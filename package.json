@@ -1,0 +1,8 @@
+{
+  "name": "gibigib",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @gibigib/api dev",
+    "dev:mobile": "pnpm --filter @gibigib/mobile start"
+  }
+}

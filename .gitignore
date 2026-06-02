@@ -36,3 +36,4 @@ apps/api/prisma/*.db-journal
 
 # Local only
 CLAUDE.md
+AGENTS.md
