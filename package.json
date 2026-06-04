@@ -1,8 +1,13 @@
 {
   "name": "gibigib",
   "private": true,
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev:api": "pnpm --filter @gibigib/api dev",
-    "dev:mobile": "pnpm --filter @gibigib/mobile start"
+    "dev:mobile": "pnpm --filter @gibigib/mobile start",
+    "typecheck": "pnpm -r typecheck"
   }
 }
