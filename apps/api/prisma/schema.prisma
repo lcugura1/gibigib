@@ -1,0 +1,137 @@
+// GibiGib — Prisma schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// App user. Authenticates with email + password (FZ01).
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role   @default(MEMBER)
+
+  memberships Membership[]
+  attendances Attendance[]
+  entryTokens EntryToken[]
+  news        News[] // articles authored (admins)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A purchasable membership plan (e.g. monthly, yearly).
+model MembershipProgram {
+  id           String  @id @default(cuid())
+  name         String
+  description  String?
+  durationDays Int
+  priceCents   Int // money stored in cents to avoid floating-point errors
+  isActive     Boolean @default(true)
+
+  memberships Membership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A membership a user actually owns, for a given period.
+model Membership {
+  id        String           @id @default(cuid())
+  userId    String
+  programId String
+  startDate DateTime
+  endDate   DateTime
+  status    MembershipStatus @default(ACTIVE)
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program MembershipProgram @relation(fields: [programId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Physical gym location (Varaždin, Zagreb, ...).
+model Gym {
+  id           String  @id @default(cuid())
+  name         String
+  city         String
+  address      String
+  workingHours String?
+
+  attendances Attendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Single-use, short-lived QR token generated each time the user opens the app.
+// Scanning marks it used and creates an Attendance — it can never be reused.
+model EntryToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance Attendance?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Records a gym entry — written when a valid EntryToken is scanned.
+model Attendance {
+  id           String   @id @default(cuid())
+  userId       String
+  gymId        String
+  entryTokenId String?  @unique
+  checkInAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gym        Gym         @relation(fields: [gymId], references: [id])
+  entryToken EntryToken? @relation(fields: [entryTokenId], references: [id])
+
+  @@index([userId])
+  @@index([gymId])
+}
+
+// Gym news article.
+model News {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  publishedAt DateTime?
+  authorId    String
+
+  author User @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+}

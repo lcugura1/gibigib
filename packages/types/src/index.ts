@@ -3,8 +3,9 @@
 
 /** Standard health-check payload returned by the API. */
 export interface ApiHealthResponse {
-  status: 'ok';
+  status: 'ok' | 'degraded';
   service: string;
+  database: 'up' | 'down';
 }
 
 export interface User {
