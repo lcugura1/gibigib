@@ -13,26 +13,8 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
-        <Stack.Screen
-          name="login"
-          options={{
-            headerShown: true,
-            title: 'Prijava',
-            headerStyle: { backgroundColor: '#000000' },
-            headerTintColor: '#FFFFFF',
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="register"
-          options={{
-            headerShown: true,
-            title: 'Registracija',
-            headerStyle: { backgroundColor: '#000000' },
-            headerTintColor: '#FFFFFF',
-            headerShadowVisible: false,
-          }}
-        />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="register" />
       </Stack>
     </SafeAreaProvider>
   );

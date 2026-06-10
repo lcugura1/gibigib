@@ -1,16 +1,5 @@
-import { Text, View } from 'react-native';
+import { LoginScreen } from '@/features/auth/screens/login-screen';
 
 export default function Login() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#000000',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text style={{ color: '#FFFFFF', fontSize: 17 }}>Prijava — uskoro</Text>
-    </View>
-  );
+  return <LoginScreen />;
 }
