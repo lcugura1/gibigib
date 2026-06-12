@@ -7,4 +7,5 @@ export const colors = {
   buttonPrimaryFrom: '#FFFFFF',
   buttonPrimaryTo: '#CFCFCF',
   buttonPrimaryText: '#000000',
+  danger: '#FF3B30',
 };

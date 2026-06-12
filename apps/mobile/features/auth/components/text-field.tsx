@@ -6,11 +6,14 @@ import { colors } from '@/shared/theme/colors';
 type Props = TextInputProps & {
   label: string;
   secureToggle?: boolean;
+  error?: string;
 };
 
-export function TextField({ label, secureToggle, style, onFocus, onBlur, ...inputProps }: Props) {
+export function TextField({ label, secureToggle, error, style, onFocus, onBlur, ...inputProps }: Props) {
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(true);
+
+  const borderColor = error ? colors.danger : focused ? colors.borderFocused : colors.border;
 
   return (
     <View style={{ gap: 8 }}>
@@ -21,7 +24,7 @@ export function TextField({ label, secureToggle, style, onFocus, onBlur, ...inpu
           borderRadius: 12,
           borderCurve: 'continuous',
           borderWidth: 1,
-          borderColor: focused ? colors.borderFocused : colors.border,
+          borderColor,
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 16,
@@ -51,6 +54,7 @@ export function TextField({ label, secureToggle, style, onFocus, onBlur, ...inpu
           </Pressable>
         ) : null}
       </View>
+      {error ? <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text> : null}
     </View>
   );
 }
