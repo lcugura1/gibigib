@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 import { hashPassword, verifyPassword } from "../utils/hash";
 import { generateRefreshToken, hashToken } from "../utils/tokens";
 import { env } from "../config/env";
+import { HttpError } from '../utils/errors';
 
 export async function registerUser(input: RegisterInput) {
   const passwordHash = await hashPassword(input.password);
@@ -25,7 +26,8 @@ export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
 
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-    throw new Error("Neuspješna prijava");
+    throw new HttpError(401, 'Neispravni podaci za prijavu');
+
   }
 
   const { passwordHash, ...safeUser } = user;
@@ -55,7 +57,7 @@ export async function rotateRefreshToken(plainToken: string) {
   });
 
   if (!existing || existing.expiresAt < new Date()) {
-    throw new Error("Invalid refresh token");
+    throw new HttpError(401, "Nevažeći refresh token");
   }
 
   await prisma.refreshToken.delete({ where: { id: existing.id } });

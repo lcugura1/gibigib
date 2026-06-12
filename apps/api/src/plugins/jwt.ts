@@ -26,7 +26,7 @@ export default fp(async (app) => {
     try {
       await request.jwtVerify();
     } catch {
-      reply.code(401).send({ message: 'Unauthorized' });
+      reply.code(401).send({ message: 'Prijavi se' });
     }
   });
 });
