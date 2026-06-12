@@ -1,9 +1,10 @@
 import Fastify from 'fastify';
 import type { ApiHealthResponse } from '@gibigib/types';
 import { prisma } from './utils/prisma';
+import { env } from './config/env';
 
-const port = Number(process.env.PORT ?? 3000);
-const host = process.env.HOST ?? '0.0.0.0';
+const port = Number(env.PORT ?? 3000);
+const host = env.HOST ?? '0.0.0.0';
 
 const app = Fastify({
   logger: true,
