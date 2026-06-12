@@ -21,7 +21,6 @@ enum MembershipStatus {
   CANCELLED
 }
 
-// App user. Authenticates with email + password (FZ01).
 model User {
   id           String @id @default(cuid())
   email        String @unique
@@ -29,23 +28,25 @@ model User {
   firstName    String
   lastName     String
   role         Role   @default(MEMBER)
+  birthDate    DateTime
+  address      String
+  oib          String  @unique
 
   memberships Membership[]
   attendances Attendance[]
   entryTokens EntryToken[]
-  news        News[] // articles authored (admins)
+  news        News[] 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// A purchasable membership plan (e.g. monthly, yearly).
 model MembershipProgram {
   id           String  @id @default(cuid())
   name         String
   description  String?
   durationDays Int
-  priceCents   Int // money stored in cents to avoid floating-point errors
+  priceCents   Int 
   isActive     Boolean @default(true)
 
   memberships Membership[]
@@ -54,7 +55,6 @@ model MembershipProgram {
   updatedAt DateTime @updatedAt
 }
 
-// A membership a user actually owns, for a given period.
 model Membership {
   id        String           @id @default(cuid())
   userId    String
@@ -73,7 +73,6 @@ model Membership {
   @@index([status])
 }
 
-// Physical gym location (Varaždin, Zagreb, ...).
 model Gym {
   id           String  @id @default(cuid())
   name         String
@@ -87,8 +86,6 @@ model Gym {
   updatedAt DateTime @updatedAt
 }
 
-// Single-use, short-lived QR token generated each time the user opens the app.
-// Scanning marks it used and creates an Attendance — it can never be reused.
 model EntryToken {
   id        String    @id @default(cuid())
   token     String    @unique
@@ -104,7 +101,6 @@ model EntryToken {
   @@index([userId])
 }
 
-// Records a gym entry — written when a valid EntryToken is scanned.
 model Attendance {
   id           String   @id @default(cuid())
   userId       String
@@ -120,7 +116,6 @@ model Attendance {
   @@index([gymId])
 }
 
-// Gym news article.
 model News {
   id          String    @id @default(cuid())
   title       String
