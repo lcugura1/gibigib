@@ -1,3 +1,4 @@
+import { registerSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -7,11 +8,16 @@ import { Checkbox } from '@/features/auth/components/checkbox';
 import { TextField } from '@/features/auth/components/text-field';
 import { useRegisterForm } from '@/features/auth/context/register-form';
 import { colors } from '@/shared/theme/colors';
+import { toFieldErrors } from '@/shared/zod-errors';
+
+const accountSchema = registerSchema.pick({ email: true, password: true });
 
 export function RegisterAccountScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { form, update } = useRegisterForm();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
@@ -24,6 +30,26 @@ export function RegisterAccountScreen() {
       hide.remove();
     };
   }, []);
+
+  const validate = () => {
+    const result = accountSchema.safeParse({ email: form.email, password: form.password });
+    const fieldErrors = result.success ? {} : toFieldErrors(result.error);
+    if (!form.acceptPolicy) {
+      fieldErrors.acceptPolicy = 'Morate prihvatiti pravila o privatnosti';
+    }
+    setErrors(fieldErrors);
+    return Object.keys(fieldErrors).length === 0;
+  };
+
+  useEffect(() => {
+    if (submitted) validate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, form.email, form.password, form.acceptPolicy]);
+
+  const handleNext = () => {
+    setSubmitted(true);
+    if (validate()) router.push('/register/details');
+  };
 
   return (
     <KeyboardAvoidingView
@@ -56,6 +82,7 @@ export function RegisterAccountScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            error={errors.email}
           />
           <TextField
             label="Lozinka"
@@ -64,20 +91,26 @@ export function RegisterAccountScreen() {
             placeholder="Kreirajte lozinku"
             autoCapitalize="none"
             secureToggle
+            error={errors.password}
           />
-          <Checkbox
-            checked={form.acceptPolicy}
-            onToggle={() => update({ acceptPolicy: !form.acceptPolicy })}
-          >
-            <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
-              Prihvaćam <Text style={{ fontWeight: '600' }}>Pravila o privatnosti</Text>
-            </Text>
-          </Checkbox>
+          <View style={{ gap: 8 }}>
+            <Checkbox
+              checked={form.acceptPolicy}
+              onToggle={() => update({ acceptPolicy: !form.acceptPolicy })}
+            >
+              <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
+                Prihvaćam <Text style={{ fontWeight: '600' }}>Pravila o privatnosti</Text>
+              </Text>
+            </Checkbox>
+            {errors.acceptPolicy ? (
+              <Text style={{ color: colors.danger, fontSize: 13 }}>{errors.acceptPolicy}</Text>
+            ) : null}
+          </View>
         </View>
 
         <View style={{ flex: 1 }} />
 
-        <Pressable onPress={() => router.push('/register/details')}>
+        <Pressable onPress={handleNext}>
           <LinearGradient
             colors={[colors.buttonPrimaryFrom, colors.buttonPrimaryTo]}
             start={{ x: 0, y: 0 }}

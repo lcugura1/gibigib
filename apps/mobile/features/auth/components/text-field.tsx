@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Pressable, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, TextInput, type TextInputProps } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { colors } from '@/shared/theme/colors';
 
 type Props = TextInputProps & {
@@ -13,22 +22,36 @@ export function TextField({ label, secureToggle, error, style, onFocus, onBlur, 
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(true);
 
-  const borderColor = error ? colors.danger : focused ? colors.borderFocused : colors.border;
+  const errorProgress = useSharedValue(error ? 1 : 0);
+
+  useEffect(() => {
+    errorProgress.value = withTiming(error ? 1 : 0, { duration: 200 });
+  }, [error, errorProgress]);
+
+  const animatedBorder = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      errorProgress.value,
+      [0, 1],
+      [focused ? colors.borderFocused : colors.border, colors.danger],
+    ),
+  }));
 
   return (
-    <View style={{ gap: 8 }}>
+    <Animated.View style={{ gap: 8 }} layout={LinearTransition.duration(200)}>
       <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{label}</Text>
-      <View
-        style={{
-          height: 56,
-          borderRadius: 12,
-          borderCurve: 'continuous',
-          borderWidth: 1,
-          borderColor,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 16,
-        }}
+      <Animated.View
+        style={[
+          {
+            height: 56,
+            borderRadius: 12,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+          },
+          animatedBorder,
+        ]}
       >
         <TextInput
           {...inputProps}
@@ -53,8 +76,16 @@ export function TextField({ label, secureToggle, error, style, onFocus, onBlur, 
             />
           </Pressable>
         ) : null}
-      </View>
-      {error ? <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text> : null}
-    </View>
+      </Animated.View>
+      {error ? (
+        <Animated.Text
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={{ color: colors.danger, fontSize: 13 }}
+        >
+          {error}
+        </Animated.Text>
+      ) : null}
+    </Animated.View>
   );
 }

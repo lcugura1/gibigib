@@ -1,17 +1,24 @@
+import { loginSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
+import { Alert, Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Checkbox } from '@/features/auth/components/checkbox';
 import { TextField } from '@/features/auth/components/text-field';
+import { ApiError, login } from '@/features/auth/services/auth';
 import { colors } from '@/shared/theme/colors';
+import { toFieldErrors } from '@/shared/zod-errors';
 
 export function LoginScreen() {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
@@ -24,6 +31,36 @@ export function LoginScreen() {
       hide.remove();
     };
   }, []);
+
+  const validate = () => {
+    const result = loginSchema.safeParse({ email, password });
+    setErrors(result.success ? {} : toFieldErrors(result.error));
+    return result.success ? result.data : null;
+  };
+
+  useEffect(() => {
+    if (submitted) validate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, email, password]);
+
+  const handleSubmit = async () => {
+    setSubmitted(true);
+    setFormError(null);
+    const data = validate();
+    if (!data) return;
+
+    setSubmitting(true);
+    try {
+      const response = await login(data);
+      Alert.alert('Uspješna prijava', `Dobrodošli, ${response.user.firstName}`);
+    } catch (error) {
+      setFormError(
+        error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -53,6 +90,7 @@ export function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            error={errors.email}
           />
           <TextField
             label="Lozinka"
@@ -61,6 +99,7 @@ export function LoginScreen() {
             placeholder="Unesite vašu lozinku"
             autoCapitalize="none"
             secureToggle
+            error={errors.password}
           />
         </View>
 
@@ -85,7 +124,13 @@ export function LoginScreen() {
 
         <View style={{ flex: 1 }} />
 
-        <Pressable>
+        {formError ? (
+          <Text style={{ color: colors.danger, fontSize: 14, textAlign: 'center', marginBottom: 12 }}>
+            {formError}
+          </Text>
+        ) : null}
+
+        <Pressable onPress={handleSubmit} disabled={submitting}>
           <LinearGradient
             colors={[colors.buttonPrimaryFrom, colors.buttonPrimaryTo]}
             start={{ x: 0, y: 0 }}
@@ -96,10 +141,11 @@ export function LoginScreen() {
               borderCurve: 'continuous',
               alignItems: 'center',
               justifyContent: 'center',
+              opacity: submitting ? 0.6 : 1,
             }}
           >
             <Text style={{ color: colors.buttonPrimaryText, fontSize: 17, fontWeight: '600' }}>
-              Prijavi se
+              {submitting ? 'Prijava...' : 'Prijavi se'}
             </Text>
           </LinearGradient>
         </Pressable>
