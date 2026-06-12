@@ -22,20 +22,20 @@ enum MembershipStatus {
 }
 
 model User {
-  id           String @id @default(cuid())
-  email        String @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
   passwordHash String
   firstName    String
   lastName     String
-  role         Role   @default(MEMBER)
+  role         Role     @default(MEMBER)
   birthDate    DateTime
   address      String
-  oib          String  @unique
+  oib          String   @unique
 
   memberships Membership[]
   attendances Attendance[]
   entryTokens EntryToken[]
-  news        News[] 
+  news        News[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,7 +46,7 @@ model MembershipProgram {
   name         String
   description  String?
   durationDays Int
-  priceCents   Int 
+  priceCents   Int
   isActive     Boolean @default(true)
 
   memberships Membership[]
