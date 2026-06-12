@@ -18,3 +18,9 @@ export const registerSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string(),
+});
+
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
