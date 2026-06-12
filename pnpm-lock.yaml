@@ -104,6 +104,10 @@ importers:
         version: 6.0.3
 
   packages/types:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: ~6.0.3

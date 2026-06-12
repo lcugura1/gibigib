@@ -57,3 +57,5 @@ export interface GymInfo {
   email: string;
   openingHours: string;
 }
+
+export * from './auth';
