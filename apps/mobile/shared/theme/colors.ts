@@ -1,11 +1,16 @@
 export const colors = {
   background: '#000000',
+  surface: '#0E0E10',
+  surfaceBorder: '#1F1F22',
   textPrimary: '#FFFFFF',
   textSecondary: '#8E8E93',
+  textOnLight: '#000000',
+  textOnLightSecondary: '#6B6B70',
   border: '#3A3A3A',
   borderFocused: '#FFFFFF',
   buttonPrimaryFrom: '#FFFFFF',
   buttonPrimaryTo: '#CFCFCF',
   buttonPrimaryText: '#000000',
+  accent: '#FFFFFF',
   danger: '#FF3B30',
 };
