@@ -39,3 +39,5 @@ apps/api/src/generated/
 CLAUDE.md
 AGENTS.md
 .claude/
+
+.vscode/
