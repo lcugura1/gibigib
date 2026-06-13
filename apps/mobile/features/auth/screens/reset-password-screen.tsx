@@ -1,53 +1,45 @@
-import { registerSchema } from '@gibigib/types';
+import { resetPasswordSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
-import { useAuth } from '@/features/auth/context/auth';
-import { useRegisterForm } from '@/features/auth/context/register-form';
-import { ApiError, register } from '@/features/auth/services/auth';
+import { ApiError, resetPassword } from '@/features/auth/services/auth';
 import { BackButton } from '@/shared/components/back-button';
 import { colors } from '@/shared/theme/colors';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { toFieldErrors } from '@/shared/zod-errors';
 
-const detailsSchema = registerSchema.pick({
-  firstName: true,
-  lastName: true,
-  birthDate: true,
-  address: true,
-  oib: true,
-});
-
-export function RegisterDetailsScreen() {
+export function ResetPasswordScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const keyboardHeight = useKeyboardHeight();
-  const { signIn } = useAuth();
-  const { form, update } = useRegisterForm();
+  const { email } = useLocalSearchParams<{ email: string }>();
   const scrollRef = useRef<ScrollView>(null);
   const offsets = useRef<Record<string, number>>({});
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
-    const result = detailsSchema.safeParse({
-      firstName: form.firstName,
-      lastName: form.lastName,
-      birthDate: form.birthDate,
-      address: form.address,
-      oib: form.oib,
-    });
-    setErrors(result.success ? {} : toFieldErrors(result.error));
-    return result.success;
+    const result = resetPasswordSchema.safeParse({ email, code, password });
+    const fieldErrors = result.success ? {} : toFieldErrors(result.error);
+    if (password && password !== confirmPassword) {
+      fieldErrors.confirmPassword = 'Lozinke se ne podudaraju';
+    }
+    setErrors(fieldErrors);
+    return Object.keys(fieldErrors).length === 0;
   };
 
   useEffect(() => {
     if (submitted) validate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submitted, form.firstName, form.lastName, form.birthDate, form.address, form.oib]);
+  }, [submitted, code, password, confirmPassword]);
 
   const handleSubmit = async () => {
     setSubmitted(true);
@@ -56,16 +48,9 @@ export function RegisterDetailsScreen() {
 
     setSubmitting(true);
     try {
-      const response = await register({
-        email: form.email,
-        password: form.password,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        birthDate: form.birthDate,
-        address: form.address,
-        oib: form.oib,
-      });
-      await signIn(response.user, response.accessToken, response.refreshToken);
+      await resetPassword({ email, code, password });
+      Alert.alert('Lozinka promijenjena', 'Prijavite se s novom lozinkom.');
+      router.replace('/login');
     } catch (error) {
       setFormError(
         error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
@@ -101,62 +86,46 @@ export function RegisterDetailsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={{ color: colors.textPrimary, fontSize: 34, fontWeight: '700', marginTop: 16 }}>
-          Registracija
+          Nova lozinka
         </Text>
-        <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '700', marginTop: 4 }}>
-          Osobni podaci
+        <Text style={{ color: colors.textSecondary, fontSize: 15, marginTop: 8 }}>
+          Unesite kod s e-pošte i novu lozinku.
         </Text>
 
-        <View onLayout={captureOffset('firstName')} style={{ marginTop: 24 }}>
+        <View onLayout={captureOffset('code')} style={{ marginTop: 24 }}>
           <TextField
-            label="Ime"
-            value={form.firstName}
-            onChangeText={(text) => update({ firstName: text })}
-            onFocus={() => scrollToField('firstName')}
-            placeholder="Unesite vaše ime"
-            error={errors.firstName}
-          />
-        </View>
-        <View onLayout={captureOffset('lastName')} style={{ marginTop: 20 }}>
-          <TextField
-            label="Prezime"
-            value={form.lastName}
-            onChangeText={(text) => update({ lastName: text })}
-            onFocus={() => scrollToField('lastName')}
-            placeholder="Unesite vaše prezime"
-            error={errors.lastName}
-          />
-        </View>
-        <View onLayout={captureOffset('birthDate')} style={{ marginTop: 20 }}>
-          <TextField
-            label="Datum rođenja"
-            value={form.birthDate}
-            onChangeText={(text) => update({ birthDate: text })}
-            onFocus={() => scrollToField('birthDate')}
-            placeholder="Unesite vaš datum rođenja"
-            error={errors.birthDate}
-          />
-        </View>
-        <View onLayout={captureOffset('address')} style={{ marginTop: 20 }}>
-          <TextField
-            label="Adresa"
-            value={form.address}
-            onChangeText={(text) => update({ address: text })}
-            onFocus={() => scrollToField('address')}
-            placeholder="Unesite vašu adresu"
-            error={errors.address}
-          />
-        </View>
-        <View onLayout={captureOffset('oib')} style={{ marginTop: 20 }}>
-          <TextField
-            label="OIB"
-            value={form.oib}
-            onChangeText={(text) => update({ oib: text })}
-            onFocus={() => scrollToField('oib')}
-            placeholder="Unesite vaš OIB"
+            label="Kod"
+            value={code}
+            onChangeText={setCode}
+            onFocus={() => scrollToField('code')}
+            placeholder="Unesite 6-znamenkasti kod"
             keyboardType="number-pad"
-            maxLength={11}
-            error={errors.oib}
+            maxLength={6}
+            error={errors.code}
+          />
+        </View>
+        <View onLayout={captureOffset('password')} style={{ marginTop: 20 }}>
+          <TextField
+            label="Nova lozinka"
+            value={password}
+            onChangeText={setPassword}
+            onFocus={() => scrollToField('password')}
+            placeholder="Unesite novu lozinku"
+            autoCapitalize="none"
+            secureToggle
+            error={errors.password}
+          />
+        </View>
+        <View onLayout={captureOffset('confirmPassword')} style={{ marginTop: 20 }}>
+          <TextField
+            label="Potvrdi lozinku"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            onFocus={() => scrollToField('confirmPassword')}
+            placeholder="Ponovite novu lozinku"
+            autoCapitalize="none"
+            secureToggle
+            error={errors.confirmPassword}
           />
         </View>
 
@@ -189,7 +158,7 @@ export function RegisterDetailsScreen() {
             }}
           >
             <Text style={{ color: colors.buttonPrimaryText, fontSize: 17, fontWeight: '600' }}>
-              {submitting ? 'Slanje...' : 'Postani član'}
+              {submitting ? 'Spremanje...' : 'Spremi lozinku'}
             </Text>
           </LinearGradient>
         </Pressable>

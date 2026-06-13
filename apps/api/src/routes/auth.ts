@@ -1,14 +1,18 @@
 import type { FastifyInstance } from "fastify";
 import {
+  forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
   registerSchema,
+  resetPasswordSchema,
 } from "@gibigib/types";
 import {
   getUserById,
   issueRefreshToken,
   loginUser,
   registerUser,
+  requestPasswordReset,
+  resetPassword,
   revokeRefreshToken,
   rotateRefreshToken,
 } from "../services/auth";
@@ -51,6 +55,18 @@ export async function authRoutes(app: FastifyInstance) {
     const { refreshToken } = refreshTokenSchema.parse(request.body);
     await revokeRefreshToken(refreshToken);
     return reply.code(204).send();
+  });
+
+  app.post("/forgot-password", async (request, reply) => {
+    const input = forgotPasswordSchema.parse(request.body);
+    await requestPasswordReset(input.email);
+    return reply.send({ message: "Ako račun postoji, poslali smo upute na e-adresu" });
+  });
+
+  app.post("/reset-password", async (request, reply) => {
+    const input = resetPasswordSchema.parse(request.body);
+    await resetPassword(input);
+    return reply.send({ message: "Lozinka je promijenjena" });
   });
 
   app.get("/me", { preHandler: [app.authenticate] }, async (request) => {

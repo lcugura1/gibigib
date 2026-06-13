@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from '@gibigib/types';
+import type { LoginInput, RegisterInput, ResetPasswordInput } from '@gibigib/types';
 import { API_URL } from '@/shared/config';
 
 export type AuthUser = {
@@ -56,4 +56,12 @@ export function refreshSession(refreshToken: string) {
 
 export function logout(refreshToken: string) {
   return post<void>('/auth/logout', { refreshToken });
+}
+
+export function forgotPassword(email: string) {
+  return post<{ message: string }>('/auth/forgot-password', { email });
+}
+
+export function resetPassword(input: ResetPasswordInput) {
+  return post<{ message: string }>('/auth/reset-password', input);
 }

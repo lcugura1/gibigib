@@ -1,9 +1,12 @@
-import type { LoginInput, RegisterInput } from "@gibigib/types";
+import type { LoginInput, RegisterInput, ResetPasswordInput } from "@gibigib/types";
 import { prisma } from "../utils/prisma";
 import { hashPassword, verifyPassword } from "../utils/hash";
-import { generateRefreshToken, hashToken } from "../utils/tokens";
+import { generateOtp, generateRefreshToken, hashToken } from "../utils/tokens";
 import { env } from "../config/env";
 import { HttpError } from '../utils/errors';
+import { sendPasswordResetEmail } from './email';
+
+const RESET_TTL_MS = 15 * 60 * 1000;
 
 export async function registerUser(input: RegisterInput) {
   const passwordHash = await hashPassword(input.password);
@@ -81,4 +84,42 @@ export async function getUserById(userId: string) {
         where: { id: userId },
         omit: { passwordHash: true },
     })
+}
+
+export async function requestPasswordReset(email: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new HttpError(404, 'Korisnik s tom e-adresom ne postoji');
+  }
+
+  await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+
+  const code = generateOtp();
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      codeHash: hashToken(code),
+      expiresAt: new Date(Date.now() + RESET_TTL_MS),
+    },
+  });
+
+  await sendPasswordResetEmail(email, code);
+}
+
+export async function resetPassword(input: ResetPasswordInput) {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const token = user
+    ? await prisma.passwordResetToken.findFirst({ where: { userId: user.id } })
+    : null;
+
+  if (!user || !token || token.expiresAt < new Date() || token.codeHash !== hashToken(input.code)) {
+    throw new HttpError(400, 'Neispravan ili istekao kod');
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(input.password) },
+  });
+  await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+  await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
 }

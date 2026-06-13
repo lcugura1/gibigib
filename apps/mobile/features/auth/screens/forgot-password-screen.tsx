@@ -1,22 +1,19 @@
-import { loginSchema } from '@gibigib/types';
+import { forgotPasswordSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Checkbox } from '@/features/auth/components/checkbox';
 import { TextField } from '@/features/auth/components/text-field';
-import { useAuth } from '@/features/auth/context/auth';
-import { ApiError, login } from '@/features/auth/services/auth';
+import { ApiError, forgotPassword } from '@/features/auth/services/auth';
+import { BackButton } from '@/shared/components/back-button';
 import { colors } from '@/shared/theme/colors';
 import { toFieldErrors } from '@/shared/zod-errors';
 
-export function LoginScreen() {
+export function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
-  const { signIn } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -35,7 +32,7 @@ export function LoginScreen() {
   }, []);
 
   const validate = () => {
-    const result = loginSchema.safeParse({ email, password });
+    const result = forgotPasswordSchema.safeParse({ email });
     setErrors(result.success ? {} : toFieldErrors(result.error));
     return result.success ? result.data : null;
   };
@@ -43,7 +40,7 @@ export function LoginScreen() {
   useEffect(() => {
     if (submitted) validate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submitted, email, password]);
+  }, [submitted, email]);
 
   const handleSubmit = async () => {
     setSubmitted(true);
@@ -53,12 +50,16 @@ export function LoginScreen() {
 
     setSubmitting(true);
     try {
-      const response = await login(data);
-      await signIn(response.user, response.accessToken, response.refreshToken);
+      await forgotPassword(data.email);
+      router.push({ pathname: '/reset-password', params: { email: data.email } });
     } catch (error) {
-      setFormError(
-        error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
-      );
+      if (error instanceof ApiError && error.status === 404) {
+        setErrors({ email: error.message });
+      } else {
+        setFormError(
+          error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -75,15 +76,20 @@ export function LoginScreen() {
         style={{
           flex: 1,
           paddingHorizontal: 16,
-          paddingTop: insets.top + 16,
+          paddingTop: insets.top + 8,
           paddingBottom: keyboardVisible ? 16 : insets.bottom + 16,
         }}
       >
-        <Text style={{ color: colors.textPrimary, fontSize: 34, fontWeight: '700', marginBottom: 32 }}>
-          Prijavi se
+        <BackButton />
+
+        <Text style={{ color: colors.textPrimary, fontSize: 34, fontWeight: '700', marginTop: 16 }}>
+          Zaboravljena lozinka
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 15, marginTop: 8 }}>
+          Unesite e-adresu i poslat ćemo vam kod za promjenu lozinke.
         </Text>
 
-        <View style={{ gap: 20 }}>
+        <View style={{ gap: 20, marginTop: 24 }}>
           <TextField
             label="E-adresa"
             value={email}
@@ -94,36 +100,6 @@ export function LoginScreen() {
             autoComplete="email"
             error={errors.email}
           />
-          <TextField
-            label="Lozinka"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Unesite vašu lozinku"
-            autoCapitalize="none"
-            secureToggle
-            error={errors.password}
-          />
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: 20,
-          }}
-        >
-          <Checkbox checked={rememberMe} onToggle={() => setRememberMe((value) => !value)}>
-            <Text style={{ color: colors.textPrimary, fontSize: 15 }}>Zapamti me</Text>
-          </Checkbox>
-
-          <Link href="/forgot-password" asChild>
-            <Pressable hitSlop={8}>
-              <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '600' }}>
-                Zaboravili ste lozinku?
-              </Text>
-            </Pressable>
-          </Link>
         </View>
 
         <View style={{ flex: 1 }} />
@@ -149,29 +125,10 @@ export function LoginScreen() {
             }}
           >
             <Text style={{ color: colors.buttonPrimaryText, fontSize: 17, fontWeight: '600' }}>
-              {submitting ? 'Prijava...' : 'Prijavi se'}
+              {submitting ? 'Slanje...' : 'Pošalji kod'}
             </Text>
           </LinearGradient>
         </Pressable>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 4,
-            marginTop: 16,
-          }}
-        >
-          <Text style={{ color: colors.textSecondary, fontSize: 15 }}>Nemate račun?</Text>
-          <Link href="/register" asChild>
-            <Pressable hitSlop={8}>
-              <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '600' }}>
-                Registriraj se
-              </Text>
-            </Pressable>
-          </Link>
-        </View>
       </Pressable>
     </KeyboardAvoidingView>
   );

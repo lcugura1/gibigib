@@ -24,3 +24,17 @@ export const refreshTokenSchema = z.object({
 });
 
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.email('Unesite ispravnu e-adresu'),
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  email: z.email('Unesite ispravnu e-adresu'),
+  code: z.string().regex(/^\d{6}$/, 'Kod mora imati 6 znamenki'),
+  password: z.string().min(8, 'Lozinka mora imati barem 8 znakova'),
+});
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
