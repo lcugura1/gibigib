@@ -2,16 +2,18 @@ import { loginSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Checkbox } from '@/features/auth/components/checkbox';
 import { TextField } from '@/features/auth/components/text-field';
+import { useAuth } from '@/features/auth/context/auth';
 import { ApiError, login } from '@/features/auth/services/auth';
 import { colors } from '@/shared/theme/colors';
 import { toFieldErrors } from '@/shared/zod-errors';
 
 export function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -52,7 +54,7 @@ export function LoginScreen() {
     setSubmitting(true);
     try {
       const response = await login(data);
-      Alert.alert('Uspješna prijava', `Dobrodošli, ${response.user.firstName}`);
+      await signIn(response.user, response.accessToken, response.refreshToken);
     } catch (error) {
       setFormError(
         error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',

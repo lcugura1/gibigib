@@ -1,9 +1,10 @@
 import { registerSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Alert, Keyboard, KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
+import { useAuth } from '@/features/auth/context/auth';
 import { useRegisterForm } from '@/features/auth/context/register-form';
 import { ApiError, register } from '@/features/auth/services/auth';
 import { BackButton } from '@/shared/components/back-button';
@@ -20,6 +21,7 @@ const detailsSchema = registerSchema.pick({
 
 export function RegisterDetailsScreen() {
   const insets = useSafeAreaInsets();
+  const { signIn } = useAuth();
   const { form, update } = useRegisterForm();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function RegisterDetailsScreen() {
         address: form.address,
         oib: form.oib,
       });
-      Alert.alert('Uspješna registracija', `Dobrodošli, ${response.user.firstName}`);
+      await signIn(response.user, response.accessToken, response.refreshToken);
     } catch (error) {
       setFormError(
         error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
