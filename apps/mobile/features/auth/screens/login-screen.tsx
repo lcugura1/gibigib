@@ -154,24 +154,26 @@ export function LoginScreen() {
           </LinearGradient>
         </Pressable>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 4,
-            marginTop: 16,
-          }}
-        >
-          <Text style={{ color: colors.textSecondary, fontSize: 15 }}>Nemate račun?</Text>
-          <Link href="/register" asChild>
-            <Pressable hitSlop={8}>
-              <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '600' }}>
-                Registriraj se
-              </Text>
-            </Pressable>
-          </Link>
-        </View>
+        {keyboardVisible ? null : (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 4,
+              marginTop: 16,
+            }}
+          >
+            <Text style={{ color: colors.textSecondary, fontSize: 15 }}>Nemate račun?</Text>
+            <Link href="/register" asChild>
+              <Pressable hitSlop={8}>
+                <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '600' }}>
+                  Registriraj se
+                </Text>
+              </Pressable>
+            </Link>
+          </View>
+        )}
       </Pressable>
     </KeyboardAvoidingView>
   );
