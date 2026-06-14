@@ -5,9 +5,12 @@ import { GlassIconButton } from "@/features/home/components/glass-icon-button";
 import { MembershipPass } from "@/features/home/components/membership-pass";
 import { PlanCard } from "@/features/home/components/plan-card";
 import { SectionLabel } from "@/features/home/components/section-label";
+import { useRouter } from 'expo-router';
+import { plans } from '@/features/home/data/plans';
 
 export default function Home() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   return (
     <ScrollView
@@ -52,58 +55,16 @@ export default function Home() {
       />
       <View style={{ gap: 12 }}>
         <SectionLabel>Dostupni planovi</SectionLabel>
+
+        {plans.map((plan) => (
+          <PlanCard
+            key={plan.slug}
+            {...plan}
+            onPress={() => router.push({ pathname: '/plan/[slug]', params: { slug: plan.slug } })}
+          />
+        ))}
       </View>
 
-      <PlanCard
-        name="Mjesečno"
-        duration="1 mjesec"
-        price="29,99 €"
-        benefits={[
-          "Neograničen pristup",
-          "Svlačionica i tuševi",
-          "Besplatan Wi-Fi",
-        ]}
-        extraBenefits={1}
-      />
-
-      <PlanCard
-        variant="light"
-        name="Grupni program"
-        duration="1 mjesec"
-        price="39,99 €"
-        benefits={[
-          "Vođeni grupni treninzi",
-          "Tjedni raspored termina",
-          "Stručni trener",
-        ]}
-        extraBenefits={2}
-      />
-
-      <PlanCard
-        name="Godišnji"
-        duration="12 mjeseci"
-        price="250,00 €"
-        savings="Uštedi 109,88 €"
-        benefits={[
-          "Neograničen pristup",
-          "Svlačionica i tuševi",
-          "Besplatan Wi-Fi",
-        ]}
-        extraBenefits={1}
-      />
-
-      <PlanCard
-        variant="light"
-        name="1 na 1 uz trenera"
-        duration="Personalni trening"
-        cta="Detalji"
-        benefits={[
-          "Individualni plan treninga",
-          "Termini po dogovoru",
-          "Posvećen trener",
-        ]}
-        extraBenefits={2}
-      />
     </ScrollView>
   );
 }
