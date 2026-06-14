@@ -11,6 +11,11 @@ export const colors = {
   buttonPrimaryFrom: '#FFFFFF',
   buttonPrimaryTo: '#CFCFCF',
   buttonPrimaryText: '#000000',
-  accent: '#FFFFFF',
+  cardGradientFrom: '#1A1B1E',
+  cardGradientTo: '#0C0C0E',
+  cardBorder: '#26272B',
+  cardLightGradientFrom: '#FFFFFF',
+  cardLightGradientTo: '#DEDEE3',
+  accent: '#C5F23D',
   danger: '#FF3B30',
 };
