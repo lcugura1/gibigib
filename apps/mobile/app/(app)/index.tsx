@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { plans } from '@/features/home/data/plans';
 
 export default function Home() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   return (
@@ -46,7 +46,7 @@ export default function Home() {
             {user?.firstName}
           </Text>
         </View>
-        <GlassIconButton name="person-outline" onPress={signOut} />
+        <GlassIconButton name="person-outline" onPress={() => router.push('/settings')} />
       </View>
 
       <MembershipPass

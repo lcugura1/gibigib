@@ -35,6 +35,15 @@ function RootNavigator() {
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="plan/[slug]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen
+          name="settings"
+          options={{
+            presentation: 'formSheet',
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: 'fitToContents',
+            sheetCornerRadius: 24,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );
