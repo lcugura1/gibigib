@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 import { formatVisitDate } from '@/features/attendance/data/visits';

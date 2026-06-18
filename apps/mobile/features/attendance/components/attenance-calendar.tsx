@@ -1,6 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { colors } from '@/shared/theme/colors';
 import {
   MONTHS_HR,
@@ -11,6 +17,7 @@ import {
 
 const COLUMNS = 7;
 const COLUMN_WIDTH = `${100 / COLUMNS}%` as const;
+const SHIFT = 16;
 
 export function AttendanceCalendar() {
   const today = new Date();
@@ -24,7 +31,28 @@ export function AttendanceCalendar() {
   const visitedDays = visitedDaysInMonth(year, month);
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
-  const changeMonth = (delta: number) => setViewDate(new Date(year, month + delta, 1));
+  const opacity = useSharedValue(1);
+  const offset = useSharedValue(0);
+
+  const gridStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: offset.value }],
+  }));
+
+  const applyMonth = (time: number) => setViewDate(new Date(time));
+
+  const changeMonth = (delta: number) => {
+    const nextTime = new Date(year, month + delta, 1).getTime();
+    offset.value = withTiming(delta * -SHIFT, { duration: 140 });
+    opacity.value = withTiming(0, { duration: 140 }, (finished) => {
+      if (finished) {
+        runOnJS(applyMonth)(nextTime);
+        offset.value = delta * SHIFT;
+        offset.value = withTiming(0, { duration: 200 });
+        opacity.value = withTiming(1, { duration: 200 });
+      }
+    });
+  };
 
   return (
     <View
@@ -39,8 +67,13 @@ export function AttendanceCalendar() {
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Pressable onPress={() => changeMonth(-1)} hitSlop={8} style={{ padding: 4 }}>
+          <Ionicons name="chevron-back" size={22} color={colors.textSecondary} />
+        </Pressable>
         <Text
           style={{
+            flex: 1,
+            textAlign: 'center',
             color: colors.textPrimary,
             fontSize: 18,
             fontWeight: '700',
@@ -50,71 +83,68 @@ export function AttendanceCalendar() {
         >
           {MONTHS_HR[month]} {year}
         </Text>
-        <View style={{ flexDirection: 'row', gap: 4 }}>
-          <Pressable onPress={() => changeMonth(-1)} hitSlop={8} style={{ padding: 4 }}>
-            <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
-          </Pressable>
-          <Pressable onPress={() => changeMonth(1)} hitSlop={8} style={{ padding: 4 }}>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </Pressable>
+        <Pressable onPress={() => changeMonth(1)} hitSlop={8} style={{ padding: 4 }}>
+          <Ionicons name="chevron-forward" size={22} color={colors.textSecondary} />
+        </Pressable>
+      </View>
+
+      <Animated.View style={[{ gap: 16 }, gridStyle]}>
+        <View style={{ flexDirection: 'row' }}>
+          {WEEKDAYS_HR.map((weekday) => (
+            <Text
+              key={weekday}
+              style={{
+                width: COLUMN_WIDTH,
+                textAlign: 'center',
+                color: colors.textSecondary,
+                fontSize: 12,
+                fontWeight: '600',
+              }}
+            >
+              {weekday}
+            </Text>
+          ))}
         </View>
-      </View>
 
-      <View style={{ flexDirection: 'row' }}>
-        {WEEKDAYS_HR.map((weekday) => (
-          <Text
-            key={weekday}
-            style={{
-              width: COLUMN_WIDTH,
-              textAlign: 'center',
-              color: colors.textSecondary,
-              fontSize: 12,
-              fontWeight: '600',
-            }}
-          >
-            {weekday}
-          </Text>
-        ))}
-      </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8 }}>
+          {cells.map((day, index) => {
+            if (day === null) {
+              return <View key={`blank-${index}`} style={{ width: COLUMN_WIDTH, height: 38 }} />;
+            }
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8 }}>
-        {cells.map((day, index) => {
-          if (day === null) {
-            return <View key={`blank-${index}`} style={{ width: COLUMN_WIDTH, height: 38 }} />;
-          }
+            const visited = visitedDays.has(day);
+            const isToday = isCurrentMonth && today.getDate() === day;
 
-          const visited = visitedDays.has(day);
-          const isToday = isCurrentMonth && today.getDate() === day;
-
-          return (
-            <View key={day} style={{ width: COLUMN_WIDTH, alignItems: 'center' }}>
-              <View
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 12,
-                  borderCurve: 'continuous',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: visited ? colors.textPrimary : 'transparent',
-                  borderWidth: isToday ? 2 : 0,
-                  borderColor: colors.accent,
-                }}
-              >
-                <Text
+            return (
+              <View key={day} style={{ width: COLUMN_WIDTH, alignItems: 'center' }}>
+                <View
                   style={{
-                    color: visited ? colors.textOnLight : colors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: visited || isToday ? '700' : '400',
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
+                    borderCurve: 'continuous',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: visited ? colors.textPrimary : 'transparent',
+                    borderWidth: isToday ? 2 : 0,
+                    borderColor: colors.accent,
                   }}
                 >
-                  {day}
-                </Text>
+                  <Text
+                    style={{
+                      color: visited ? colors.textOnLight : colors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: visited || isToday ? '700' : '400',
+                    }}
+                  >
+                    {day}
+                  </Text>
+                </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      </Animated.View>
 
       <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
         <LegendItem filled label="Posjećeno" />
