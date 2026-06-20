@@ -1,11 +1,22 @@
+import { visitTagSchema } from '@gibigib/types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Modal, Pressable, Text, TextInput, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { SectionLabel } from '@/shared/components/section-label';
 import { colors } from '@/shared/theme/colors';
+import { toFieldErrors } from '@/shared/zod-errors';
 import { useAttendance } from '@/features/attendance/context/attendance';
-import { formatVisitDate } from '@/features/attendance/data/visits';
+import { formatVisitDate, labelForColor } from '@/features/attendance/data/visits';
 
 export function DayDetailSheet() {
   const { selectedDate, clearSelection } = useAttendance();
@@ -23,26 +34,61 @@ export function DayDetailSheet() {
 }
 
 function DayDetailContent({ date }: { date: string }) {
-  const { visits, colorOptions, tagVisit, clearSelection } = useAttendance();
+  const { visits, colorOptions, colorLabels, tagVisit, clearSelection } = useAttendance();
   const visit = visits.find((item) => item.date === date);
 
-  const [color, setColor] = useState(visit?.color ?? colorOptions[0]);
-  const [label, setLabel] = useState(visit?.label ?? '');
+  const initialColor = visit?.color ?? colorOptions[0];
+  const [color, setColor] = useState(initialColor);
+  const [label, setLabel] = useState(visit?.label ?? labelForColor(colorLabels, initialColor));
+  const [focused, setFocused] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const keyboardHeight = useKeyboardHeight();
+
+  const errorProgress = useSharedValue(0);
+
+  const validate = () => {
+    const result = visitTagSchema.safeParse({ label });
+    setErrors(result.success ? {} : toFieldErrors(result.error));
+    return result.success ? result.data : null;
+  };
+
+  useEffect(() => {
+    if (submitted) validate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, label]);
+
+  useEffect(() => {
+    errorProgress.value = withTiming(errors.label ? 1 : 0, { duration: 200 });
+  }, [errors.label, errorProgress]);
+
+  const animatedBorder = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      errorProgress.value,
+      [0, 1],
+      [focused ? colors.borderFocused : colors.surfaceBorder, colors.danger],
+    ),
+  }));
 
   const save = () => {
+    setSubmitted(true);
+    if (!validate()) return;
     tagVisit(date, color, label);
     clearSelection();
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+    <Pressable
+      onPress={clearSelection}
+      style={{
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: keyboardHeight > 0 ? 'flex-end' : 'center',
+        paddingHorizontal: 24,
+        paddingTop: 24,
+        paddingBottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24,
+      }}
     >
-      <Pressable
-        onPress={clearSelection}
-        style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', padding: 24 }}
-      >
         <Pressable
           onPress={() => {}}
           style={{
@@ -71,7 +117,14 @@ function DayDetailContent({ date }: { date: string }) {
               {colorOptions.map((option) => {
                 const active = option === color;
                 return (
-                  <Pressable key={option} onPress={() => setColor(option)} hitSlop={6}>
+                  <Pressable
+                    key={option}
+                    onPress={() => {
+                      setColor(option);
+                      setLabel(labelForColor(colorLabels, option));
+                    }}
+                    hitSlop={6}
+                  >
                     <View
                       style={{
                         width: 40,
@@ -90,26 +143,42 @@ function DayDetailContent({ date }: { date: string }) {
 
           <View style={{ gap: 10 }}>
             <SectionLabel>Oznaka</SectionLabel>
-            <TextInput
-              value={label}
-              onChangeText={setLabel}
-              placeholder="npr. Push, Noge, Kardio…"
-              placeholderTextColor={colors.textSecondary}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={save}
-              style={{
-                backgroundColor: colors.background,
-                borderWidth: 1,
-                borderColor: colors.surfaceBorder,
-                borderRadius: 14,
-                borderCurve: 'continuous',
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                color: colors.textPrimary,
-                fontSize: 16,
-              }}
-            />
+            <Animated.View
+              style={[
+                {
+                  height: 50,
+                  borderRadius: 14,
+                  borderCurve: 'continuous',
+                  borderWidth: 1,
+                  backgroundColor: colors.background,
+                  paddingHorizontal: 14,
+                  justifyContent: 'center',
+                },
+                animatedBorder,
+              ]}
+            >
+              <TextInput
+                value={label}
+                onChangeText={setLabel}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="npr. Push, Pull, Legs, Upper, Lower…"
+                placeholderTextColor={colors.textSecondary}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={save}
+                style={{ color: colors.textPrimary, fontSize: 16 }}
+              />
+            </Animated.View>
+            {errors.label ? (
+              <Animated.Text
+                entering={FadeIn.duration(200)}
+                exiting={FadeOut.duration(200)}
+                style={{ color: colors.danger, fontSize: 13 }}
+              >
+                {errors.label}
+              </Animated.Text>
+            ) : null}
           </View>
 
           <Pressable onPress={save}>
@@ -130,6 +199,5 @@ function DayDetailContent({ date }: { date: string }) {
           </Pressable>
         </Pressable>
       </Pressable>
-    </KeyboardAvoidingView>
   );
 }

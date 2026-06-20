@@ -21,6 +21,15 @@ export const TAG_COLORS = [
   '#3DDC97',
 ];
 
+export const DEFAULT_COLOR_LABELS: Record<string, string> = {
+  '#C5F23D': 'Push',
+  '#4DA3FF': 'Pull',
+  '#FF9F45': 'Legs',
+  '#FF6B8A': 'Upper',
+  '#B57BFF': 'Lower',
+  '#3DDC97': 'Kardio',
+};
+
 export const initialVisits: Visit[] = [
   { id: "1", date: "2026-06-11", time: "09:00", color: '#C5F23D', label: 'Push' },
   { id: "2", date: "2026-06-12", time: "10:00", color: '#4DA3FF', label: 'Pull' },
@@ -124,4 +133,8 @@ export function visitsByDayInMonth(visits: Visit[], year: number, month: number)
     }
   }
   return map;
+}
+
+export function labelForColor(colorLabels: Record<string, string>, color: string) {
+  return colorLabels[color] ?? '';
 }
