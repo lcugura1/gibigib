@@ -1,5 +1,8 @@
-import { createContext, use, useMemo, useState, type ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TAG_COLORS, DEFAULT_COLOR_LABELS, initialVisits, type Visit } from '@/features/attendance/data/visits';
+
+const STORAGE_KEY = 'attendance:v1';
 
 type AttendanceContextValue = {
   visits: Visit[];
@@ -17,6 +20,31 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
   const [visits, setVisits] = useState<Visit[]>(initialVisits);
   const [colorLabels, setColorLabels] = useState<Record<string, string>>(DEFAULT_COLOR_LABELS);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw) as {
+            visits?: Visit[];
+            colorLabels?: Record<string, string>;
+          };
+          if (saved.visits) setVisits(saved.visits);
+          if (saved.colorLabels) setColorLabels({ ...DEFAULT_COLOR_LABELS, ...saved.colorLabels });
+        }
+      } catch {
+      } finally {
+        setHydrated(true);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ visits, colorLabels })).catch(() => {});
+  }, [hydrated, visits, colorLabels]);
 
   const value = useMemo<AttendanceContextValue>(
     () => ({

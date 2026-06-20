@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
@@ -61,13 +62,13 @@ export function AttendanceCalendar() {
   };
 
   return (
-    <View
+    <LinearGradient
+      colors={[colors.cardLightGradientFrom, colors.cardLightGradientTo]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
-        backgroundColor: colors.surface,
         borderRadius: 24,
         borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: colors.surfaceBorder,
         padding: 20,
         gap: 16,
       }}
@@ -87,14 +88,14 @@ export function AttendanceCalendar() {
           <Ionicons
             name="chevron-back"
             size={22}
-            color={colors.textSecondary}
+            color={colors.textOnLight}
           />
         </Pressable>
         <Text
           style={{
             flex: 1,
             textAlign: "center",
-            color: colors.textPrimary,
+            color: colors.textOnLight,
             fontSize: 18,
             fontWeight: "700",
             letterSpacing: 0.5,
@@ -111,7 +112,7 @@ export function AttendanceCalendar() {
           <Ionicons
             name="chevron-forward"
             size={22}
-            color={colors.textSecondary}
+            color={colors.textOnLight}
           />
         </Pressable>
       </View>
@@ -124,7 +125,7 @@ export function AttendanceCalendar() {
               style={{
                 width: COLUMN_WIDTH,
                 textAlign: "center",
-                color: colors.textSecondary,
+                color: colors.textOnLight,
                 fontSize: 12,
                 fontWeight: "600",
               }}
@@ -147,7 +148,7 @@ export function AttendanceCalendar() {
 
             const visit = monthVisits.get(day);
             const visited = visit != null;
-            const dayColor = visit?.color ?? colors.textPrimary;
+            const dayColor = visit?.color ?? colors.textOnLightSecondary;
             const isToday = isCurrentMonth && today.getDate() === day;
 
             const chip = (
@@ -161,12 +162,12 @@ export function AttendanceCalendar() {
                   justifyContent: "center",
                   backgroundColor: visited ? dayColor : "transparent",
                   borderWidth: isToday ? 2 : 0,
-                  borderColor: colors.accent,
+                  borderColor: colors.textOnLight,
                 }}
               >
                 <Text
                   style={{
-                    color: visited ? colors.textOnLight : colors.textPrimary,
+                    color: colors.textOnLight,
                     fontSize: 15,
                     fontWeight: visited || isToday ? "700" : "400",
                   }}
@@ -209,7 +210,7 @@ export function AttendanceCalendar() {
         ))}
         <LegendItem ring label="Danas" />
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -231,10 +232,10 @@ function LegendItem({
           borderRadius: 4,
           backgroundColor: ring ? "transparent" : color,
           borderWidth: ring ? 2 : 0,
-          borderColor: colors.accent,
+          borderColor: colors.textOnLight,
         }}
       />
-      <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{label}</Text>
+      <Text style={{ color: colors.textOnLight, fontSize: 13 }}>{label}</Text>
     </View>
   );
 }

@@ -2,13 +2,15 @@ import { visitTagSchema } from '@gibigib/types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { Keyboard, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
   interpolateColor,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
@@ -25,7 +27,7 @@ export function DayDetailSheet() {
     <Modal
       visible={selectedDate !== null}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={clearSelection}
     >
       {selectedDate ? <DayDetailContent key={selectedDate} date={selectedDate} /> : null}
@@ -46,6 +48,7 @@ function DayDetailContent({ date }: { date: string }) {
   const keyboardHeight = useKeyboardHeight();
 
   const errorProgress = useSharedValue(0);
+  const progress = useSharedValue(0);
 
   const validate = () => {
     const result = visitTagSchema.safeParse({ label });
@@ -70,37 +73,60 @@ function DayDetailContent({ date }: { date: string }) {
     ),
   }));
 
+  useEffect(() => {
+    progress.value = withSpring(1, { damping: 16, stiffness: 180, mass: 0.9 });
+  }, [progress]);
+
+  const close = () => {
+    Keyboard.dismiss();
+    progress.value = withTiming(0, { duration: 180 }, (finished) => {
+      if (finished) runOnJS(clearSelection)();
+    });
+  };
+
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ translateY: (1 - progress.value) * 24 }],
+  }));
+
   const save = () => {
     setSubmitted(true);
     if (!validate()) return;
     tagVisit(date, color, label);
-    clearSelection();
+    close();
   };
 
   return (
-    <Pressable
-      onPress={clearSelection}
-      style={{
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        justifyContent: keyboardHeight > 0 ? 'flex-end' : 'center',
-        paddingHorizontal: 24,
-        paddingTop: 24,
-        paddingBottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24,
-      }}
-    >
-        <Pressable
-          onPress={() => {}}
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 24,
-            borderCurve: 'continuous',
-            borderWidth: 1,
-            borderColor: colors.surfaceBorder,
-            padding: 24,
-            gap: 20,
-          }}
-        >
+    <Pressable onPress={close} style={{ flex: 1 }}>
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }, backdropStyle]}
+      />
+      <View
+        pointerEvents="box-none"
+        style={{
+          flex: 1,
+          justifyContent: keyboardHeight > 0 ? 'flex-end' : 'center',
+          paddingHorizontal: 24,
+          paddingTop: 24,
+          paddingBottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24,
+        }}
+      >
+        <Animated.View style={cardStyle}>
+          <Pressable
+            onPress={() => Keyboard.dismiss()}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 24,
+              borderCurve: 'continuous',
+              borderWidth: 1,
+              borderColor: colors.surfaceBorder,
+              padding: 24,
+              gap: 20,
+            }}
+          >
           <View style={{ gap: 8 }}>
             <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '700' }}>
               {formatVisitDate(date)}
@@ -164,7 +190,6 @@ function DayDetailContent({ date }: { date: string }) {
                 onBlur={() => setFocused(false)}
                 placeholder="npr. Push, Pull, Legs, Upper, Lower…"
                 placeholderTextColor={colors.textSecondary}
-                autoFocus
                 returnKeyType="done"
                 onSubmitEditing={save}
                 style={{ color: colors.textPrimary, fontSize: 16 }}
@@ -197,7 +222,9 @@ function DayDetailContent({ date }: { date: string }) {
               <Text style={{ color: colors.buttonPrimaryText, fontSize: 16, fontWeight: '700' }}>Spremi</Text>
             </LinearGradient>
           </Pressable>
-        </Pressable>
-      </Pressable>
+          </Pressable>
+        </Animated.View>
+      </View>
+    </Pressable>
   );
 }

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '@/shared/theme/colors';
 import type { TagStat } from '@/features/attendance/data/visits';
@@ -11,12 +12,16 @@ const INNER = 60;
 const POP = 10;
 const GAP = 2.5;
 
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+
 function polar(angle: number, radius: number) {
+  'worklet';
   const a = ((angle - 90) * Math.PI) / 180;
   return { x: CENTER + radius * Math.cos(a), y: CENTER + radius * Math.sin(a) };
 }
 
 function segmentPath(startAngle: number, endAngle: number, outerR: number) {
+  'worklet';
   const a0 = startAngle + GAP / 2;
   const a1 = endAngle - GAP / 2;
   const o0 = polar(a0, outerR);
@@ -24,13 +29,30 @@ function segmentPath(startAngle: number, endAngle: number, outerR: number) {
   const i1 = polar(a1, INNER);
   const i0 = polar(a0, INNER);
   const large = a1 - a0 > 180 ? 1 : 0;
-  return [
-    `M ${o0.x} ${o0.y}`,
-    `A ${outerR} ${outerR} 0 ${large} 1 ${o1.x} ${o1.y}`,
-    `L ${i1.x} ${i1.y}`,
-    `A ${INNER} ${INNER} 0 ${large} 0 ${i0.x} ${i0.y}`,
-    'Z',
-  ].join(' ');
+  return `M ${o0.x} ${o0.y} A ${outerR} ${outerR} 0 ${large} 1 ${o1.x} ${o1.y} L ${i1.x} ${i1.y} A ${INNER} ${INNER} 0 ${large} 0 ${i0.x} ${i0.y} Z`;
+}
+
+type SliceProps = {
+  start: number;
+  end: number;
+  color: string;
+  isActive: boolean;
+  onPress: () => void;
+};
+
+function Slice({ start, end, color, isActive, onPress }: SliceProps) {
+  const t = useSharedValue(isActive ? 1 : 0);
+
+  useEffect(() => {
+    t.value = withTiming(isActive ? 1 : 0, { duration: 240 });
+  }, [isActive, t]);
+
+  const animatedProps = useAnimatedProps(() => ({
+    d: segmentPath(start, end, OUTER + POP * t.value),
+    opacity: 0.4 + t.value * 0.6,
+  }));
+
+  return <AnimatedPath fill={color} animatedProps={animatedProps} onPress={onPress} />;
 }
 
 type Props = {
@@ -76,18 +98,16 @@ export function TrainingChart({ tags }: Props) {
     >
       <View style={{ width: SIZE, height: SIZE }}>
         <Svg width={SIZE} height={SIZE}>
-          {segments.map(({ tag, start, end }) => {
-            const isActive = tag.label === active.label;
-            return (
-              <Path
-                key={tag.label}
-                d={segmentPath(start, end, isActive ? OUTER + POP : OUTER)}
-                fill={tag.color}
-                opacity={isActive ? 1 : 0.4}
-                onPress={() => setSelected(tag.label)}
-              />
-            );
-          })}
+          {segments.map(({ tag, start, end }) => (
+            <Slice
+              key={tag.label}
+              start={start}
+              end={end}
+              color={tag.color}
+              isActive={tag.label === active.label}
+              onPress={() => setSelected(tag.label)}
+            />
+          ))}
         </Svg>
 
         <View
