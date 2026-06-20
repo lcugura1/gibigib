@@ -1,17 +1,22 @@
 import { ScrollView, Text, View } from "react-native";
 import { colors } from "@/shared/theme/colors";
 import { StatCard } from "@/features/attendance/components/stat-card";
-import { visits, visitedDaysInMonth } from "@/features/attendance/data/visits";
-import { AttendanceCalendar } from "@/features/attendance/components/attenance-calendar";
+import { AttendanceCalendar } from "@/features/attendance/components/attendance-calendar";
 import { SectionLabel } from '@/shared/components/section-label';
 import { VisitRow } from '@/features/attendance/components/visit-row';
+import { useAttendance } from '@/features/attendance/context/attendance';
+import { visitedDaysInMonth } from '@/features/attendance/data/visits';
+import { DayDetailSheet } from '@/features/attendance/components/day-detail-sheet';
+
 
 export function AttendanceScreen() {
+  const { visits } = useAttendance();
   const now = new Date();
-  const thisMonth = visitedDaysInMonth(now.getFullYear(), now.getMonth()).size;
+  const thisMonth = visitedDaysInMonth(visits, now.getFullYear(), now.getMonth()).size;
 
   return (
-    <ScrollView
+    <>
+      <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={{
@@ -52,6 +57,8 @@ export function AttendanceScreen() {
             <VisitRow key={visit.id} date={visit.date} time={visit.time} />
           ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+      <DayDetailSheet />
+    </>
   );
 }
