@@ -8,6 +8,11 @@ export type OpeningHours = {
   time: string;
 };
 
+export type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
+
 export type GymLocation = {
   name: string;
   city: string;
@@ -15,6 +20,7 @@ export type GymLocation = {
   phone: string;
   tel: string;
   email: string;
+  coordinates: Coordinates;
   hours: OpeningHours[];
 };
 
@@ -25,11 +31,21 @@ export type SocialLink = {
   icon: IconName;
 };
 
+export type IntroSegment = {
+  text: string;
+  bold?: boolean;
+};
+
 export const gym = {
-  name: 'GIBIGIB',
-  tagline: 'Fitness klub',
-  description:
-    'Gibi Gib je fitness klub koji od 2010. godine spaja vrhunsku opremu, licencirane trenere i ugodan prostor za sve razine treninga — u Varaždinu i Zagrebu.',
+  intro: [
+    { text: 'Gibi Gib je fitness klub koji ' },
+    { text: 'od 2010.', bold: true },
+    {
+      text: ' spaja vrhunsku opremu, licencirane trenere i ugodan prostor za sve razine treninga — u ',
+    },
+    { text: 'Varaždinu i Zagrebu', bold: true },
+    { text: '.' },
+  ] as IntroSegment[],
 };
 
 export const locations: GymLocation[] = [
@@ -40,6 +56,7 @@ export const locations: GymLocation[] = [
     phone: '042 717 625',
     tel: '+38542717625',
     email: 'infovz@gibigib.com',
+    coordinates: { latitude: 46.313255, longitude: 16.349829 },
     hours: [
       { day: 'Pon – Pet', time: '06:00 – 22:00' },
       { day: 'Subota', time: '08:00 – 21:00' },
@@ -53,6 +70,7 @@ export const locations: GymLocation[] = [
     phone: '042 205 031',
     tel: '+38542205031',
     email: 'infovz@gibigib.com',
+    coordinates: { latitude: 46.296655, longitude: 16.330017 },
     hours: [
       { day: 'Pon – Pet', time: '06:00 – 22:00' },
       { day: 'Subota', time: '08:00 – 21:00' },
@@ -60,14 +78,29 @@ export const locations: GymLocation[] = [
     ],
   },
   {
-    name: 'Zagreb',
+    name: 'Zagreb I',
     city: 'Zagreb',
     address: 'Lazinska ulica 40, 10000 Zagreb',
     phone: '01 383 3649',
     tel: '+38513833649',
     email: 'info@gibigib.com',
+    coordinates: { latitude: 45.794466, longitude: 15.933312 },
     hours: [
       { day: 'Pon – Pet', time: '06:30 – 22:30' },
+      { day: 'Subota', time: '08:00 – 21:00' },
+      { day: 'Nedjelja', time: '10:00 – 21:00' },
+    ],
+  },
+  {
+    name: 'Zagreb II',
+    city: 'Zagreb',
+    address: 'Zagrebačka cesta 143A, 10000 Zagreb',
+    phone: '01 33 58 172',
+    tel: '+38513358172',
+    email: 'info@gibigib.com',
+    coordinates: { latitude: 45.805521, longitude: 15.923823 },
+    hours: [
+      { day: 'Pon – Pet', time: '06:00 – 22:00' },
       { day: 'Subota', time: '08:00 – 21:00' },
       { day: 'Nedjelja', time: '10:00 – 21:00' },
     ],

@@ -5,11 +5,12 @@ import { InfoRow } from '@/features/info/components/info-row';
 
 export function SocialCard() {
   return (
-    <InfoCard>
+    <InfoCard light>
       <View style={{ gap: 16 }}>
         {socials.map((social) => (
           <InfoRow
             key={social.url}
+            light
             icon={social.icon}
             label={social.label}
             value={social.value}
