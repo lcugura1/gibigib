@@ -1,11 +1,17 @@
 import { Text } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 
-export function SectionLabel({ children }: { children: string }) {
+export function SectionLabel({
+  children,
+  color = colors.textSecondary,
+}: {
+  children: string;
+  color?: string;
+}) {
   return (
     <Text
       style={{
-        color: colors.textSecondary,
+        color,
         fontSize: 13,
         fontWeight: '600',
         letterSpacing: 0.5,
