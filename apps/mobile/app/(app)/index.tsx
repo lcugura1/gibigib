@@ -4,7 +4,7 @@ import { colors } from "@/shared/theme/colors";
 import { GlassIconButton } from "@/features/home/components/glass-icon-button";
 import { MembershipPass } from "@/features/home/components/membership-pass";
 import { PlanCard } from "@/features/home/components/plan-card";
-import { SectionLabel } from "@/features/home/components/section-label";
+import { SectionLabel } from "@/shared/components/section-label";
 import { useRouter } from 'expo-router';
 import { plans } from '@/features/home/data/plans';
 
