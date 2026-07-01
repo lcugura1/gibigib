@@ -33,21 +33,17 @@ export function AttendanceScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ gap: 4 }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-            Tvoji dolasci
-          </Text>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 34,
-              fontWeight: "800",
-              letterSpacing: 1,
-            }}
-          >
-            EVIDENCIJA
-          </Text>
-        </View>
+        <Text
+          style={{
+            color: colors.textPrimary,
+            fontSize: 30,
+            fontWeight: "800",
+            letterSpacing: 0.5,
+            textAlign: "center",
+          }}
+        >
+          Evidencija
+        </Text>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
           <StatCard value={thisMonth} label="Ovaj mjesec" />

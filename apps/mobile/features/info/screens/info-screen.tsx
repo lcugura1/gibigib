@@ -58,7 +58,7 @@ export function InfoScreen() {
         <SectionLabel>Lokacije</SectionLabel>
         <LocationsMap />
         {locations.map((location, index) => (
-          <LocationCard key={location.name} location={location} light={index % 2 === 0} />
+          <LocationCard key={location.name} location={location} light={index % 2 === 1} />
         ))}
       </View>
 
