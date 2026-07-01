@@ -53,8 +53,6 @@ export function SettingsScreen() {
         gap: 24,
       }}
     >
-      <Text style={{ color: colors.textPrimary, fontSize: 28, fontWeight: '700' }}>Postavke</Text>
-
       <View
         style={{
           flexDirection: 'row',
