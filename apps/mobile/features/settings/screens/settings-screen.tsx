@@ -1,11 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, Switch, Text, View } from 'react-native';
-import Animated, { Easing, SlideInDown } from 'react-native-reanimated';
+import { useEffect, useState } from 'react';
+import { Dimensions, Pressable, Switch, Text, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth/context/auth';
 import { colors } from '@/shared/theme/colors';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 type Row = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -48,25 +57,51 @@ export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const translateY = useSharedValue(SCREEN_HEIGHT);
+  const backdropOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    translateY.value = withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) });
+    backdropOpacity.value = withTiming(1, { duration: 280 });
+  }, [backdropOpacity, translateY]);
+
+  const dismiss = () => {
+    backdropOpacity.value = withTiming(0, { duration: 260 });
+    translateY.value = withTiming(
+      SCREEN_HEIGHT,
+      { duration: 300, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) {
+          scheduleOnRN(router.back);
+        }
+      },
+    );
+  };
+
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
+  const blockStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
+
   return (
     <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
-        onPress={() => router.back()}
+      <AnimatedPressable
+        style={[{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }, backdropStyle]}
+        onPress={dismiss}
       />
 
       <Animated.View
-        entering={SlideInDown.duration(420).easing(Easing.out(Easing.cubic))}
-        style={{
-          backgroundColor: colors.background,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          borderCurve: 'continuous',
-          paddingHorizontal: 16,
-          paddingTop: 10,
-          paddingBottom: insets.bottom + 16,
-          gap: 20,
-        }}
+        style={[
+          {
+            backgroundColor: colors.background,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            borderCurve: 'continuous',
+            paddingHorizontal: 16,
+            paddingTop: 10,
+            paddingBottom: insets.bottom + 16,
+            gap: 20,
+          },
+          blockStyle,
+        ]}
       >
         <View
           style={{

@@ -39,7 +39,7 @@ function RootNavigator() {
           name="settings"
           options={{
             presentation: 'transparentModal',
-            animation: 'fade',
+            animation: 'none',
             contentStyle: { backgroundColor: 'transparent' },
           }}
         />
