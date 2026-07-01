@@ -1,6 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Switch, Text, View } from 'react-native';
+import Animated, { Easing, SlideInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth/context/auth';
 import { colors } from '@/shared/theme/colors';
 
@@ -42,51 +45,73 @@ const groups: Group[] = [
 export function SettingsScreen() {
   const { user, signOut } = useAuth();
   const [notifications, setNotifications] = useState(true);
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
-    <View
-      style={{
-        backgroundColor: colors.background,
-        paddingHorizontal: 16,
-        paddingTop: 12,
-        paddingBottom: 8,
-        gap: 24,
-      }}
-    >
-      <View
+    <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
+        onPress={() => router.back()}
+      />
+
+      <Animated.View
+        entering={SlideInDown.duration(420).easing(Easing.out(Easing.cubic))}
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 14,
-          padding: 16,
-          backgroundColor: colors.surface,
-          borderRadius: 18,
+          backgroundColor: colors.background,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           borderCurve: 'continuous',
-          borderWidth: 1,
-          borderColor: colors.surfaceBorder,
+          paddingHorizontal: 16,
+          paddingTop: 10,
+          paddingBottom: insets.bottom + 16,
+          gap: 20,
         }}
       >
         <View
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            backgroundColor: '#1F1F22',
+            alignSelf: 'center',
+            width: 40,
+            height: 5,
+            borderRadius: 3,
+            backgroundColor: '#48484A',
+            marginBottom: 2,
+          }}
+        />
+
+        <View
+          style={{
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: 14,
+            padding: 16,
+            backgroundColor: colors.surface,
+            borderRadius: 18,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            borderColor: colors.surfaceBorder,
           }}
         >
-          <Ionicons name="person" size={24} color={colors.textPrimary} />
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: '#1F1F22',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="person" size={24} color={colors.textPrimary} />
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '600' }}>
+              {user?.firstName} {user?.lastName}
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{user?.email}</Text>
+          </View>
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '600' }}>
-            {user?.firstName} {user?.lastName}
-          </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{user?.email}</Text>
-        </View>
-      </View>
 
-      <View style={{ gap: 22 }}>
         {groups.map((group) => (
           <View key={group.title} style={{ gap: 8 }}>
             <Text
@@ -123,7 +148,9 @@ export function SettingsScreen() {
                     }}
                   >
                     <Ionicons name={row.icon} size={20} color={colors.textPrimary} />
-                    <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 16 }}>{row.label}</Text>
+                    <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 16 }}>
+                      {row.label}
+                    </Text>
                     {row.type === 'toggle' ? (
                       <Switch
                         value={notifications}
@@ -137,33 +164,35 @@ export function SettingsScreen() {
                     )}
                   </View>
                   {index < group.rows.length - 1 ? (
-                    <View style={{ height: 1, backgroundColor: colors.surfaceBorder, marginLeft: 50 }} />
+                    <View
+                      style={{ height: 1, backgroundColor: colors.surfaceBorder, marginLeft: 50 }}
+                    />
                   ) : null}
                 </View>
               ))}
             </View>
           </View>
         ))}
-      </View>
 
-      <Pressable
-        onPress={signOut}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          padding: 16,
-          backgroundColor: colors.surface,
-          borderRadius: 18,
-          borderCurve: 'continuous',
-          borderWidth: 1,
-          borderColor: colors.surfaceBorder,
-        }}
-      >
-        <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-        <Text style={{ color: colors.danger, fontSize: 16, fontWeight: '600' }}>Odjava</Text>
-      </Pressable>
+        <Pressable
+          onPress={signOut}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            padding: 16,
+            backgroundColor: colors.surface,
+            borderRadius: 18,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            borderColor: colors.surfaceBorder,
+          }}
+        >
+          <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+          <Text style={{ color: colors.danger, fontSize: 16, fontWeight: '600' }}>Odjava</Text>
+        </Pressable>
+      </Animated.View>
     </View>
   );
 }

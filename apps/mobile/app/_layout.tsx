@@ -38,10 +38,9 @@ function RootNavigator() {
         <Stack.Screen
           name="settings"
           options={{
-            presentation: 'formSheet',
-            sheetGrabberVisible: true,
-            sheetAllowedDetents: 'fitToContents',
-            sheetCornerRadius: 24,
+            presentation: 'transparentModal',
+            animation: 'fade',
+            contentStyle: { backgroundColor: 'transparent' },
           }}
         />
       </Stack.Protected>
