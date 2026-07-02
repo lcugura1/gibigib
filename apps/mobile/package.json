@@ -7,6 +7,8 @@
     "@gibigib/types": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~56.0.8",
+    "expo-blur": "~56.0.3",
+    "expo-brightness": "~56.0.5",
     "expo-constants": "~56.0.17",
     "expo-glass-effect": "~56.0.4",
     "expo-image": "~56.0.10",
@@ -38,7 +40,9 @@
   },
   "expo": {
     "autolinking": {
-      "buildFromSource": ["expo-maps"]
+      "buildFromSource": [
+        "expo-maps"
+      ]
     }
   },
   "private": true

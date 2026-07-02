@@ -12,6 +12,9 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
 
+  const passValue = `gibigib:${user?.id ?? "demo"}`;
+  const memberName = user?.firstName ?? "Član";
+
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
@@ -50,8 +53,14 @@ export default function Home() {
       </View>
 
       <MembershipPass
-        value={`gibigib:${user?.id ?? "demo"}`}
-        memberName={user?.firstName ?? "Član"}
+        value={passValue}
+        memberName={memberName}
+        onPress={() =>
+          router.push({
+            pathname: "/pass",
+            params: { value: passValue, memberName },
+          })
+        }
       />
       <View style={{ gap: 12 }}>
         <SectionLabel>Dostupni planovi</SectionLabel>
