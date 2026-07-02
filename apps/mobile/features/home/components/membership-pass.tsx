@@ -1,14 +1,16 @@
 import QRCode from 'react-native-qrcode-svg';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
+import { GlassIconButton } from '@/features/home/components/glass-icon-button';
 
 type Props = {
     value: string;
     memberName: string;
     onPress?: () => void;
+    onLockerPress?: () => void;
 };
 
-export function MembershipPass({ value, memberName, onPress }: Props) {
+export function MembershipPass({ value, memberName, onPress, onLockerPress }: Props) {
     return (
         <View
             style={{
@@ -20,6 +22,16 @@ export function MembershipPass({ value, memberName, onPress }: Props) {
                 gap: 16,
             }}
         >
+            <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
+                <GlassIconButton
+                    name="key-outline"
+                    color={colors.textOnLight}
+                    interactive={false}
+                    elevated
+                    onPress={onLockerPress}
+                />
+            </View>
+
             <View style={{ alignItems: 'center', gap: 4 }}>
                 <Text 
                     style={{ 
