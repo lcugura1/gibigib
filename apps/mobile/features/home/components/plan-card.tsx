@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "@/shared/theme/colors";
+import { MoreIndicator } from "@/features/home/components/more-indicator";
 
 type Props = {
   name: string;
@@ -9,7 +10,7 @@ type Props = {
   price?: string;
   cta?: string;
   benefits: string[];
-  extraBenefits?: number;
+  hasMore?: boolean;
   savings?: string;
   variant?: "dark" | "light";
   popular?: boolean;
@@ -21,7 +22,7 @@ export function PlanCard({
   duration,
   price,
   benefits,
-  extraBenefits,
+  hasMore,
   savings,
   cta= "Pogledaj plan",
   variant = "dark",
@@ -94,11 +95,7 @@ export function PlanCard({
             <Text style={{ color: fg, fontSize: 15 }}>{benefit}</Text>
           </View>
         ))}
-        {extraBenefits ? (
-          <Text style={{ color: muted, fontSize: 14, marginLeft: 28 }}>
-            +{extraBenefits} {extraBenefits === 1 ? "pogodnost" : "pogodnosti"}
-          </Text>
-        ) : null}
+        {hasMore ? <MoreIndicator color={muted} /> : null}
       </View>
 
       <View
