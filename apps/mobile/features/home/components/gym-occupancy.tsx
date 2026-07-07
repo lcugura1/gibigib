@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
+import { StyleProp, Text, TextStyle, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -18,6 +19,48 @@ function levelFor(ratio: number) {
   if (ratio < 0.5) return { label: 'Ugodno za trening', color: colors.accent };
   if (ratio < 0.8) return { label: 'Umjerena gužva', color: '#FF9F0A' };
   return { label: 'Velika gužva', color: colors.danger };
+}
+
+function CountUp({
+  value,
+  accessibilityLabel,
+  style,
+}: {
+  value: number;
+  accessibilityLabel?: string;
+  style?: StyleProp<TextStyle>;
+}) {
+  const [display, setDisplay] = useState(0);
+  const fromRef = useRef(0);
+
+  useEffect(() => {
+    const from = fromRef.current;
+    let raf = 0;
+    let start: number | null = null;
+
+    const tick = (ts: number) => {
+      if (start === null) start = ts;
+      const t = Math.min((ts - start) / 900, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = Math.round(from + (value - from) * eased);
+      setDisplay(current);
+      fromRef.current = current;
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        fromRef.current = value;
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return (
+    <Text accessibilityLabel={accessibilityLabel} style={style}>
+      {display}
+    </Text>
+  );
 }
 
 function OccupancyBar({ ratio, color }: { ratio: number; color: string }) {
@@ -49,6 +92,11 @@ export function GymOccupancy({ count, capacity }: Props) {
   const ratio = Math.min(count / capacity, 1);
   const level = levelFor(ratio);
   const [notify, setNotify] = useState(false);
+
+  const toggleNotify = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setNotify((value) => !value);
+  };
 
   return (
     <View
@@ -84,7 +132,7 @@ export function GymOccupancy({ count, capacity }: Props) {
           name={notify ? 'notifications' : 'notifications-outline'}
           color={notify ? colors.accent : colors.textPrimary}
           interactive={false}
-          onPress={() => setNotify((value) => !value)}
+          onPress={toggleNotify}
           accessibilityLabel={
             notify ? 'Isključi obavijest kad je gužva manja' : 'Obavijesti me kad je gužva manja'
           }
@@ -99,7 +147,8 @@ export function GymOccupancy({ count, capacity }: Props) {
             alignItems: 'center',
           }}
         >
-          <Text
+          <CountUp
+            value={count}
             accessibilityLabel={`${count} ljudi u teretani, ${level.label}`}
             style={{
               color: colors.textPrimary,
@@ -107,9 +156,7 @@ export function GymOccupancy({ count, capacity }: Props) {
               fontWeight: '800',
               lineHeight: 50,
             }}
-          >
-            {count}
-          </Text>
+          />
           <View
             style={{
               backgroundColor: `${level.color}26`,
