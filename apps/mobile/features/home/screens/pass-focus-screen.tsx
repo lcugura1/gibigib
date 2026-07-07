@@ -18,10 +18,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const QR_SIZE = Math.min(SCREEN_WIDTH - 96, 300);
 
 export function PassFocusScreen() {
-  const { value = 'demo', memberName } = useLocalSearchParams<{
-    value: string;
-    memberName?: string;
-  }>();
+  const { value = 'demo' } = useLocalSearchParams<{ value: string }>();
   const router = useRouter();
   const originalBrightness = useRef<number | null>(null);
 
@@ -90,11 +87,6 @@ export function PassFocusScreen() {
         <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>
           Skeniraj kod na ulazu
         </Text>
-        {memberName ? (
-          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center' }}>
-            {memberName}
-          </Text>
-        ) : null}
       </Animated.View>
     </View>
   );

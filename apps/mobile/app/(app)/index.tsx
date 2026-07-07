@@ -58,10 +58,11 @@ export default function Home() {
         value={passValue}
         memberName={memberName}
         countdown={membershipCountdown}
+        onCountdownPress={() => router.push("/membership")}
         onPress={() =>
           router.push({
             pathname: "/pass",
-            params: { value: passValue, memberName },
+            params: { value: passValue },
           })
         }
       />

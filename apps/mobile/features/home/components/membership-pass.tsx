@@ -10,9 +10,10 @@ type Props = {
     onPress?: () => void;
     onLockerPress?: () => void;
     countdown?: string | null;
+    onCountdownPress?: () => void;
 };
 
-export function MembershipPass({ value, memberName, onPress, onLockerPress, countdown }: Props) {
+export function MembershipPass({ value, memberName, onPress, onLockerPress, countdown, onCountdownPress }: Props) {
     return (
         <View
             style={{
@@ -26,7 +27,7 @@ export function MembershipPass({ value, memberName, onPress, onLockerPress, coun
         >
             {countdown ? (
                 <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 1 }}>
-                    <MembershipCountdown label={countdown} />
+                    <MembershipCountdown label={countdown} onPress={onCountdownPress} />
                 </View>
             ) : null}
 
