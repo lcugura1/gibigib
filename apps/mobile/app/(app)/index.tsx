@@ -3,6 +3,7 @@ import { useAuth } from "@/features/auth/context/auth";
 import { colors } from "@/shared/theme/colors";
 import { GlassIconButton } from "@/features/home/components/glass-icon-button";
 import { MembershipPass } from "@/features/home/components/membership-pass";
+import { GymOccupancy } from "@/features/home/components/gym-occupancy";
 import { PlanCard } from "@/features/home/components/plan-card";
 import { SectionLabel } from "@/shared/components/section-label";
 import { useRouter } from 'expo-router';
@@ -16,6 +17,10 @@ export default function Home() {
 
   const passValue = `gibigib:${user?.id ?? "demo"}`;
   const memberName = user?.firstName ?? "Član";
+
+  // TODO: swap for live occupancy from API (see Linear task)
+  const gymOccupancy = 70;
+  const gymCapacity = 120;
 
   return (
     <ScrollView
@@ -66,6 +71,9 @@ export default function Home() {
           })
         }
       />
+
+      <GymOccupancy count={gymOccupancy} capacity={gymCapacity} />
+
       <View style={{ gap: 12 }}>
         <SectionLabel>Dostupni planovi</SectionLabel>
 

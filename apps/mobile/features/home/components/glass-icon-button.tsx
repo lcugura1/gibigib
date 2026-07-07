@@ -9,6 +9,7 @@ type Props = {
   color?: string;
   interactive?: boolean;
   elevated?: boolean;
+  accessibilityLabel?: string;
 };
 
 const DIAMETER = 44;
@@ -19,12 +20,15 @@ export function GlassIconButton({
   color = colors.textPrimary,
   interactive = true,
   elevated = false,
+  accessibilityLabel,
 }: Props) {
   return (
     <GlassCircle diameter={DIAMETER} interactive={interactive} elevated={elevated}>
       <Pressable
         onPress={onPress}
         hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
         style={({ pressed }) => ({
           width: DIAMETER,
           height: DIAMETER,
