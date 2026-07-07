@@ -2,15 +2,17 @@ import QRCode from 'react-native-qrcode-svg';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 import { GlassIconButton } from '@/features/home/components/glass-icon-button';
+import { MembershipCountdown } from '@/features/membership/components/membership-countdown';
 
 type Props = {
     value: string;
     memberName: string;
     onPress?: () => void;
     onLockerPress?: () => void;
+    countdown?: string | null;
 };
 
-export function MembershipPass({ value, memberName, onPress, onLockerPress }: Props) {
+export function MembershipPass({ value, memberName, onPress, onLockerPress, countdown }: Props) {
     return (
         <View
             style={{
@@ -22,6 +24,12 @@ export function MembershipPass({ value, memberName, onPress, onLockerPress }: Pr
                 gap: 16,
             }}
         >
+            {countdown ? (
+                <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 1 }}>
+                    <MembershipCountdown label={countdown} />
+                </View>
+            ) : null}
+
             <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
                 <GlassIconButton
                     name="key-outline"

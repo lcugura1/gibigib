@@ -7,10 +7,12 @@ import { PlanCard } from "@/features/home/components/plan-card";
 import { SectionLabel } from "@/shared/components/section-label";
 import { useRouter } from 'expo-router';
 import { plans } from '@/features/home/data/plans';
+import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+  const { label: membershipCountdown } = useMembershipCountdown();
 
   const passValue = `gibigib:${user?.id ?? "demo"}`;
   const memberName = user?.firstName ?? "Član";
@@ -55,6 +57,7 @@ export default function Home() {
       <MembershipPass
         value={passValue}
         memberName={memberName}
+        countdown={membershipCountdown}
         onPress={() =>
           router.push({
             pathname: "/pass",
