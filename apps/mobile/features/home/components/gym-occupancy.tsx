@@ -106,28 +106,11 @@ export function GymOccupancy({ count, capacity }: Props) {
         borderCurve: 'continuous',
         borderWidth: 1,
         borderColor: colors.surfaceBorder,
-        padding: 20,
-        gap: 18,
+        padding: 16,
+        gap: 12,
       }}
     >
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Text
-          style={{
-            color: colors.textSecondary,
-            fontSize: 13,
-            fontWeight: '600',
-            letterSpacing: 0.5,
-            textTransform: 'uppercase',
-          }}
-        >
-          Broj ljudi u teretani
-        </Text>
+      <View style={{ position: 'absolute', top: 14, right: 14, zIndex: 1 }}>
         <GlassIconButton
           name={notify ? 'notifications' : 'notifications-outline'}
           color={notify ? colors.accent : colors.textPrimary}
@@ -139,12 +122,24 @@ export function GymOccupancy({ count, capacity }: Props) {
         />
       </View>
 
-      <View style={{ gap: 12 }}>
+      <Text
+        style={{
+          color: colors.textSecondary,
+          fontSize: 13,
+          fontWeight: '600',
+          letterSpacing: 0.5,
+          textTransform: 'uppercase',
+        }}
+      >
+        Broj ljudi u teretani
+      </Text>
+
+      <View style={{ gap: 10 }}>
         <View
           style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-end',
           }}
         >
           <CountUp
@@ -154,7 +149,7 @@ export function GymOccupancy({ count, capacity }: Props) {
               color: colors.textPrimary,
               fontSize: 46,
               fontWeight: '800',
-              lineHeight: 50,
+              lineHeight: 48,
             }}
           />
           <View
@@ -164,6 +159,7 @@ export function GymOccupancy({ count, capacity }: Props) {
               paddingVertical: 5,
               borderRadius: 10,
               borderCurve: 'continuous',
+              marginBottom: 6,
             }}
           >
             <Text style={{ color: level.color, fontSize: 13, fontWeight: '700' }}>

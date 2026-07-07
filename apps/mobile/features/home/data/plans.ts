@@ -44,7 +44,7 @@ export const plans: Plan[] = [
   {
     slug: 'trener',
     name: '1 na 1 uz trenera',
-    duration: 'Personalni trening',
+    duration: 'Prilagođeni trening',
     cta: 'Detalji',
     variant: 'light',
     benefits: ['Individualni plan treninga', 'Termini po dogovoru', 'Posvećen trener'],

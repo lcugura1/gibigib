@@ -35,6 +35,8 @@ function RootNavigator() {
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="plan/[slug]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="trainers/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="trainers/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen
           name="settings"
           options={{

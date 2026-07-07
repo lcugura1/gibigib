@@ -81,7 +81,11 @@ export default function Home() {
           <PlanCard
             key={plan.slug}
             {...plan}
-            onPress={() => router.push({ pathname: '/plan/[slug]', params: { slug: plan.slug } })}
+            onPress={() =>
+              plan.slug === "trener"
+                ? router.push("/trainers")
+                : router.push({ pathname: "/plan/[slug]", params: { slug: plan.slug } })
+            }
           />
         ))}
       </View>
