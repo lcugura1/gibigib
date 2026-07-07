@@ -11,7 +11,7 @@ export const trainers: Trainer[] = [
     specialties: ['Snaga', 'Hipertrofija', 'Powerlifting'],
     experienceYears: 8,
     certifications: ['NSCA-CPT', 'Kettlebell L1'],
-    bio: 'Osam godina radim s klijentima svih razina — od početnika do natjecatelja. Fokus mi je na tehnici podizanja i postupnom, održivom napretku u snazi.',
+    bio: 'Osam godina radim s klijentima svih razina — od početnika do natjecatelja. Fokus mi je na postupnom, održivom napretku u snazi.',
     email: 'ivan.horvat@gibigib.hr',
     instagram: 'ivan.trener',
   },

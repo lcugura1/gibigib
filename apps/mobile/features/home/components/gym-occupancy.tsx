@@ -107,7 +107,7 @@ export function GymOccupancy({ count, capacity }: Props) {
         borderWidth: 1,
         borderColor: colors.surfaceBorder,
         padding: 16,
-        gap: 12,
+        gap: 18,
       }}
     >
       <View style={{ position: 'absolute', top: 14, right: 14, zIndex: 1 }}>
