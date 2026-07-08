@@ -12,7 +12,7 @@ import { DayDetailSheet } from "@/features/attendance/components/day-detail-shee
 import { TrainingChart } from "@/features/attendance/components/training-chart";
 
 export function AttendanceScreen() {
-  const { visits } = useAttendance();
+  const { visits, status, errorMessage } = useAttendance();
   const now = new Date();
   const thisMonth = visitedDaysInMonth(
     visits,
@@ -44,6 +44,25 @@ export function AttendanceScreen() {
         >
           Evidencija
         </Text>
+
+        {status === "loading" ? (
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 13,
+              textAlign: "center",
+            }}
+          >
+            Učitavanje…
+          </Text>
+        ) : null}
+        {errorMessage ? (
+          <Text
+            style={{ color: colors.danger, fontSize: 13, textAlign: "center" }}
+          >
+            {errorMessage}
+          </Text>
+        ) : null}
 
         <View style={{ flexDirection: "row", gap: 12 }}>
           <StatCard value={thisMonth} label="Ovaj mjesec" />
