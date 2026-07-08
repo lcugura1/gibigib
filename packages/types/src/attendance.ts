@@ -4,8 +4,6 @@ export const visitTagSchema = z.object({
   label: z.string().trim().min(1, 'Unesi naziv plana'),
 });
 
-export type VisitTagInput = z.infer<typeof visitTagSchema>;
-
 export const isoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Neispravan datum');
@@ -36,3 +34,13 @@ export const visitDtoSchema = z.object({
 });
 
 export type VisitDto = z.infer<typeof visitDtoSchema>;
+
+export const monthlyGoalInputSchema = z.object({
+  goal: z
+    .number('Unesi cilj')
+    .int('Cilj mora biti cijeli broj')
+    .min(1, 'Cilj mora biti barem 1')
+    .max(31, 'Cilj može biti najviše 31'),
+});
+
+export type MonthlyGoalDto = { goal: number | null };

@@ -31,6 +31,7 @@ model User {
   birthDate    DateTime
   address      String
   oib          String   @unique
+  monthlyTrainingGoal Int?
 
   memberships Membership[]
   attendances Attendance[]

@@ -1,4 +1,4 @@
-import type { TrainingTagInput, VisitDto } from '@gibigib/types';
+import type { MonthlyGoalDto, TrainingTagInput, VisitDto } from '@gibigib/types';
 import type { TrainingTag } from '../generated/prisma/client';
 import { prisma } from '../utils/prisma';
 
@@ -44,4 +44,22 @@ export async function upsertTrainingTag(
   });
 
   return toVisitDto(tag);
+}
+
+export async function getMonthlyGoal(userId: string): Promise<MonthlyGoalDto> {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { monthlyTrainingGoal: true },
+  });
+
+  return { goal: user.monthlyTrainingGoal ?? null };
+}
+
+export async function setMonthlyGoal(userId: string, goal: number): Promise<MonthlyGoalDto> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { monthlyTrainingGoal: goal },
+  });
+
+  return { goal };
 }
