@@ -5,7 +5,7 @@ export type Plan = {
   price?: string;
   amount?: number;
   benefits: string[];
-  extraBenefits?: number;
+  hasMore?: boolean;
   savings?: string;
   variant?: 'dark' | 'light';
   cta?: string;
@@ -19,7 +19,7 @@ export const plans: Plan[] = [
     price: '29,99 €',
     amount: 29.99,
     benefits: ['Neograničen pristup', 'Svlačionica i tuševi', 'Besplatan Wi-Fi'],
-    extraBenefits: 1,
+    hasMore: true,
   },
   {
     slug: 'grupni',
@@ -29,7 +29,7 @@ export const plans: Plan[] = [
     amount: 39.99,
     variant: 'light',
     benefits: ['Vođeni grupni treninzi', 'Tjedni raspored termina', 'Stručni trener'],
-    extraBenefits: 2,
+    hasMore: true,
   },
   {
     slug: 'godisnji',
@@ -39,16 +39,16 @@ export const plans: Plan[] = [
     amount: 250,
     savings: 'Uštedi 109,88 €',
     benefits: ['Neograničen pristup', 'Svlačionica i tuševi', 'Besplatan Wi-Fi'],
-    extraBenefits: 1,
+    hasMore: true,
   },
   {
     slug: 'trener',
     name: '1 na 1 uz trenera',
-    duration: 'Personalni trening',
+    duration: 'Prilagođeni trening',
     cta: 'Detalji',
     variant: 'light',
     benefits: ['Individualni plan treninga', 'Termini po dogovoru', 'Posvećen trener'],
-    extraBenefits: 2,
+    hasMore: true,
   },
 ];
 

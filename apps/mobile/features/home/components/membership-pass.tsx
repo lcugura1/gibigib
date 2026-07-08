@@ -1,13 +1,19 @@
 import QRCode from 'react-native-qrcode-svg';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
+import { GlassIconButton } from '@/features/home/components/glass-icon-button';
+import { MembershipCountdown } from '@/features/membership/components/membership-countdown';
 
 type Props = {
     value: string;
     memberName: string;
+    onPress?: () => void;
+    onLockerPress?: () => void;
+    countdown?: string | null;
+    onCountdownPress?: () => void;
 };
 
-export function MembershipPass({ value, memberName }: Props) {
+export function MembershipPass({ value, memberName, onPress, onLockerPress, countdown, onCountdownPress }: Props) {
     return (
         <View
             style={{
@@ -19,6 +25,22 @@ export function MembershipPass({ value, memberName }: Props) {
                 gap: 16,
             }}
         >
+            {countdown ? (
+                <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 1 }}>
+                    <MembershipCountdown label={countdown} onPress={onCountdownPress} />
+                </View>
+            ) : null}
+
+            <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
+                <GlassIconButton
+                    name="key-outline"
+                    color={colors.textOnLight}
+                    interactive={false}
+                    elevated
+                    onPress={onLockerPress}
+                />
+            </View>
+
             <View style={{ alignItems: 'center', gap: 4 }}>
                 <Text 
                     style={{ 
@@ -33,12 +55,23 @@ export function MembershipPass({ value, memberName }: Props) {
                 </Text>
             </View>
 
-            <View style={{ padding: 16, backgroundColor: '#FFFFFF', borderRadius: 16, borderCurve: 'continuous' }}>
+            <Pressable
+                onPress={onPress}
+                accessibilityRole="button"
+                accessibilityLabel="Povećaj QR kod za skeniranje"
+                style={({ pressed }) => ({
+                    padding: 16,
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: 16,
+                    borderCurve: 'continuous',
+                    opacity: pressed ? 0.85 : 1,
+                })}
+            >
                 <QRCode value={value} size={200} color="#000000" backgroundColor="#FFFFFF" />
-            </View>
-            
+            </Pressable>
+
             <Text style={{ color: colors.textOnLightSecondary, fontSize: 14, textAlign: 'center' }}>
-                Skeniraj kod na ulazu u teretanu
+                Dodirni kod za povećanje i skeniranje na ulazu
             </Text>
         </View>
     );

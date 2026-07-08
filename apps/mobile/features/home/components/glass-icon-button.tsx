@@ -1,49 +1,44 @@
 import { Ionicons } from '@expo/vector-icons';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 import { colors } from '@/shared/theme/colors';
+import { GlassCircle } from '@/shared/components/glass-circle';
 
 type Props = {
   name: keyof typeof Ionicons.glyphMap;
   onPress?: () => void;
+  color?: string;
+  interactive?: boolean;
+  elevated?: boolean;
+  accessibilityLabel?: string;
 };
 
 const DIAMETER = 44;
 
-export function GlassIconButton({ name, onPress }: Props) {
-  const content = (
-    <Pressable
-      onPress={onPress}
-      hitSlop={8}
-      style={{
-        width: DIAMETER,
-        height: DIAMETER,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Ionicons name={name} size={20} color={colors.textPrimary} />
-    </Pressable>
-  );
-
-  if (isLiquidGlassAvailable()) {
-    return (
-      <GlassView isInteractive style={{ borderRadius: DIAMETER / 2 }}>
-        {content}
-      </GlassView>
-    );
-  }
-
+export function GlassIconButton({
+  name,
+  onPress,
+  color = colors.textPrimary,
+  interactive = true,
+  elevated = false,
+  accessibilityLabel,
+}: Props) {
   return (
-    <View
-      style={{
-        borderRadius: DIAMETER / 2,
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.surfaceBorder,
-      }}
-    >
-      {content}
-    </View>
+    <GlassCircle diameter={DIAMETER} interactive={interactive} elevated={elevated}>
+      <Pressable
+        onPress={onPress}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        style={({ pressed }) => ({
+          width: DIAMETER,
+          height: DIAMETER,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: !interactive && pressed ? 0.5 : 1,
+        })}
+      >
+        <Ionicons name={name} size={20} color={color} />
+      </Pressable>
+    </GlassCircle>
   );
 }
