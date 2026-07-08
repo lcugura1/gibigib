@@ -100,34 +100,35 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
       tagVisit: (date, color, label) => {
         const trimmed = label.trim();
         const snapshot = visits;
+        const renaming = (colorLabels[color] ?? '') !== trimmed;
         const existing = visits.find((visit) => visit.date === date);
         const time = existing?.time ?? '';
 
-        const optimistic = existing
-          ? visits.map((visit) =>
-              visit.date === date ? { ...visit, color, label: trimmed } : visit,
-            )
-          : [...visits, { id: date, date, time, color, label: trimmed }].sort((a, b) =>
-              a.date.localeCompare(b.date),
-            );
+        const base = existing
+          ? visits
+          : [...visits, { id: date, date, time, color, label: trimmed }];
+        const optimistic = base
+          .map((visit) => {
+            if (visit.date === date) return { ...visit, color, label: trimmed };
+            if (renaming && visit.color === color) return { ...visit, label: trimmed };
+            return visit;
+          })
+          .sort((a, b) => a.date.localeCompare(b.date));
 
         setVisits(optimistic);
         setErrorMessage(null);
 
-        saveTag({ date, time: time || undefined, color, label: trimmed })
-          .then((saved) => {
-            setVisits((current) =>
-              current.map((visit) =>
-                visit.date === date
-                  ? { ...visit, id: saved.id, time: saved.time ?? visit.time, color: saved.color, label: saved.label }
-                  : visit,
-              ),
-            );
-          })
-          .catch(() => {
-            setVisits(snapshot);
-            setErrorMessage('Spremanje nije uspjelo. Pokušaj ponovno.');
-          });
+        const changed = optimistic.filter(
+          (visit) => visit.date === date || (renaming && visit.color === color),
+        );
+        Promise.all(
+          changed.map((visit) =>
+            saveTag({ date: visit.date, time: visit.time || undefined, color, label: trimmed }),
+          ),
+        ).catch(() => {
+          setVisits(snapshot);
+          setErrorMessage('Spremanje nije uspjelo. Pokušaj ponovno.');
+        });
       },
     }),
     [visits, colorLabels, selectedDate, status, errorMessage, goal],

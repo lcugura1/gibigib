@@ -61,7 +61,7 @@ type Props = {
 };
 
 export function TrainingChart({ tags }: Props) {
-  const [selected, setSelected] = useState<string | null>(tags[0]?.label ?? null);
+  const [selected, setSelected] = useState<string | null>(tags[0]?.color ?? null);
 
   const total = tags.reduce((sum, tag) => sum + tag.count, 0);
 
@@ -76,7 +76,7 @@ export function TrainingChart({ tags }: Props) {
     );
   }
 
-  const active = tags.find((tag) => tag.label === selected) ?? tags[0];
+  const active = tags.find((tag) => tag.color === selected) ?? tags[0];
   const activePct = Math.round((active.count / total) * 100);
 
   let cursor = 0;
@@ -96,12 +96,12 @@ export function TrainingChart({ tags }: Props) {
           <Svg width={SIZE} height={SIZE}>
             {segments.map(({ tag, start, end }) => (
               <Slice
-                key={tag.label}
+                key={tag.color}
                 start={start}
                 end={end}
                 color={tag.color}
-                isActive={tag.label === active.label}
-                onPress={() => setSelected(tag.label)}
+                isActive={tag.color === active.color}
+                onPress={() => setSelected(tag.color)}
               />
             ))}
           </Svg>
@@ -121,12 +121,12 @@ export function TrainingChart({ tags }: Props) {
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {tags.map((tag) => {
-          const isActive = tag.label === active.label;
+          const isActive = tag.color === active.color;
           const pct = Math.round((tag.count / total) * 100);
           return (
             <Pressable
-              key={tag.label}
-              onPress={() => setSelected(tag.label)}
+              key={tag.color}
+              onPress={() => setSelected(tag.color)}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',

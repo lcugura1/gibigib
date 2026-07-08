@@ -116,11 +116,11 @@ export function tagStats(visits: Visit[]): TagStat[] {
   const map = new Map<string, TagStat>();
   for (const visit of visits) {
     if (!visit.label || !visit.color) continue;
-    const existing = map.get(visit.label);
+    const existing = map.get(visit.color);
     if (existing) {
       existing.count += 1;
     } else {
-      map.set(visit.label, { label: visit.label, color: visit.color, count: 1 });
+      map.set(visit.color, { label: visit.label, color: visit.color, count: 1 });
     }
   }
   return [...map.values()].sort((a, b) => b.count - a.count);

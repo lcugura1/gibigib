@@ -206,7 +206,7 @@ export function AttendanceCalendar() {
         }}
       >
         {tags.map((tag) => (
-          <LegendItem key={tag.label} color={tag.color} label={tag.label} />
+          <LegendItem key={tag.color} color={tag.color} label={tag.label} />
         ))}
         <LegendItem ring label="Danas" />
       </View>
