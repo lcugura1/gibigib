@@ -4,6 +4,7 @@ import { prisma } from './utils/prisma';
 import { env } from './config/env';
 import jwtPlugin from './plugins/jwt';
 import { authRoutes } from './routes/auth';
+import { attendanceRoutes } from './routes/attendance';
 import { errorHandler } from './middleware/error-handler';
 
 const port = Number(env.PORT ?? 3000);
@@ -18,6 +19,7 @@ app.decorate('prisma', prisma);
 
 await app.register(jwtPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
+await app.register(attendanceRoutes, { prefix: '/attendance' });
 
 app.addHook('onClose', async () => {
   await prisma.$disconnect();

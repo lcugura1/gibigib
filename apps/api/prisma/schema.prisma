@@ -31,11 +31,13 @@ model User {
   birthDate    DateTime
   address      String
   oib          String   @unique
+  monthlyTrainingGoal Int?
 
   memberships Membership[]
   attendances Attendance[]
   entryTokens EntryToken[]
   news        News[]
+  trainingTags TrainingTag[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,6 +119,23 @@ model Attendance {
 
   @@index([userId])
   @@index([gymId])
+}
+
+model TrainingTag {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime @db.Date
+  time   String?
+  color  String
+  label  String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
 }
 
 model News {

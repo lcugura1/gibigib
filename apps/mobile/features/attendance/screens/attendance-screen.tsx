@@ -1,18 +1,22 @@
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { colors } from "@/shared/theme/colors";
-import { StatCard } from "@/features/attendance/components/stat-card";
+import { MonthGoalCard } from "@/features/attendance/components/month-goal-card";
+import { TotalTrendCard } from "@/features/attendance/components/total-trend-card";
+import { MonthlyGoalSheet } from "@/features/attendance/components/monthly-goal-sheet";
 import { AttendanceCalendar } from "@/features/attendance/components/attendance-calendar";
-import { SectionLabel } from "@/shared/components/section-label";
 import { useAttendance } from "@/features/attendance/context/attendance";
 import {
   visitedDaysInMonth,
   tagStats,
+  cumulativeTrend,
 } from "@/features/attendance/data/visits";
 import { DayDetailSheet } from "@/features/attendance/components/day-detail-sheet";
 import { TrainingChart } from "@/features/attendance/components/training-chart";
 
 export function AttendanceScreen() {
-  const { visits } = useAttendance();
+  const { visits, status, errorMessage, goal } = useAttendance();
+  const [goalOpen, setGoalOpen] = useState(false);
   const now = new Date();
   const thisMonth = visitedDaysInMonth(
     visits,
@@ -20,6 +24,7 @@ export function AttendanceScreen() {
     now.getMonth(),
   ).size;
   const tags = tagStats(visits);
+  const trend = cumulativeTrend(visits);
   return (
     <>
       <ScrollView
@@ -45,18 +50,39 @@ export function AttendanceScreen() {
           Evidencija
         </Text>
 
+        {status === "loading" ? (
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 13,
+              textAlign: "center",
+            }}
+          >
+            Učitavanje…
+          </Text>
+        ) : null}
+        {errorMessage ? (
+          <Text
+            style={{ color: colors.danger, fontSize: 13, textAlign: "center" }}
+          >
+            {errorMessage}
+          </Text>
+        ) : null}
+
         <View style={{ flexDirection: "row", gap: 12 }}>
-          <StatCard value={thisMonth} label="Ovaj mjesec" />
-          <StatCard value={visits.length} label="Ukupno" />
+          <MonthGoalCard
+            count={thisMonth}
+            goal={goal}
+            onPress={() => setGoalOpen(true)}
+          />
+          <TotalTrendCard total={visits.length} trend={trend} />
         </View>
         <AttendanceCalendar />
 
-        <View style={{ gap: 12 }}>
-          <SectionLabel>Najčešći treninzi</SectionLabel>
-          <TrainingChart tags={tags} />
-        </View>
+        <TrainingChart tags={tags} />
       </ScrollView>
       <DayDetailSheet />
+      <MonthlyGoalSheet visible={goalOpen} onClose={() => setGoalOpen(false)} />
     </>
   );
 }

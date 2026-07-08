@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
-import { useEffect, useRef, useState } from 'react';
-import { StyleProp, Text, TextStyle, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { GlassIconButton } from '@/features/home/components/glass-icon-button';
+import { CountUp } from '@/shared/components/count-up';
 import { colors } from '@/shared/theme/colors';
 
 type Props = {
@@ -19,48 +20,6 @@ function levelFor(ratio: number) {
   if (ratio < 0.5) return { label: 'Ugodno za trening', color: colors.accent };
   if (ratio < 0.8) return { label: 'Umjerena gužva', color: '#FF9F0A' };
   return { label: 'Velika gužva', color: colors.danger };
-}
-
-function CountUp({
-  value,
-  accessibilityLabel,
-  style,
-}: {
-  value: number;
-  accessibilityLabel?: string;
-  style?: StyleProp<TextStyle>;
-}) {
-  const [display, setDisplay] = useState(0);
-  const fromRef = useRef(0);
-
-  useEffect(() => {
-    const from = fromRef.current;
-    let raf = 0;
-    let start: number | null = null;
-
-    const tick = (ts: number) => {
-      if (start === null) start = ts;
-      const t = Math.min((ts - start) / 900, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      const current = Math.round(from + (value - from) * eased);
-      setDisplay(current);
-      fromRef.current = current;
-      if (t < 1) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        fromRef.current = value;
-      }
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value]);
-
-  return (
-    <Text accessibilityLabel={accessibilityLabel} style={style}>
-      {display}
-    </Text>
-  );
 }
 
 function OccupancyBar({ ratio, color }: { ratio: number; color: string }) {

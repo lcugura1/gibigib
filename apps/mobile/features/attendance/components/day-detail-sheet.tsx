@@ -186,6 +186,7 @@ function DayDetailContent({ date }: { date: string }) {
               <TextInput
                 value={label}
                 onChangeText={setLabel}
+                maxLength={9}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="npr. Push, Pull, Legs, Upper, Lower…"
