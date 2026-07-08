@@ -33,10 +33,12 @@ export const DEFAULT_COLOR_LABELS: Record<string, string> = {
 export const initialVisits: Visit[] = [
   { id: "1", date: "2026-06-11", time: "09:00", color: '#C5F23D', label: 'Push' },
   { id: "2", date: "2026-06-12", time: "10:00", color: '#4DA3FF', label: 'Pull' },
-  { id: "3", date: "2026-06-13", time: "11:00", color: '#FF9F45', label: 'Squat' },
-  { id: "4", date: "2026-06-14", time: "12:00", color: '#FF6B8A', label: 'Deadlift' },
-  { id: "5", date: "2026-06-15", time: "13:00", color: '#B57BFF', label: 'Bench Press' },
-  { id: "6", date: "2026-06-16", time: "14:00", color: '#3DDC97', label: 'Overhead Press' },
+  { id: "3", date: "2026-06-13", time: "11:00", color: '#FF9F45', label: 'Legs' },
+  { id: "4", date: "2026-06-14", time: "12:00", color: '#FF6B8A', label: 'Upper' },
+  { id: "5", date: "2026-06-15", time: "13:00", color: '#B57BFF', label: 'Lower' },
+  { id: "6", date: "2026-06-16", time: "14:00", color: '#3DDC97', label: 'Kardio' },
+  { id: "7", date: "2026-07-03", time: "09:00", color: '#C5F23D', label: 'Push' },
+  { id: "8", date: "2026-07-07", time: "18:00", color: '#4DA3FF', label: 'Pull' },
 ];
 
 export const MONTHS_HR = [
@@ -137,4 +139,17 @@ export function visitsByDayInMonth(visits: Visit[], year: number, month: number)
 
 export function labelForColor(colorLabels: Record<string, string>, color: string) {
   return colorLabels[color] ?? '';
+}
+
+const WEEK_MS = 7 * 86_400_000;
+
+export function cumulativeTrend(visits: Visit[], points = 7): number[] {
+  const now = Date.now();
+  const times = visits.map((visit) => parseLocalDate(visit.date).getTime());
+  const series: number[] = [];
+  for (let i = points - 1; i >= 0; i -= 1) {
+    const cutoff = now - i * WEEK_MS;
+    series.push(times.filter((time) => time <= cutoff).length);
+  }
+  return series;
 }

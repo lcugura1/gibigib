@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '@/shared/theme/colors';
+import { SectionLabel } from '@/shared/components/section-label';
 import type { TagStat } from '@/features/attendance/data/visits';
 
 const SIZE = 240;
 const CENTER = SIZE / 2;
 const OUTER = 104;
-const INNER = 60;
+const INNER = 76;
 const POP = 10;
 const GAP = 2.5;
 
@@ -66,9 +67,12 @@ export function TrainingChart({ tags }: Props) {
 
   if (tags.length === 0 || total === 0) {
     return (
-      <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-        Označi dolaske u kalendaru da vidiš statistiku treninga.
-      </Text>
+      <View style={styles.card}>
+        <SectionLabel>Najčešći treninzi</SectionLabel>
+        <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
+          Označi dolaske u kalendaru da vidiš statistiku treninga.
+        </Text>
+      </View>
     );
   }
 
@@ -84,45 +88,38 @@ export function TrainingChart({ tags }: Props) {
   });
 
   return (
-    <View
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        borderCurve: 'continuous',
-        borderWidth: 1,
-        borderColor: colors.surfaceBorder,
-        padding: 20,
-        alignItems: 'center',
-        gap: 18,
-      }}
-    >
-      <View style={{ width: SIZE, height: SIZE }}>
-        <Svg width={SIZE} height={SIZE}>
-          {segments.map(({ tag, start, end }) => (
-            <Slice
-              key={tag.label}
-              start={start}
-              end={end}
-              color={tag.color}
-              isActive={tag.label === active.label}
-              onPress={() => setSelected(tag.label)}
-            />
-          ))}
-        </Svg>
+    <View style={styles.card}>
+      <SectionLabel>Najčešći treninzi</SectionLabel>
 
-        <View
-          pointerEvents="none"
-          style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Text style={{ color: active.color, fontSize: 15, fontWeight: '600' }}>{active.label}</Text>
-          <Text style={{ color: colors.textPrimary, fontSize: 40, fontWeight: '800' }}>{activePct}%</Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-            {active.count} {active.count === 1 ? 'trening' : 'treninga'}
-          </Text>
+      <View style={{ alignItems: 'center' }}>
+        <View style={{ width: SIZE, height: SIZE }}>
+          <Svg width={SIZE} height={SIZE}>
+            {segments.map(({ tag, start, end }) => (
+              <Slice
+                key={tag.label}
+                start={start}
+                end={end}
+                color={tag.color}
+                isActive={tag.label === active.label}
+                onPress={() => setSelected(tag.label)}
+              />
+            ))}
+          </Svg>
+
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text style={{ color: active.color, fontSize: 15, fontWeight: '600' }}>{active.label}</Text>
+            <Text style={{ color: colors.textPrimary, fontSize: 40, fontWeight: '800' }}>{activePct}%</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+              {active.count} {active.count === 1 ? 'trening' : 'treninga'}
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={{ width: '100%', gap: 10 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {tags.map((tag) => {
           const isActive = tag.label === active.label;
           const pct = Math.round((tag.count / total) * 100);
@@ -130,13 +127,23 @@ export function TrainingChart({ tags }: Props) {
             <Pressable
               key={tag.label}
               onPress={() => setSelected(tag.label)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, opacity: isActive ? 1 : 0.55 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: isActive ? tag.color : colors.surfaceBorder,
+                backgroundColor: isActive ? `${tag.color}1F` : 'transparent',
+              }}
             >
-              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: tag.color }} />
-              <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: isActive ? '700' : '400' }}>
+              <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: tag.color }} />
+              <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: isActive ? '700' : '500' }}>
                 {tag.label}
               </Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{pct}%</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{pct}%</Text>
             </Pressable>
           );
         })}
@@ -144,3 +151,15 @@ export function TrainingChart({ tags }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    borderCurve: 'continuous',
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    padding: 20,
+    gap: 18,
+  },
+});

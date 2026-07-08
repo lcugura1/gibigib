@@ -1,7 +1,7 @@
 import type { VisitDto } from '@gibigib/types';
 import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from '@/features/auth/context/auth';
-import { fetchVisits, saveTag } from '@/features/attendance/services/attendance';
+import { fetchGoal, fetchVisits, saveGoal, saveTag } from '@/features/attendance/services/attendance';
 import { TAG_COLORS, DEFAULT_COLOR_LABELS, initialVisits, type Visit } from '@/features/attendance/data/visits';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -13,9 +13,11 @@ type AttendanceContextValue = {
   selectedDate: string | null;
   status: Status;
   errorMessage: string | null;
+  goal: number | null;
   selectDate: (date: string) => void;
   clearSelection: () => void;
   tagVisit: (date: string, color: string, label: string) => void;
+  setGoal: (goal: number) => void;
 };
 
 const AttendanceContext = createContext<AttendanceContextValue | null>(null);
@@ -42,15 +44,17 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [goal, setGoalState] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isReady || !user) return;
     let cancelled = false;
     setStatus('loading');
-    fetchVisits()
-      .then((server) => {
+    Promise.all([fetchVisits(), fetchGoal().catch(() => ({ goal: null }))])
+      .then(([server, goalDto]) => {
         if (cancelled) return;
         setVisits(mergeVisits(initialVisits, server));
+        setGoalState(goalDto.goal);
         setStatus('ready');
         setErrorMessage(null);
       })
@@ -81,8 +85,18 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
       selectedDate,
       status,
       errorMessage,
+      goal,
       selectDate: (date) => setSelectedDate(date),
       clearSelection: () => setSelectedDate(null),
+      setGoal: (next) => {
+        const previous = goal;
+        setGoalState(next);
+        setErrorMessage(null);
+        saveGoal(next).catch(() => {
+          setGoalState(previous);
+          setErrorMessage('Spremanje cilja nije uspjelo. Pokušaj ponovno.');
+        });
+      },
       tagVisit: (date, color, label) => {
         const trimmed = label.trim();
         const snapshot = visits;
@@ -116,7 +130,7 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
           });
       },
     }),
-    [visits, colorLabels, selectedDate, status, errorMessage],
+    [visits, colorLabels, selectedDate, status, errorMessage, goal],
   );
 
   return <AttendanceContext value={value}>{children}</AttendanceContext>;
