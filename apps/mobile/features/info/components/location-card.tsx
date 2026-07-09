@@ -24,12 +24,9 @@ export function LocationCard({
   return (
     <InfoCard light={light}>
       <View style={{ gap: 18 }}>
-        <View style={{ gap: 2 }}>
-          <Text style={{ color: fg, fontSize: 20, fontWeight: '800', letterSpacing: 0.5 }}>
-            {location.name}
-          </Text>
-          <Text style={{ color: muted, fontSize: 13 }}>{location.city}</Text>
-        </View>
+        <Text style={{ color: fg, fontSize: 20, fontWeight: '800', letterSpacing: 0.5 }}>
+          {location.name}
+        </Text>
 
         <View style={{ gap: 16 }}>
           <InfoRow
