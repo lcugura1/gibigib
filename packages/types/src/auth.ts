@@ -38,3 +38,12 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const updateAvatarSchema = z.object({
+  avatar: z
+    .string()
+    .startsWith('data:image/', 'Neispravan format slike')
+    .max(4_000_000, 'Slika je prevelika'),
+});
+
+export type UpdateAvatarInput = z.infer<typeof updateAvatarSchema>;

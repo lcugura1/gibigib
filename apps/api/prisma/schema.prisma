@@ -32,6 +32,7 @@ model User {
   address      String
   oib          String   @unique
   monthlyTrainingGoal Int?
+  avatarUrl    String?
 
   memberships Membership[]
   attendances Attendance[]
