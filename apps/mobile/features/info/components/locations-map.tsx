@@ -1,14 +1,16 @@
 import { requireOptionalNativeModule } from 'expo';
 import { Platform, Text, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
-import { locations } from '@/features/info/data/gym';
+import { Coordinates, locations } from '@/features/info/data/gym';
 
 const markers = locations.map((location) => ({
   title: location.name,
   coordinates: location.coordinates,
 }));
 
-const cameraPosition = {
+type CameraPosition = { coordinates: Coordinates; zoom: number };
+
+const defaultCamera: CameraPosition = {
   coordinates: { latitude: 46.05, longitude: 16.14 },
   zoom: 7.4,
 };
@@ -20,7 +22,11 @@ const maps = requireOptionalNativeModule('ExpoMaps') ? require('expo-maps') : nu
 const AppleMaps = maps?.AppleMaps;
 const GoogleMaps = maps?.GoogleMaps;
 
-export function LocationsMap() {
+export function LocationsMap({
+  cameraPosition = defaultCamera,
+}: {
+  cameraPosition?: CameraPosition;
+}) {
   return (
     <View
       style={{

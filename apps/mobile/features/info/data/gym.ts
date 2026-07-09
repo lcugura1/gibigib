@@ -107,6 +107,17 @@ export const locations: GymLocation[] = [
   },
 ];
 
+export const cities = [...new Set(locations.map((location) => location.city))];
+
+export const cityCameras = cities.map((city) => {
+  const points = locations
+    .filter((location) => location.city === city)
+    .map((location) => location.coordinates);
+  const latitude = points.reduce((sum, point) => sum + point.latitude, 0) / points.length;
+  const longitude = points.reduce((sum, point) => sum + point.longitude, 0) / points.length;
+  return { coordinates: { latitude, longitude }, zoom: 12.5 };
+});
+
 export const socials: SocialLink[] = [
   {
     label: 'Web',
