@@ -8,12 +8,13 @@ const SIZE = 44;
 
 type Props = {
   onPress?: () => void;
+  icon?: keyof typeof Ionicons.glyphMap;
 };
 
-export function BackButton({ onPress }: Props) {
+export function BackButton({ onPress, icon: iconName = 'chevron-back' }: Props) {
   const router = useRouter();
   const handlePress = () => (onPress ? onPress() : router.back());
-  const icon = <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />;
+  const icon = <Ionicons name={iconName} size={24} color={colors.textPrimary} />;
 
   if (isLiquidGlassAvailable()) {
     return (

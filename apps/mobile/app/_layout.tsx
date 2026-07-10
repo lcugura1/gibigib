@@ -37,6 +37,9 @@ function RootNavigator() {
         <Stack.Screen name="plan/[slug]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="trainers/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="trainers/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="edit-profile" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="support" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="about" options={{ presentation: 'modal' }} />
         <Stack.Screen
           name="settings"
           options={{
