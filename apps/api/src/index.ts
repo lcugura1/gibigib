@@ -5,6 +5,7 @@ import { env } from './config/env';
 import jwtPlugin from './plugins/jwt';
 import { authRoutes } from './routes/auth';
 import { attendanceRoutes } from './routes/attendance';
+import { profileRoutes } from './routes/profile';
 import { errorHandler } from './middleware/error-handler';
 
 const port = Number(env.PORT ?? 3000);
@@ -12,6 +13,7 @@ const host = env.HOST ?? '0.0.0.0';
 
 const app = Fastify({
   logger: true,
+  bodyLimit: 6 * 1024 * 1024,
 });
 
 app.setErrorHandler(errorHandler);
@@ -20,6 +22,7 @@ app.decorate('prisma', prisma);
 await app.register(jwtPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
 await app.register(attendanceRoutes, { prefix: '/attendance' });
+await app.register(profileRoutes, { prefix: '/profile' });
 
 app.addHook('onClose', async () => {
   await prisma.$disconnect();

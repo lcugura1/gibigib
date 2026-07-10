@@ -7,6 +7,7 @@ type AuthContextValue = {
   isReady: boolean;
   signIn: (user: AuthUser, accessToken: string, refreshToken: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (user: AuthUser) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await tokenStorage.save(accessToken, refreshToken);
         setUser(nextUser);
       },
+      updateUser: (nextUser) => setUser(nextUser),
       signOut: async () => {
         const refreshToken = await tokenStorage.getRefreshToken();
         if (refreshToken) {

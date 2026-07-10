@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
 import { useAuth } from "@/features/auth/context/auth";
 import { colors } from "@/shared/theme/colors";
-import { GlassIconButton } from "@/features/home/components/glass-icon-button";
+import { AvatarButton } from "@/features/home/components/avatar-button";
 import { MembershipPass } from "@/features/home/components/membership-pass";
 import { GymOccupancy } from "@/features/home/components/gym-occupancy";
 import { PlanCard } from "@/features/home/components/plan-card";
@@ -56,7 +56,7 @@ export default function Home() {
             {user?.firstName}
           </Text>
         </View>
-        <GlassIconButton name="person-outline" onPress={() => router.push('/settings')} />
+        <AvatarButton avatarUrl={user?.avatarUrl ?? null} onPress={() => router.push('/settings')} />
       </View>
 
       <MembershipPass
