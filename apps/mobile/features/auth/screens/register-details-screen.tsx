@@ -1,4 +1,4 @@
-import { registerSchema } from '@gibigib/types';
+import { birthDateInputSchema, registerSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
@@ -12,13 +12,19 @@ import { colors } from '@/shared/theme/colors';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { toFieldErrors } from '@/shared/zod-errors';
 
-const detailsSchema = registerSchema.pick({
-  firstName: true,
-  lastName: true,
-  birthDate: true,
-  address: true,
-  oib: true,
-});
+const detailsSchema = registerSchema
+  .pick({
+    firstName: true,
+    lastName: true,
+    address: true,
+    oib: true,
+  })
+  .extend({ birthDate: birthDateInputSchema });
+
+const formatBirthDate = (text: string) => {
+  const digits = text.replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('.');
+};
 
 export function RegisterDetailsScreen() {
   const insets = useSafeAreaInsets();
@@ -41,7 +47,7 @@ export function RegisterDetailsScreen() {
       oib: form.oib,
     });
     setErrors(result.success ? {} : toFieldErrors(result.error));
-    return result.success;
+    return result;
   };
 
   useEffect(() => {
@@ -52,18 +58,15 @@ export function RegisterDetailsScreen() {
   const handleSubmit = async () => {
     setSubmitted(true);
     setFormError(null);
-    if (!validate()) return;
+    const result = validate();
+    if (!result.success) return;
 
     setSubmitting(true);
     try {
       const response = await register({
         email: form.email,
         password: form.password,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        birthDate: form.birthDate,
-        address: form.address,
-        oib: form.oib,
+        ...result.data,
       });
       await signIn(response.user, response.accessToken, response.refreshToken);
     } catch (error) {
@@ -131,9 +134,11 @@ export function RegisterDetailsScreen() {
           <TextField
             label="Datum rođenja"
             value={form.birthDate}
-            onChangeText={(text) => update({ birthDate: text })}
+            onChangeText={(text) => update({ birthDate: formatBirthDate(text) })}
             onFocus={() => scrollToField('birthDate')}
-            placeholder="Unesite vaš datum rođenja"
+            placeholder="DD.MM.GGGG"
+            keyboardType="number-pad"
+            maxLength={10}
             error={errors.birthDate}
           />
         </View>
