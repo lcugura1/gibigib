@@ -17,7 +17,7 @@ export async function registerUser(input: RegisterInput) {
       passwordHash,
       firstName: input.firstName,
       lastName: input.lastName,
-      birthDate: new Date(input.birthDate),
+      birthDate: new Date(`${input.birthDate}T00:00:00.000Z`),
       address: input.address,
       oib: input.oib,
     },
