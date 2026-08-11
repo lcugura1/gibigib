@@ -22,7 +22,7 @@ export default function Home() {
   const memberName = user?.firstName ?? "Član";
 
   // TODO: swap for live occupancy from API (see Linear task)
-  const gymOccupancy = 70;
+  const gymOccupancy = 100;
   const gymCapacity = 120;
 
   return (
