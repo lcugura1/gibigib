@@ -16,9 +16,10 @@ import { colors } from '@/shared/theme/colors';
 type Props = {
   children: ReactNode;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  footer?: ReactNode;
 };
 
-export function ScrollScreen({ children, contentContainerStyle }: Props) {
+export function ScrollScreen({ children, contentContainerStyle, footer }: Props) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const backTop = insets.top + 8;
@@ -45,7 +46,7 @@ export function ScrollScreen({ children, contentContainerStyle }: Props) {
             {
               paddingHorizontal: 16,
               paddingTop: fadeEnd,
-              paddingBottom: insets.bottom + 24,
+              paddingBottom: footer ? 24 : insets.bottom + 24,
               gap: 24,
             },
             contentContainerStyle,
@@ -55,6 +56,12 @@ export function ScrollScreen({ children, contentContainerStyle }: Props) {
           {children}
         </ScrollView>
       </MaskedView>
+
+      {footer ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16 }}>
+          {footer}
+        </View>
+      ) : null}
 
       <View style={{ position: 'absolute', top: backTop, left: 16 }}>
         <BackButton />
