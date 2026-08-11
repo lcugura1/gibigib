@@ -16,6 +16,7 @@ import { GymIntro } from '@/features/info/components/gym-intro';
 import { LocationCard } from '@/features/info/components/location-card';
 import { LocationsMap } from '@/features/info/components/locations-map';
 import { SocialCard } from '@/features/info/components/social-card';
+import { ScrollEdgeFade } from '@/shared/components/scroll-edge-fade';
 
 export function InfoScreen() {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -33,56 +34,60 @@ export function InfoScreen() {
   }));
 
   return (
-    <Animated.ScrollView
-      ref={scrollRef}
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 24,
-        gap: 24,
-      }}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text
-        style={{
-          color: colors.textPrimary,
-          fontSize: 30,
-          fontWeight: '800',
-          letterSpacing: 0.5,
-          textAlign: 'center',
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Animated.ScrollView
+        ref={scrollRef}
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 24,
+          gap: 24,
         }}
+        showsVerticalScrollIndicator={false}
       >
-        O Gibiju
-      </Text>
+        <Text
+          style={{
+            color: colors.textPrimary,
+            fontSize: 30,
+            fontWeight: '800',
+            letterSpacing: 0.5,
+            textAlign: 'center',
+          }}
+        >
+          O Gibiju
+        </Text>
 
-      <Animated.View style={introStyle}>
-        <GymIntro />
-      </Animated.View>
-
-      <View style={{ gap: 12 }}>
-        <SectionLabel>Lokacije</SectionLabel>
-        <CityTabs
-          segments={cities.map((city) => ({
-            label: city,
-            count: locations.filter((location) => location.city === city).length,
-          }))}
-          activeIndex={cityIndex}
-          onChange={setCityIndex}
-        />
-        <LocationsMap cameraPosition={cityCameras[cityIndex]} />
-        <Animated.View key={activeCity} entering={FadeIn.duration(200)} style={{ gap: 12 }}>
-          {cityLocations.map((location) => (
-            <LocationCard key={location.name} location={location} />
-          ))}
+        <Animated.View style={introStyle}>
+          <GymIntro />
         </Animated.View>
-      </View>
 
-      <View style={{ gap: 12 }}>
-        <SectionLabel>Društvene mreže</SectionLabel>
-        <SocialCard />
-      </View>
-    </Animated.ScrollView>
+        <View style={{ gap: 12 }}>
+          <SectionLabel>Lokacije</SectionLabel>
+          <CityTabs
+            segments={cities.map((city) => ({
+              label: city,
+              count: locations.filter((location) => location.city === city).length,
+            }))}
+            activeIndex={cityIndex}
+            onChange={setCityIndex}
+          />
+          <LocationsMap cameraPosition={cityCameras[cityIndex]} />
+          <Animated.View key={activeCity} entering={FadeIn.duration(200)} style={{ gap: 12 }}>
+            {cityLocations.map((location) => (
+              <LocationCard key={location.name} location={location} />
+            ))}
+          </Animated.View>
+        </View>
+
+        <View style={{ gap: 12 }}>
+          <SectionLabel>Društvene mreže</SectionLabel>
+          <SocialCard />
+        </View>
+      </Animated.ScrollView>
+
+      <ScrollEdgeFade scrollY={offset} insetAdjusted />
+    </View>
   );
 }

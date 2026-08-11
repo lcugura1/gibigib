@@ -23,7 +23,31 @@ export function TrainerProfileScreen({ id }: { id: string }) {
   };
 
   return (
-    <ScrollScreen>
+    <ScrollScreen
+      footer={
+        <Pressable
+          onPress={sendEmail}
+          accessibilityRole="button"
+          accessibilityLabel={`Pošalji email treneru ${trainer.name}`}
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            paddingVertical: 16,
+            borderRadius: 18,
+            borderCurve: 'continuous',
+            backgroundColor: colors.buttonPrimaryFrom,
+            opacity: pressed ? 0.9 : 1,
+          })}
+        >
+          <Ionicons name="mail-outline" size={20} color={colors.buttonPrimaryText} />
+          <Text style={{ color: colors.buttonPrimaryText, fontSize: 16, fontWeight: '700' }}>
+            Pošalji email
+          </Text>
+        </Pressable>
+      }
+    >
       <View style={{ alignItems: 'center', gap: 14 }}>
         <Image
           source={{ uri: trainer.photo }}
@@ -106,70 +130,6 @@ export function TrainerProfileScreen({ id }: { id: string }) {
         <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22 }}>
           {trainer.bio}
         </Text>
-      </View>
-
-      <View style={{ gap: 12 }}>
-        <Pressable
-          onPress={sendEmail}
-          accessibilityRole="button"
-          accessibilityLabel={`Pošalji email treneru ${trainer.name}`}
-          style={({ pressed }) => ({
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            paddingVertical: 16,
-            borderRadius: 18,
-            borderCurve: 'continuous',
-            backgroundColor: colors.buttonPrimaryFrom,
-            opacity: pressed ? 0.9 : 1,
-          })}
-        >
-          <Ionicons name="mail-outline" size={20} color={colors.buttonPrimaryText} />
-          <Text style={{ color: colors.buttonPrimaryText, fontSize: 16, fontWeight: '700' }}>
-            Pošalji email
-          </Text>
-        </Pressable>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            paddingVertical: 16,
-            borderRadius: 18,
-            borderCurve: 'continuous',
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.surfaceBorder,
-            opacity: 0.6,
-          }}
-        >
-          <Ionicons name="calendar-outline" size={20} color={colors.textPrimary} />
-          <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '600' }}>
-            Rezerviraj termin
-          </Text>
-          <View
-            style={{
-              backgroundColor: colors.surfaceBorder,
-              borderRadius: 8,
-              paddingHorizontal: 8,
-              paddingVertical: 3,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.textSecondary,
-                fontSize: 11,
-                fontWeight: '700',
-                letterSpacing: 0.5,
-              }}
-            >
-              USKORO
-            </Text>
-          </View>
-        </View>
       </View>
     </ScrollScreen>
   );
