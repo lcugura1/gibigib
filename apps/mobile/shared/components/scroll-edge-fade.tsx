@@ -1,6 +1,7 @@
+import MaskedView from '@react-native-masked-view/masked-view';
 import { BlurView } from 'expo-blur';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -10,11 +11,12 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/shared/theme/colors';
 
 const FADE_IN_DISTANCE = 24;
-const SCRIM_HEIGHT = 28;
 const HEADER_HEIGHT = 52;
+const RAMP_HEIGHT = 44;
+const LAYERS = 6;
+const LAYER_INTENSITY = 10;
 
 type Props = {
   scrollY: SharedValue<number>;
@@ -34,7 +36,9 @@ export function useScrollEdge() {
 
 export function ScrollEdgeFade({ scrollY, height, insetAdjusted = false }: Props) {
   const insets = useSafeAreaInsets();
-  const barHeight = height ?? insets.top + HEADER_HEIGHT;
+  const solidHeight = height ?? insets.top + HEADER_HEIGHT;
+  const totalHeight = solidHeight + RAMP_HEIGHT;
+  const rampStart = solidHeight / totalHeight;
   const restingOffset = insetAdjusted ? -insets.top : 0;
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -49,14 +53,31 @@ export function ScrollEdgeFade({ scrollY, height, insetAdjusted = false }: Props
   return (
     <Animated.View
       pointerEvents="none"
-      style={[{ position: 'absolute', top: 0, left: 0, right: 0 }, animatedStyle]}
+      style={[
+        { position: 'absolute', top: 0, left: 0, right: 0, height: totalHeight },
+        animatedStyle,
+      ]}
     >
-      {isLiquidGlassAvailable() ? (
-        <GlassView style={{ height: barHeight }} colorScheme="dark" />
-      ) : (
-        <BlurView intensity={60} tint="dark" style={{ height: barHeight }} />
-      )}
-      <LinearGradient colors={[colors.background, 'transparent']} style={{ height: SCRIM_HEIGHT }} />
+      {Array.from({ length: LAYERS }, (_, index) => {
+        const step = (1 - rampStart) / LAYERS;
+        const fadeStart = rampStart + step * (LAYERS - 1 - index);
+
+        return (
+          <MaskedView
+            key={index}
+            style={StyleSheet.absoluteFill}
+            maskElement={
+              <LinearGradient
+                colors={['black', 'black', 'transparent']}
+                locations={[0, fadeStart, fadeStart + step]}
+                style={StyleSheet.absoluteFill}
+              />
+            }
+          >
+            <BlurView intensity={LAYER_INTENSITY} tint="dark" style={StyleSheet.absoluteFill} />
+          </MaskedView>
+        );
+      })}
     </Animated.View>
   );
 }
