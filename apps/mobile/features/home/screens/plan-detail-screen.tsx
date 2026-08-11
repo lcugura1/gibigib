@@ -5,9 +5,6 @@ import { PaymentSection } from "@/features/payments/components/payment-section";
 import { ScrollScreen } from "@/shared/components/scroll-screen";
 import { colors } from "@/shared/theme/colors";
 
-const FILLER =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.";
-
 export function PlanDetailScreen({ slug }: { slug: string }) {
   const plan = getPlan(slug);
 
@@ -69,7 +66,7 @@ export function PlanDetailScreen({ slug }: { slug: string }) {
             lineHeight: 22,
           }}
         >
-          {FILLER}
+          {plan.description}
         </Text>
       </View>
 
