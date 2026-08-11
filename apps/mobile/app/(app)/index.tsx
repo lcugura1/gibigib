@@ -1,5 +1,7 @@
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useAuth } from "@/features/auth/context/auth";
+import { ScrollEdgeFade, useScrollEdge } from "@/shared/components/scroll-edge-fade";
 import { colors } from "@/shared/theme/colors";
 import { AvatarButton } from "@/features/home/components/avatar-button";
 import { MembershipPass } from "@/features/home/components/membership-pass";
@@ -14,6 +16,7 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const { label: membershipCountdown } = useMembershipCountdown();
+  const { scrollY, onScroll } = useScrollEdge();
 
   const passValue = `gibigib:${user?.id ?? "demo"}`;
   const memberName = user?.firstName ?? "Član";
@@ -23,73 +26,78 @@ export default function Home() {
   const gymCapacity = 120;
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 24,
-        gap: 24,
-      }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 12,
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Animated.ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1 }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 24,
+          gap: 24,
         }}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-            Dobrodošao,
-          </Text>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 30,
-              fontWeight: "700",
-            }}
-          >
-            {user?.firstName}
-          </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
+              Dobrodošao,
+            </Text>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 30,
+                fontWeight: "700",
+              }}
+            >
+              {user?.firstName}
+            </Text>
+          </View>
+          <AvatarButton avatarUrl={user?.avatarUrl ?? null} onPress={() => router.push('/settings')} />
         </View>
-        <AvatarButton avatarUrl={user?.avatarUrl ?? null} onPress={() => router.push('/settings')} />
-      </View>
 
-      <MembershipPass
-        value={passValue}
-        memberName={memberName}
-        countdown={membershipCountdown}
-        onCountdownPress={() => router.push("/membership")}
-        onPress={() =>
-          router.push({
-            pathname: "/pass",
-            params: { value: passValue },
-          })
-        }
-      />
+        <MembershipPass
+          value={passValue}
+          memberName={memberName}
+          countdown={membershipCountdown}
+          onCountdownPress={() => router.push("/membership")}
+          onPress={() =>
+            router.push({
+              pathname: "/pass",
+              params: { value: passValue },
+            })
+          }
+        />
 
-      <GymOccupancy count={gymOccupancy} capacity={gymCapacity} />
+        <GymOccupancy count={gymOccupancy} capacity={gymCapacity} />
 
-      <View style={{ gap: 12 }}>
-        <SectionLabel>Dostupni planovi</SectionLabel>
+        <View style={{ gap: 12 }}>
+          <SectionLabel>Dostupni planovi</SectionLabel>
 
-        {plans.map((plan) => (
-          <PlanCard
-            key={plan.slug}
-            {...plan}
-            onPress={() =>
-              plan.slug === "trener"
-                ? router.push("/trainers")
-                : router.push({ pathname: "/plan/[slug]", params: { slug: plan.slug } })
-            }
-          />
-        ))}
-      </View>
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan.slug}
+              {...plan}
+              onPress={() =>
+                plan.slug === "trener"
+                  ? router.push("/trainers")
+                  : router.push({ pathname: "/plan/[slug]", params: { slug: plan.slug } })
+              }
+            />
+          ))}
+        </View>
+      </Animated.ScrollView>
 
-    </ScrollView>
+      <ScrollEdgeFade scrollY={scrollY} insetAdjusted />
+    </View>
   );
 }

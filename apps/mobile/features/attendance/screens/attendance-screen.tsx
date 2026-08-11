@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { colors } from "@/shared/theme/colors";
+import { ScrollEdgeFade, useScrollEdge } from "@/shared/components/scroll-edge-fade";
 import { MonthGoalCard } from "@/features/attendance/components/month-goal-card";
 import { TotalTrendCard } from "@/features/attendance/components/total-trend-card";
 import { MonthlyGoalSheet } from "@/features/attendance/components/monthly-goal-sheet";
@@ -25,11 +27,14 @@ export function AttendanceScreen() {
   ).size;
   const tags = tagStats(visits);
   const trend = cumulativeTrend(visits);
+  const { scrollY, onScroll } = useScrollEdge();
   return (
-    <>
-      <ScrollView
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Animated.ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={{ flex: 1, backgroundColor: colors.background }}
+        style={{ flex: 1 }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 8,
@@ -80,9 +85,12 @@ export function AttendanceScreen() {
         <AttendanceCalendar />
 
         <TrainingChart tags={tags} />
-      </ScrollView>
+      </Animated.ScrollView>
+
+      <ScrollEdgeFade scrollY={scrollY} insetAdjusted />
+
       <DayDetailSheet />
       <MonthlyGoalSheet visible={goalOpen} onClose={() => setGoalOpen(false)} />
-    </>
+    </View>
   );
 }
