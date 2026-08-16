@@ -11,6 +11,8 @@ import { PlanCard } from "@/features/home/components/plan-card";
 import { SectionLabel } from "@/shared/components/section-label";
 import { useRouter } from 'expo-router';
 import { plans } from '@/features/home/data/plans';
+import { useEntryToken } from '@/features/home/hooks/use-entry-token';
+import { useOccupancy } from '@/features/home/hooks/use-occupancy';
 import { useMembership } from '@/features/membership/context/membership';
 import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
 
@@ -19,14 +21,11 @@ export default function Home() {
   const router = useRouter();
   const { membership, status: membershipStatus } = useMembership();
   const { label: membershipCountdown } = useMembershipCountdown();
+  const { qrValue } = useEntryToken(!!membership);
+  const occupancy = useOccupancy();
   const { scrollY, onScroll } = useScrollEdge();
 
-  const passValue = `gibigib:${user?.id ?? "demo"}`;
   const memberName = user?.firstName ?? "Član";
-
-  // TODO: swap for live occupancy from API (see Linear task)
-  const gymOccupancy = 100;
-  const gymCapacity = 120;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -69,23 +68,27 @@ export default function Home() {
         </View>
 
         {membership ? (
-          <MembershipPass
-            value={passValue}
-            memberName={memberName}
-            countdown={membershipCountdown}
-            onCountdownPress={() => router.push("/membership")}
-            onPress={() =>
-              router.push({
-                pathname: "/pass",
-                params: { value: passValue },
-              })
-            }
-          />
+          qrValue ? (
+            <MembershipPass
+              value={qrValue}
+              memberName={memberName}
+              countdown={membershipCountdown}
+              onCountdownPress={() => router.push("/membership")}
+              onPress={() =>
+                router.push({
+                  pathname: "/pass",
+                  params: { value: qrValue },
+                })
+              }
+            />
+          ) : null
         ) : membershipStatus === "ready" ? (
           <MembershipCtaCard />
         ) : null}
 
-        <GymOccupancy count={gymOccupancy} capacity={gymCapacity} />
+        {occupancy ? (
+          <GymOccupancy count={occupancy.count} capacity={occupancy.capacity} />
+        ) : null}
 
         <View style={{ gap: 12 }}>
           <SectionLabel>Dostupni planovi</SectionLabel>

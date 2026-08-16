@@ -1,8 +1,12 @@
-import type { MonthlyGoalDto, TrainingTagInput, VisitDto } from '@gibigib/types';
+import type { AttendanceVisitDto, MonthlyGoalDto, TrainingTagInput, VisitDto } from '@gibigib/types';
 import { authedFetch } from '@/shared/api';
 
 export function fetchVisits() {
   return authedFetch<VisitDto[]>('/attendance');
+}
+
+export function fetchEntryVisits() {
+  return authedFetch<AttendanceVisitDto[]>('/attendance/visits');
 }
 
 export function saveTag(input: TrainingTagInput) {

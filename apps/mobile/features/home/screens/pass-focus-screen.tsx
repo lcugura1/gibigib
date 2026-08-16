@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { useEntryToken } from '@/features/home/hooks/use-entry-token';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -19,6 +20,7 @@ const QR_SIZE = Math.min(SCREEN_WIDTH - 96, 300);
 
 export function PassFocusScreen() {
   const { value = 'demo' } = useLocalSearchParams<{ value: string }>();
+  const { qrValue } = useEntryToken(true);
   const router = useRouter();
   const originalBrightness = useRef<number | null>(null);
 
@@ -82,7 +84,7 @@ export function PassFocusScreen() {
             borderCurve: 'continuous',
           }}
         >
-          <QRCode value={value} size={QR_SIZE} color="#000000" backgroundColor="#FFFFFF" />
+          <QRCode value={qrValue ?? value} size={QR_SIZE} color="#000000" backgroundColor="#FFFFFF" />
         </View>
         <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '600', textAlign: 'center' }}>
           Skeniraj kod na ulazu
