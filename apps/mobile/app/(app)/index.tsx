@@ -4,17 +4,20 @@ import { useAuth } from "@/features/auth/context/auth";
 import { ScrollEdgeFade, useScrollEdge } from "@/shared/components/scroll-edge-fade";
 import { colors } from "@/shared/theme/colors";
 import { AvatarButton } from "@/features/home/components/avatar-button";
+import { MembershipCtaCard } from "@/features/home/components/membership-cta-card";
 import { MembershipPass } from "@/features/home/components/membership-pass";
 import { GymOccupancy } from "@/features/home/components/gym-occupancy";
 import { PlanCard } from "@/features/home/components/plan-card";
 import { SectionLabel } from "@/shared/components/section-label";
 import { useRouter } from 'expo-router';
 import { plans } from '@/features/home/data/plans';
+import { useMembership } from '@/features/membership/context/membership';
 import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+  const { membership, status: membershipStatus } = useMembership();
   const { label: membershipCountdown } = useMembershipCountdown();
   const { scrollY, onScroll } = useScrollEdge();
 
@@ -65,18 +68,22 @@ export default function Home() {
           <AvatarButton avatarUrl={user?.avatarUrl ?? null} onPress={() => router.push('/settings')} />
         </View>
 
-        <MembershipPass
-          value={passValue}
-          memberName={memberName}
-          countdown={membershipCountdown}
-          onCountdownPress={() => router.push("/membership")}
-          onPress={() =>
-            router.push({
-              pathname: "/pass",
-              params: { value: passValue },
-            })
-          }
-        />
+        {membership ? (
+          <MembershipPass
+            value={passValue}
+            memberName={memberName}
+            countdown={membershipCountdown}
+            onCountdownPress={() => router.push("/membership")}
+            onPress={() =>
+              router.push({
+                pathname: "/pass",
+                params: { value: passValue },
+              })
+            }
+          />
+        ) : membershipStatus === "ready" ? (
+          <MembershipCtaCard />
+        ) : null}
 
         <GymOccupancy count={gymOccupancy} capacity={gymCapacity} />
 

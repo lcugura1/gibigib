@@ -5,6 +5,7 @@ import { env } from './config/env';
 import jwtPlugin from './plugins/jwt';
 import { authRoutes } from './routes/auth';
 import { attendanceRoutes } from './routes/attendance';
+import { membershipRoutes } from './routes/memberships';
 import { profileRoutes } from './routes/profile';
 import { errorHandler } from './middleware/error-handler';
 
@@ -22,6 +23,7 @@ app.decorate('prisma', prisma);
 await app.register(jwtPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
 await app.register(attendanceRoutes, { prefix: '/attendance' });
+await app.register(membershipRoutes, { prefix: '/memberships' });
 await app.register(profileRoutes, { prefix: '/profile' });
 
 app.addHook('onClose', async () => {

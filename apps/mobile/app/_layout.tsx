@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/features/auth/context/auth';
+import { MembershipProvider } from '@/features/membership/context/membership';
 import { colors } from '@/shared/theme/colors';
 
 function RootNavigator() {
@@ -74,7 +75,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <AuthProvider>
-        <RootNavigator />
+        <MembershipProvider>
+          <RootNavigator />
+        </MembershipProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
