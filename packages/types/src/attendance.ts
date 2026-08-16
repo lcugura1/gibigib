@@ -44,3 +44,11 @@ export const monthlyGoalInputSchema = z.object({
 });
 
 export type MonthlyGoalDto = { goal: number | null };
+
+export const attendanceVisitDtoSchema = z.object({
+  id: z.string(),
+  date: isoDateSchema,
+  time: isoTimeSchema,
+});
+
+export type AttendanceVisitDto = z.infer<typeof attendanceVisitDtoSchema>;

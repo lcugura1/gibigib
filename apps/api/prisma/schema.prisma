@@ -50,6 +50,7 @@ model User {
 
 model MembershipProgram {
   id           String  @id @default(cuid())
+  slug         String  @unique
   name         String
   description  String?
   durationDays Int
@@ -86,6 +87,7 @@ model Gym {
   city         String
   address      String
   workingHours String?
+  capacity     Int
 
   attendances Attendance[]
 
@@ -138,6 +140,20 @@ model TrainingTag {
 
   @@unique([userId, date])
   @@index([userId])
+}
+
+enum LockerStatus {
+  LOCKED
+  UNLOCKED
+}
+
+model Locker {
+  id     String       @id @default(cuid())
+  number Int          @unique
+  status LockerStatus @default(UNLOCKED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model News {
