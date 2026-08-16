@@ -10,6 +10,7 @@ import { attendanceRoutes } from './routes/attendance';
 import { demoRoutes } from './routes/demo';
 import { deviceRoutes } from './routes/device';
 import { entryRoutes } from './routes/entry';
+import { lockerRoutes } from './routes/lockers';
 import { membershipRoutes } from './routes/memberships';
 import { occupancyRoutes } from './routes/occupancy';
 import { profileRoutes } from './routes/profile';
@@ -33,6 +34,7 @@ await app.register(membershipRoutes, { prefix: '/memberships' });
 await app.register(profileRoutes, { prefix: '/profile' });
 await app.register(entryRoutes, { prefix: '/entry' });
 await app.register(occupancyRoutes);
+await app.register(lockerRoutes);
 await app.register(deviceRoutes, { prefix: '/device', logLevel: 'warn' });
 await app.register(fastifyStatic, {
   root: join(import.meta.dirname, '../public'),

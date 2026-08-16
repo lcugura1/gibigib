@@ -65,6 +65,14 @@ function RootNavigator() {
             contentStyle: { backgroundColor: 'transparent' },
           }}
         />
+        <Stack.Screen
+          name="locker"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'none',
+            contentStyle: { backgroundColor: 'transparent' },
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

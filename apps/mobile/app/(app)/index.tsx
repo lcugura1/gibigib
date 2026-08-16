@@ -74,6 +74,7 @@ export default function Home() {
               memberName={memberName}
               countdown={membershipCountdown}
               onCountdownPress={() => router.push("/membership")}
+              onLockerPress={() => router.push("/locker")}
               onPress={() =>
                 router.push({
                   pathname: "/pass",
