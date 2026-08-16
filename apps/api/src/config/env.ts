@@ -8,6 +8,7 @@ const schema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number(),
   PORT: z.coerce.number(),
   HOST: z.string(),
+  DEMO_RESET: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

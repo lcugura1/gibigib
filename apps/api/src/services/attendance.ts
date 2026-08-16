@@ -1,6 +1,10 @@
-import type { MonthlyGoalDto, TrainingTagInput, VisitDto } from '@gibigib/types';
+import type { AttendanceVisitDto, MonthlyGoalDto, TrainingTagInput, VisitDto } from '@gibigib/types';
 import type { TrainingTag } from '../generated/prisma/client';
 import { prisma } from '../utils/prisma';
+
+function pad(value: number) {
+  return String(value).padStart(2, '0');
+}
 
 function toVisitDto(tag: TrainingTag): VisitDto {
   return {
@@ -44,6 +48,19 @@ export async function upsertTrainingTag(
   });
 
   return toVisitDto(tag);
+}
+
+export async function listEntryVisits(userId: string): Promise<AttendanceVisitDto[]> {
+  const entries = await prisma.attendance.findMany({
+    where: { userId },
+    orderBy: { checkInAt: 'asc' },
+  });
+
+  return entries.map((entry) => ({
+    id: entry.id,
+    date: `${entry.checkInAt.getFullYear()}-${pad(entry.checkInAt.getMonth() + 1)}-${pad(entry.checkInAt.getDate())}`,
+    time: `${pad(entry.checkInAt.getHours())}:${pad(entry.checkInAt.getMinutes())}`,
+  }));
 }
 
 export async function getMonthlyGoal(userId: string): Promise<MonthlyGoalDto> {
