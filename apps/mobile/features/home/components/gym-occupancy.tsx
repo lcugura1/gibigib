@@ -66,10 +66,30 @@ export function GymOccupancy({ count, capacity }: Props) {
         borderWidth: 1,
         borderColor: colors.surfaceBorder,
         padding: 16,
-        gap: 18,
+        gap: 14,
       }}
     >
-      <View style={{ position: 'absolute', top: 14, right: 14, zIndex: 1 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
+        <Text
+          style={{
+            flex: 1,
+            color: colors.textSecondary,
+            fontSize: 13,
+            fontWeight: '600',
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+          }}
+        >
+          Broj ljudi u teretani
+        </Text>
+
         <GlassIconButton
           name={notify ? 'notifications' : 'notifications-outline'}
           color={notify ? colors.accent : colors.textPrimary}
@@ -81,24 +101,13 @@ export function GymOccupancy({ count, capacity }: Props) {
         />
       </View>
 
-      <Text
-        style={{
-          color: colors.textSecondary,
-          fontSize: 13,
-          fontWeight: '600',
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
-        }}
-      >
-        Broj ljudi u teretani
-      </Text>
-
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 12 }}>
         <View
           style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
+            gap: 12,
           }}
         >
           <CountUp

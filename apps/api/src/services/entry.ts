@@ -9,6 +9,12 @@ import { getActiveMembership } from './membership';
 const TOKEN_TTL_MS = 120_000;
 const TOKEN_REUSE_MIN_MS = 30_000;
 
+function startOfToday() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
   const membership = await getActiveMembership(userId);
   if (!membership) {
@@ -45,10 +51,12 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
   if (!entryToken) {
     return { ok: false, message: 'Nevažeća ulaznica' };
   }
-  if (entryToken.usedAt) {
+  const usedToday = entryToken.usedAt != null && entryToken.usedAt >= startOfToday();
+
+  if (entryToken.usedAt && !usedToday) {
     return { ok: false, message: 'Ulaznica je već iskorištena' };
   }
-  if (entryToken.expiresAt.getTime() < Date.now()) {
+  if (!entryToken.usedAt && entryToken.expiresAt.getTime() < Date.now()) {
     return { ok: false, message: 'QR kod je istekao, osvježi ga u aplikaciji' };
   }
 
@@ -57,28 +65,42 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
     return { ok: false, message: 'Članarina nije aktivna' };
   }
 
-  const gym = await prisma.gym.findFirstOrThrow();
+  const alreadyInside = await prisma.attendance.findFirst({
+    where: { userId: entryToken.userId, checkInAt: { gte: startOfToday() } },
+  });
 
-  await prisma.$transaction([
-    prisma.entryToken.update({ where: { id: entryToken.id }, data: { usedAt: new Date() } }),
-    prisma.attendance.create({
-      data: { userId: entryToken.userId, gymId: gym.id, entryTokenId: entryToken.id },
-    }),
-  ]);
+  if (alreadyInside) {
+    await prisma.entryToken.update({
+      where: { id: entryToken.id },
+      data: { usedAt: new Date() },
+    });
+  } else {
+    const gym = await prisma.gym.findFirstOrThrow();
+    await prisma.$transaction([
+      prisma.entryToken.update({ where: { id: entryToken.id }, data: { usedAt: new Date() } }),
+      prisma.attendance.create({
+        data: { userId: entryToken.userId, gymId: gym.id, entryTokenId: entryToken.id },
+      }),
+    ]);
+  }
 
   queueDoorOpen();
 
-  return { ok: true, message: 'Ulaz odobren', memberName: entryToken.user.firstName };
+  return {
+    ok: true,
+    message: alreadyInside ? 'Ulaz odobren, već si evidentiran danas' : 'Ulaz odobren',
+    memberName: entryToken.user.firstName,
+  };
 }
 
 export async function getOccupancy(): Promise<OccupancyDto> {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const [count, gym] = await Promise.all([
-    prisma.attendance.count({ where: { checkInAt: { gte: startOfDay } } }),
+  const [members, gym] = await Promise.all([
+    prisma.attendance.groupBy({
+      by: ['userId'],
+      where: { checkInAt: { gte: startOfToday() } },
+    }),
     prisma.gym.findFirstOrThrow(),
   ]);
 
-  return { count, capacity: gym.capacity };
+  return { count: members.length, capacity: gym.capacity };
 }
