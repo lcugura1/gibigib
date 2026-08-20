@@ -1,18 +1,24 @@
 import { ApiError, refreshSession } from '@/features/auth/services/auth';
 import { tokenStorage } from '@/features/auth/services/token-storage';
 import { API_URL } from '@/shared/config';
+import { NETWORK_ERROR_MESSAGE, fetchWithTimeout } from '@/shared/http';
 
 async function request<T>(path: string, init: RequestInit | undefined, allowRefresh: boolean): Promise<T> {
   const accessToken = await tokenStorage.getAccessToken();
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      ...init?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(`${API_URL}${path}`, {
+      ...init,
+      headers: {
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...init?.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(undefined, NETWORK_ERROR_MESSAGE);
+  }
 
   if (response.status === 401 && allowRefresh) {
     const refreshToken = await tokenStorage.getRefreshToken();

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { monthlyGoalInputSchema, trainingTagInputSchema } from '@gibigib/types';
 import {
   getMonthlyGoal,
+  listEntryVisits,
   listTrainingTags,
   setMonthlyGoal,
   upsertTrainingTag,
@@ -16,6 +17,10 @@ export async function attendanceRoutes(app: FastifyInstance) {
     const input = trainingTagInputSchema.parse(request.body);
     const visit = await upsertTrainingTag(request.user.userId, input);
     return reply.send(visit);
+  });
+
+  app.get('/visits', { preHandler: [app.authenticate] }, async (request) => {
+    return listEntryVisits(request.user.userId);
   });
 
   app.get('/goal', { preHandler: [app.authenticate] }, async (request) => {

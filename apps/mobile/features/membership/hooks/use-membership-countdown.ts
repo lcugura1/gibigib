@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getActiveMembership } from '@/features/membership/services/membership';
-import type { ActiveMembership } from '@/features/membership/types/membership';
+import { useMembership } from '@/features/membership/context/membership';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -50,20 +49,8 @@ export function formatExpiryLong(endDate: string, now: number): string | null {
 }
 
 export function useMembershipCountdown() {
-  const [membership, setMembership] = useState<ActiveMembership | null>(null);
+  const { membership } = useMembership();
   const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    let active = true;
-    getActiveMembership()
-      .then((data) => {
-        if (active) setMembership(data);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), MINUTE_MS);

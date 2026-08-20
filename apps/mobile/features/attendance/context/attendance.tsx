@@ -1,7 +1,8 @@
-import type { VisitDto } from '@gibigib/types';
-import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { AttendanceVisitDto, VisitDto } from '@gibigib/types';
+import { createContext, use, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@/features/auth/context/auth';
-import { fetchGoal, fetchVisits, saveGoal, saveTag } from '@/features/attendance/services/attendance';
+import { fetchEntryVisits, fetchGoal, fetchVisits, saveGoal, saveTag } from '@/features/attendance/services/attendance';
 import { TAG_COLORS, DEFAULT_COLOR_LABELS, initialVisits, type Visit } from '@/features/attendance/data/visits';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -21,6 +22,17 @@ type AttendanceContextValue = {
 };
 
 const AttendanceContext = createContext<AttendanceContextValue | null>(null);
+
+function mergeEntryVisits(seed: Visit[], entries: AttendanceVisitDto[]): Visit[] {
+  const byDate = new Map<string, Visit>();
+  for (const visit of seed) byDate.set(visit.date, visit);
+  for (const entry of entries) {
+    if (!byDate.has(entry.date)) {
+      byDate.set(entry.date, { id: entry.id, date: entry.date, time: entry.time });
+    }
+  }
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
 
 function mergeVisits(seed: Visit[], server: VisitDto[]): Visit[] {
   const byDate = new Map<string, Visit>();
@@ -46,28 +58,33 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [goal, setGoalState] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!isReady || !user) return;
-    let cancelled = false;
-    setStatus('loading');
-    Promise.all([fetchVisits(), fetchGoal().catch(() => ({ goal: null }))])
-      .then(([server, goalDto]) => {
-        if (cancelled) return;
-        setVisits(mergeVisits(initialVisits, server));
-        setGoalState(goalDto.goal);
-        setStatus('ready');
-        setErrorMessage(null);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setStatus('error');
-        setErrorMessage('Nije moguće učitati treninge.');
-      });
-    return () => {
-      cancelled = true;
-    };
+  useFocusEffect(
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReady, user?.id]);
+    useCallback(() => {
+      if (!isReady || !user) return;
+      let cancelled = false;
+      Promise.all([
+        fetchVisits(),
+        fetchEntryVisits().catch(() => []),
+        fetchGoal().catch(() => ({ goal: null })),
+      ])
+        .then(([server, entries, goalDto]) => {
+          if (cancelled) return;
+          setVisits(mergeVisits(mergeEntryVisits(initialVisits, entries), server));
+          setGoalState(goalDto.goal);
+          setStatus('ready');
+          setErrorMessage(null);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setStatus('error');
+          setErrorMessage('Nije moguće učitati treninge.');
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, [isReady, user?.id]),
+  );
 
   const colorLabels = useMemo(() => {
     const derived: Record<string, string> = { ...DEFAULT_COLOR_LABELS };

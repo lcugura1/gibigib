@@ -1,21 +1,47 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Text, View } from "react-native";
+import { purchaseMembershipSchema } from "@gibigib/types";
+import { ApiError } from "@/features/auth/services/auth";
 import { getPlan } from "@/features/home/data/plans";
+import { useMembership } from "@/features/membership/context/membership";
+import { purchaseMembership } from "@/features/membership/services/membership";
 import { PaymentSection } from "@/features/payments/components/payment-section";
 import { ScrollScreen } from "@/shared/components/scroll-screen";
 import { colors } from "@/shared/theme/colors";
 
 export function PlanDetailScreen({ slug }: { slug: string }) {
   const plan = getPlan(slug);
+  const router = useRouter();
+  const { refresh } = useMembership();
+  const [submitting, setSubmitting] = useState(false);
 
   if (!plan) return null;
 
-  const handlePay = (methodId: string) => {
-    console.log("Pay", {
-      plan: plan.slug,
-      amount: plan.amount,
-      method: methodId,
+  const handlePay = async (methodId: string) => {
+    const parsed = purchaseMembershipSchema.safeParse({
+      programSlug: plan.slug,
+      paymentMethod: methodId,
     });
+    if (!parsed.success) {
+      Alert.alert("Plaćanje nije uspjelo", "Ovaj plan trenutno nije dostupan za online kupnju.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await purchaseMembership(parsed.data);
+      await refresh();
+      router.back();
+    } catch (err) {
+      Alert.alert(
+        "Plaćanje nije uspjelo",
+        err instanceof ApiError ? err.message : "Provjeri vezu i pokušaj ponovno.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -71,7 +97,7 @@ export function PlanDetailScreen({ slug }: { slug: string }) {
       </View>
 
       {plan.amount != null ? (
-        <PaymentSection amount={plan.amount} onPay={handlePay} />
+        <PaymentSection amount={plan.amount} onPay={handlePay} submitting={submitting} />
       ) : (
         <Text
           style={{

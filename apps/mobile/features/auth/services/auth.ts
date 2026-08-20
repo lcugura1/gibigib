@@ -1,5 +1,6 @@
 import type { LoginInput, RegisterInput, ResetPasswordInput } from '@gibigib/types';
 import { API_URL } from '@/shared/config';
+import { NETWORK_ERROR_MESSAGE, fetchWithTimeout } from '@/shared/http';
 
 export type AuthUser = {
   id: string;
@@ -28,11 +29,16 @@ export class ApiError extends Error {
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(undefined, NETWORK_ERROR_MESSAGE);
+  }
 
   const data = await response.json().catch(() => ({}));
 

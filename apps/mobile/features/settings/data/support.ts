@@ -9,7 +9,7 @@ export const faq: FaqItem[] = [
   {
     question: 'Kako uđem u teretanu?',
     answer:
-      'Na početnom zaslonu otvori svoju člansku iskaznicu i skeniraj prikazani barkod na ulaznom čitaču.',
+      'Na početnom zaslonu otvori svoju ulaznicu i skeniraj prikazani QR kod na ulaznom čitaču.',
   },
   {
     question: 'Kako produžim članstvo?',
@@ -17,12 +17,8 @@ export const faq: FaqItem[] = [
       'Na početnom zaslonu odaberi željeni plan i dovrši plaćanje. Novo članstvo aktivira se odmah.',
   },
   {
-    question: 'Mogu li zamrznuti članstvo?',
-    answer: 'Da — javi nam se na podršku i privremeno ćemo pauzirati tvoje članstvo.',
-  },
-  {
     question: 'Zaboravio sam lozinku, što sad?',
     answer:
-      'Na zaslonu za prijavu odaberi „Zaboravljena lozinka” i slijedi upute koje ćemo poslati na tvoju e-adresu.',
+      'Na zaslonu za prijavu odaberi „Zaboravili ste lozinku?“ i slijedi upute koje ćemo poslati na tvoju e-adresu.',
   },
 ];
