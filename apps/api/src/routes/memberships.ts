@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { purchaseMembershipSchema } from '@gibigib/types';
-import { getActiveMembership, purchaseMembership } from '../services/membership';
+import {
+  getActiveMembership,
+  pauseMembership,
+  purchaseMembership,
+  resumeMembership,
+} from '../services/membership';
 
 export async function membershipRoutes(app: FastifyInstance) {
   app.post('/', { preHandler: [app.authenticate] }, async (request, reply) => {
@@ -12,5 +17,13 @@ export async function membershipRoutes(app: FastifyInstance) {
   app.get('/active', { preHandler: [app.authenticate] }, async (request) => {
     const membership = await getActiveMembership(request.user.userId);
     return { membership };
+  });
+
+  app.post('/active/pause', { preHandler: [app.authenticate] }, async (request) => {
+    return pauseMembership(request.user.userId);
+  });
+
+  app.post('/active/resume', { preHandler: [app.authenticate] }, async (request) => {
+    return resumeMembership(request.user.userId);
   });
 }

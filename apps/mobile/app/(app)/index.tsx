@@ -15,17 +15,17 @@ import { useEntryToken } from '@/features/home/hooks/use-entry-token';
 import { useOccupancy } from '@/features/home/hooks/use-occupancy';
 import { useMembership } from '@/features/membership/context/membership';
 import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
+import { useMembershipPause } from '@/features/membership/hooks/use-membership-pause';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
-  const { membership, status: membershipStatus } = useMembership();
+  const { membership, status: membershipStatus, notice, clearNotice } = useMembership();
   const { label: membershipCountdown } = useMembershipCountdown();
-  const { qrValue } = useEntryToken(!!membership);
+  const pause = useMembershipPause();
+  const { qrValue } = useEntryToken(!!membership && !pause.paused);
   const occupancy = useOccupancy();
   const { scrollY, onScroll } = useScrollEdge();
-
-  const memberName = user?.firstName ?? "Član";
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -68,21 +68,24 @@ export default function Home() {
         </View>
 
         {membership ? (
-          qrValue ? (
-            <MembershipPass
-              value={qrValue}
-              memberName={memberName}
-              countdown={membershipCountdown}
-              onCountdownPress={() => router.push("/membership")}
-              onLockerPress={() => router.push("/locker")}
-              onPress={() =>
-                router.push({
-                  pathname: "/pass",
-                  params: { value: qrValue },
-                })
-              }
-            />
-          ) : null
+          <MembershipPass
+            value={qrValue}
+            countdown={membershipCountdown}
+            pause={pause}
+            notice={notice}
+            onNoticeShown={clearNotice}
+            onCountdownPress={() => router.push("/membership")}
+            onPausePress={() => router.push("/pause-membership")}
+            onResumePress={() => router.push("/resume-membership")}
+            onPress={() =>
+              qrValue
+                ? router.push({
+                    pathname: "/pass",
+                    params: { value: qrValue },
+                  })
+                : undefined
+            }
+          />
         ) : membershipStatus === "ready" ? (
           <MembershipCtaCard />
         ) : null}

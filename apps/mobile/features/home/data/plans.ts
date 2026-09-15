@@ -19,6 +19,7 @@ export const plans: Plan[] = [
     duration: '1 mjesec',
     price: '29,99 €',
     amount: 29.99,
+    variant: 'light',
     description:
       'Mjesečno članstvo omogućuje neograničen pristup teretani i opremi tijekom jednog mjeseca. Pogodno je za članove koji žele redovno trenirati bez dugoročne obveze.',
     benefits: ['Neograničen pristup', 'Svlačionica i tuševi', 'Besplatan Wi-Fi'],
@@ -30,7 +31,6 @@ export const plans: Plan[] = [
     duration: '1 mjesec',
     price: '39,99 €',
     amount: 39.99,
-    variant: 'light',
     description:
       'Grupni program uz pristup teretani uključuje i vođene grupne treninge prema tjednom rasporedu termina. Treninge vodi stručni trener, a namijenjeni su članovima koji redovitost lakše održavaju u grupi.',
     benefits: ['Vođeni grupni treninzi', 'Tjedni raspored termina', 'Stručni trener'],
@@ -53,7 +53,6 @@ export const plans: Plan[] = [
     name: '1 na 1 uz trenera',
     duration: 'Prilagođeni trening',
     cta: 'Detalji',
-    variant: 'light',
     description:
       'Prilagođeni trening podrazumijeva rad s odabranim trenerom prema individualnom planu i dogovorenim terminima. Cijena se određuje prema broju i trajanju treninga, pa se dogovara izravno s trenerom.',
     benefits: ['Individualni plan treninga', 'Termini po dogovoru', 'Posvećen trener'],

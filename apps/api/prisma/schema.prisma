@@ -73,12 +73,27 @@ model Membership {
 
   user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   program MembershipProgram @relation(fields: [programId], references: [id])
+  pauses  MembershipPause[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
+}
+
+model MembershipPause {
+  id           String    @id @default(cuid())
+  membershipId String
+  startedAt    DateTime
+  endsAt       DateTime
+  endedAt      DateTime?
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([membershipId, startedAt])
 }
 
 model Gym {

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 import { GlassCircle } from '@/shared/components/glass-circle';
 
@@ -9,6 +9,7 @@ type Props = {
   color?: string;
   interactive?: boolean;
   elevated?: boolean;
+  muted?: boolean;
   accessibilityLabel?: string;
 };
 
@@ -20,25 +21,67 @@ export function GlassIconButton({
   color = colors.textPrimary,
   interactive = true,
   elevated = false,
+  muted = false,
   accessibilityLabel,
 }: Props) {
+  if (interactive) {
+    return (
+      <GlassCircle diameter={DIAMETER} interactive elevated={elevated}>
+        <Pressable
+          onPress={onPress}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          style={{ width: DIAMETER, height: DIAMETER, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ionicons name={name} size={20} color={color} />
+        </Pressable>
+      </GlassCircle>
+    );
+  }
+
   return (
-    <GlassCircle diameter={DIAMETER} interactive={interactive} elevated={elevated}>
-      <Pressable
-        onPress={onPress}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        style={({ pressed }) => ({
-          width: DIAMETER,
-          height: DIAMETER,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: !interactive && pressed ? 0.5 : 1,
-        })}
-      >
-        <Ionicons name={name} size={20} color={color} />
-      </Pressable>
-    </GlassCircle>
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.94 : 1 }] })}
+    >
+      {({ pressed }) => {
+        const icon = (
+          <View
+            style={{
+              width: DIAMETER,
+              height: DIAMETER,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed ? 0.5 : 1,
+            }}
+          >
+            <Ionicons name={name} size={20} color={muted ? colors.textOnLightSecondary : color} />
+          </View>
+        );
+
+        if (muted) {
+          return (
+            <View
+              style={{
+                borderRadius: DIAMETER / 2,
+                backgroundColor: colors.surfaceOnLightMuted,
+              }}
+            >
+              {icon}
+            </View>
+          );
+        }
+
+        return (
+          <GlassCircle diameter={DIAMETER} elevated={elevated}>
+            {icon}
+          </GlassCircle>
+        );
+      }}
+    </Pressable>
   );
 }

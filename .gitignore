@@ -42,3 +42,4 @@ AGENTS.md
 RUN.txt
 
 .vscode/
+design/**/prompt.md

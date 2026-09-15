@@ -12,13 +12,36 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
+import {
+  formatDayMonth,
+  formatDays,
+  useMembershipPause,
+} from '@/features/membership/hooks/use-membership-pause';
 import { colors } from '@/shared/theme/colors';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+function InfoRow({
+  icon,
+  iconColor = colors.textSecondary,
+  children,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor?: string;
+  children: string;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Ionicons name={icon} size={16} color={iconColor} />
+      <Text style={{ color: colors.textSecondary, fontSize: 15 }}>{children}</Text>
+    </View>
+  );
+}
+
 export function MembershipExpiryScreen() {
   const router = useRouter();
   const { membership, longLabel } = useMembershipCountdown();
+  const pause = useMembershipPause();
 
   const progress = useSharedValue(0);
 
@@ -57,47 +80,55 @@ export function MembershipExpiryScreen() {
           style={[
             {
               backgroundColor: colors.surface,
-              borderRadius: 28,
+              borderRadius: 24,
               borderCurve: 'continuous',
               borderWidth: 1,
               borderColor: colors.surfaceBorder,
-              paddingVertical: 30,
-              paddingHorizontal: 36,
+              padding: 24,
               marginHorizontal: 24,
               alignItems: 'center',
-              gap: 10,
+              gap: 20,
             },
             cardStyle,
           ]}
         >
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 13,
-              fontWeight: '600',
-              letterSpacing: 0.5,
-              textTransform: 'uppercase',
-            }}
-          >
-            Aktivan plan
-          </Text>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 24,
-              fontWeight: '700',
-              textAlign: 'center',
-            }}
-          >
-            {membership.program.name}
-          </Text>
-          {longLabel ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-              <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-                Ističe za {longLabel}
-              </Text>
+          <View style={{ alignItems: 'center', gap: 4 }}>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 13,
+                fontWeight: '600',
+                letterSpacing: 0.5,
+                textTransform: 'uppercase',
+              }}
+            >
+              {pause.paused ? 'Pauziran plan' : 'Aktivan plan'}
+            </Text>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 24,
+                fontWeight: '700',
+                textAlign: 'center',
+              }}
+            >
+              {membership.program.name}
+            </Text>
+          </View>
+
+          {pause.paused ? (
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <InfoRow icon="pause-circle-outline" iconColor={colors.accent}>
+                {`Nastavlja se za ${formatDays(pause.remainingDays)}`}
+              </InfoRow>
+              {pause.endDateAfterFullPause ? (
+                <InfoRow icon="calendar-outline">
+                  {`Nakon pauze ističe ${formatDayMonth(pause.endDateAfterFullPause)}`}
+                </InfoRow>
+              ) : null}
             </View>
+          ) : longLabel ? (
+            <InfoRow icon="time-outline">{`Ističe za ${longLabel}`}</InfoRow>
           ) : null}
         </Animated.View>
       ) : null}
