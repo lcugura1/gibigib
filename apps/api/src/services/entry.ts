@@ -20,6 +20,9 @@ export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
   if (!membership) {
     throw new HttpError(403, 'Članarina nije aktivna');
   }
+  if (membership.status === 'PAUSED') {
+    throw new HttpError(403, 'Članarina je pauzirana');
+  }
 
   const now = Date.now();
   const existing = await prisma.entryToken.findFirst({
@@ -63,6 +66,9 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
   const membership = await getActiveMembership(entryToken.userId);
   if (!membership) {
     return { ok: false, message: 'Članarina nije aktivna' };
+  }
+  if (membership.status === 'PAUSED') {
+    return { ok: false, message: 'Članarina je pauzirana' };
   }
 
   const alreadyInside = await prisma.attendance.findFirst({

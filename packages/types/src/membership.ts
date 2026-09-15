@@ -19,6 +19,19 @@ export const membershipStatusSchema = z.enum(['ACTIVE', 'PAUSED', 'EXPIRED', 'CA
 
 export type MembershipStatus = z.infer<typeof membershipStatusSchema>;
 
+export const MEMBERSHIP_PAUSE_MAX_DAYS = 7;
+export const MEMBERSHIP_PAUSE_COOLDOWN_DAYS = 30;
+export const PAUSABLE_PROGRAM_SLUG: MembershipProgramSlug = 'mjesecno';
+
+export const membershipPauseDtoSchema = z.object({
+  id: z.string(),
+  startedAt: z.string(),
+  endsAt: z.string(),
+  endedAt: z.string().nullable(),
+});
+
+export type MembershipPauseDto = z.infer<typeof membershipPauseDtoSchema>;
+
 export const membershipDtoSchema = z.object({
   id: z.string(),
   status: membershipStatusSchema,
@@ -29,6 +42,8 @@ export const membershipDtoSchema = z.object({
     name: z.string(),
     durationDays: z.number().int(),
   }),
+  pausable: z.boolean(),
+  lastPause: membershipPauseDtoSchema.nullable(),
 });
 
 export type MembershipDto = z.infer<typeof membershipDtoSchema>;

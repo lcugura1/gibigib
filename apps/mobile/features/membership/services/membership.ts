@@ -11,3 +11,11 @@ export function purchaseMembership(input: PurchaseMembershipInput) {
     body: JSON.stringify(input),
   });
 }
+
+export function pauseMembership() {
+  return authedFetch<MembershipDto>('/memberships/active/pause', { method: 'POST' });
+}
+
+export function resumeMembership() {
+  return authedFetch<MembershipDto>('/memberships/active/resume', { method: 'POST' });
+}

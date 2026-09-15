@@ -66,6 +66,22 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="pause-membership"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'none',
+            contentStyle: { backgroundColor: 'transparent' },
+          }}
+        />
+        <Stack.Screen
+          name="resume-membership"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'none',
+            contentStyle: { backgroundColor: 'transparent' },
+          }}
+        />
+        <Stack.Screen
           name="locker"
           options={{
             presentation: 'transparentModal',

@@ -6,6 +6,7 @@ export const colors = {
   textSecondary: '#8E8E93',
   textOnLight: '#000000',
   textOnLightSecondary: '#6B6B70',
+  surfaceOnLightMuted: '#EFEFF2',
   border: '#3A3A3A',
   borderFocused: '#FFFFFF',
   buttonPrimaryFrom: '#FFFFFF',

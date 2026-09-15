@@ -13,7 +13,7 @@ export function formatTimeLeft(endDate: string, now: number): string | null {
   return `${Math.max(1, Math.floor(diff / MINUTE_MS))}m`;
 }
 
-function pluralHr(n: number, one: string, few: string, many: string): string {
+export function pluralHr(n: number, one: string, few: string, many: string): string {
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return one;
