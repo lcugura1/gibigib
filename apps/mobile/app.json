@@ -28,7 +28,8 @@
       "expo-router",
       "expo-image",
       "expo-secure-store",
-      "expo-maps"
+      "expo-maps",
+      "./plugins/with-pod-deployment-target"
     ],
     "experiments": {
       "typedRoutes": true
