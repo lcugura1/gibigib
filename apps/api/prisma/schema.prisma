@@ -157,19 +157,7 @@ model TrainingTag {
   @@index([userId])
 }
 
-enum LockerStatus {
-  LOCKED
-  UNLOCKED
-}
 
-model Locker {
-  id     String       @id @default(cuid())
-  number Int          @unique
-  status LockerStatus @default(UNLOCKED)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model News {
   id          String    @id @default(cuid())

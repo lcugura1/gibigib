@@ -22,4 +22,3 @@ mobile application available on iOS and Android.
 | FZ06 | Attendance tracking |
 | FZ07 | News and events |
 | FZ08 | Gym info (location, hours, contact) |
-| FZ09 | Digital locker access | 

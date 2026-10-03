@@ -45,13 +45,5 @@ for (const program of programs) {
   });
 }
 
-for (const number of [1, 2]) {
-  await prisma.locker.upsert({
-    where: { number },
-    update: {},
-    create: { number },
-  });
-}
-
-console.log('Seed done: gym, programs, lockers');
+console.log('Seed done: gym, programs');
 await prisma.$disconnect();

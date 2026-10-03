@@ -29,3 +29,9 @@ export const occupancyDtoSchema = z.object({
 });
 
 export type OccupancyDto = z.infer<typeof occupancyDtoSchema>;
+
+export const deviceCommandsDtoSchema = z.object({
+  door: z.enum(['open', 'idle']),
+});
+
+export type DeviceCommandsDto = z.infer<typeof deviceCommandsDtoSchema>;
