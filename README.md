@@ -22,3 +22,94 @@ mobile application available on iOS and Android.
 | FZ06 | Attendance tracking |
 | FZ07 | News and events |
 | FZ08 | Gym info (location, hours, contact) |
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 22 or newer
+- pnpm 11 (`npm install -g pnpm@11`)
+- Docker Desktop (runs the PostgreSQL database)
+- For iOS: macOS with Xcode and CocoaPods
+- For Android: Android Studio with an emulator or a device with USB debugging
+
+### 1. Install dependencies
+
+```sh
+git clone https://github.com/lcugura1/gibigib.git
+cd gibigib
+pnpm install
+```
+
+`pnpm install` also generates the Prisma client.
+
+### 2. Configure the API
+
+```sh
+cp apps/api/.env.example apps/api/.env
+```
+
+In `apps/api/.env`:
+
+- set `POSTGRES_PASSWORD` and use the same password in `DATABASE_URL`
+- set `JWT_SECRET_KEY` to a random value of at least 32 characters, e.g. the output of `openssl rand -base64 48`
+
+### 3. Start the database
+
+```sh
+cd apps/api
+docker compose up -d
+cd ../..
+```
+
+### 4. Create the schema and seed data
+
+```sh
+pnpm --filter api db:deploy
+pnpm --filter api db:seed
+```
+
+The seed creates the gym and the membership programs. It creates no users; register an account in the app.
+
+### 5. Run the API
+
+```sh
+pnpm dev:api
+```
+
+`http://localhost:3000/health` should return `"database": "up"`. If macOS asks whether Node may accept incoming connections, allow it, otherwise the phone cannot reach the API.
+
+### 6. Run the mobile app
+
+The app uses a development build (`expo-dev-client`), so it has to be built and installed once per device:
+
+```sh
+cd apps/mobile
+npx expo run:ios --device       # iPhone
+npx expo run:android --device   # Android
+```
+
+For a physical iPhone, the first build also needs:
+
+1. Open `apps/mobile/ios/GibiGib.xcworkspace` in Xcode, select the GibiGib target and choose your team under Signing & Capabilities.
+2. On the iPhone, enable Developer Mode (Settings → Privacy & Security).
+3. After installing, trust the developer certificate (Settings → General → VPN & Device Management).
+
+After the app is installed, start only the dev server:
+
+```sh
+pnpm dev:mobile
+```
+
+and open the installed GibiGib app on the device.
+
+The phone and the computer must be on the same Wi-Fi network. The app reaches the API on the dev server's host at port 3000. To point it elsewhere, set `EXPO_PUBLIC_API_URL` in `apps/mobile/.env.local`.
+
+### Useful commands
+
+| Command | Description |
+|---|---|
+| `pnpm typecheck` | Type-check all packages |
+| `pnpm --filter api db:migrate` | Create and apply a new migration after a schema change |
+| `pnpm --filter api db:studio` | Browse the database in Prisma Studio |
+| `http://localhost:3000/scanner/` | Web QR scanner for testing entry (camera works on `localhost` only) |
