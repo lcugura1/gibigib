@@ -12,4 +12,3 @@ export * from './auth';
 export * from './attendance';
 export * from './membership';
 export * from './entry';
-export * from './locker';

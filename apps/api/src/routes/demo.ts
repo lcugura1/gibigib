@@ -10,12 +10,10 @@ export async function demoRoutes(app: FastifyInstance) {
       where: { checkInAt: { gte: startOfDay } },
     });
     const tokens = await prisma.entryToken.deleteMany({ where: { usedAt: null } });
-    const lockers = await prisma.locker.updateMany({ data: { status: 'UNLOCKED' } });
 
     return {
       attendanceDeleted: attendance.count,
       tokensDeleted: tokens.count,
-      lockersReset: lockers.count,
     };
   });
 }
