@@ -133,7 +133,10 @@ export async function requestPasswordReset(email: string) {
     },
   });
 
-  await sendPasswordResetEmail(email, code);
+  // Sent in the background so the response time does not reveal whether the account exists.
+  sendPasswordResetEmail(email, code, RESET_TTL_MS / 60_000).catch((err) => {
+    console.error('[email] password reset email failed:', err instanceof Error ? err.message : err);
+  });
 }
 
 export async function resetPassword(input: ResetPasswordInput) {

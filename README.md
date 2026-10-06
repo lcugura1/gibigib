@@ -54,13 +54,15 @@ In `apps/api/.env`:
 - set `POSTGRES_PASSWORD` and use the same password in `DATABASE_URL`
 - set `JWT_SECRET_KEY` to a random value of at least 32 characters, e.g. the output of `openssl rand -base64 48`
 
-### 3. Start the database
+### 3. Start the database and the mail catcher
 
 ```sh
 cd apps/api
 docker compose up -d
 cd ../..
 ```
+
+This starts PostgreSQL and [Mailpit](https://mailpit.axllent.org/), which catches the email the API sends (password reset codes). Read it at `http://localhost:8025`. In production, point the `SMTP_*` variables in `.env` at a real mail provider.
 
 ### 4. Create the schema and seed data
 

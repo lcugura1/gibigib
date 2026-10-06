@@ -6,6 +6,7 @@ import { prisma } from './utils/prisma';
 import { env } from './config/env';
 import deviceAuthPlugin from './plugins/device-auth';
 import jwtPlugin from './plugins/jwt';
+import rateLimitPlugin from './plugins/rate-limit';
 import { authRoutes } from './routes/auth';
 import { attendanceRoutes } from './routes/attendance';
 import { demoRoutes } from './routes/demo';
@@ -21,12 +22,13 @@ const host = env.HOST ?? '0.0.0.0';
 
 const app = Fastify({
   logger: true,
-  bodyLimit: 6 * 1024 * 1024,
+  trustProxy: env.TRUST_PROXY,
 });
 
 app.setErrorHandler(errorHandler);
 app.decorate('prisma', prisma);
 
+await app.register(rateLimitPlugin);
 await app.register(jwtPlugin);
 await app.register(deviceAuthPlugin);
 await app.register(authRoutes, { prefix: '/auth' });

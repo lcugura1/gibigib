@@ -14,8 +14,15 @@ const schema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number(),
   PORT: z.coerce.number(),
   HOST: z.string(),
+  TRUST_PROXY: z.stringbool().default(false),
   DEMO_RESET: z.string().optional(),
   ENTRY_ANTI_PASSBACK_MINUTES: z.coerce.number().int().min(0).default(30),
+  SMTP_HOST: z.string().min(1),
+  SMTP_PORT: z.coerce.number().int().positive(),
+  SMTP_SECURE: z.stringbool().default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().min(1),
 });
 
 const parsed = schema.safeParse(process.env);

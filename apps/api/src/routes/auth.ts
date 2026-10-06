@@ -6,6 +6,7 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "@gibigib/types";
+import { byEmail, byIp, limitRequests } from "../plugins/rate-limit";
 import {
   getUserById,
   issueRefreshToken,
@@ -18,7 +19,14 @@ import {
 } from "../services/auth";
 
 export async function authRoutes(app: FastifyInstance) {
-  app.post("/register", async (request, reply) => {
+  const limitLoginPerIp = limitRequests(app, "login-ip", { max: 50, timeWindow: "15 minutes", key: byIp });
+  const limitLoginPerEmail = limitRequests(app, "login-email", { max: 10, timeWindow: "15 minutes", key: byEmail });
+  const limitRegister = limitRequests(app, "register", { max: 10, timeWindow: "1 hour", key: byIp });
+  const limitForgotPerIp = limitRequests(app, "forgot-ip", { max: 20, timeWindow: "1 hour", key: byIp });
+  const limitForgotPerEmail = limitRequests(app, "forgot-email", { max: 3, timeWindow: "1 hour", key: byEmail });
+  const limitReset = limitRequests(app, "reset", { max: 20, timeWindow: "15 minutes", key: byIp });
+
+  app.post("/register", { preHandler: [limitRegister] }, async (request, reply) => {
     const input = registerSchema.parse(request.body);
     const user = await registerUser(input);
     const accessToken = await reply.jwtSign({
@@ -29,7 +37,7 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.code(201).send({ user, accessToken, refreshToken });
   });
 
-  app.post("/login", async (request, reply) => {
+  app.post("/login", { preHandler: [limitLoginPerIp, limitLoginPerEmail] }, async (request, reply) => {
     const input = loginSchema.parse(request.body);
     const user = await loginUser(input);
     const accessToken = await reply.jwtSign({
@@ -57,13 +65,17 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
-  app.post("/forgot-password", async (request, reply) => {
-    const input = forgotPasswordSchema.parse(request.body);
-    await requestPasswordReset(input.email);
-    return reply.send({ message: "Ako račun postoji, poslali smo upute na e-adresu" });
-  });
+  app.post(
+    "/forgot-password",
+    { preHandler: [limitForgotPerIp, limitForgotPerEmail] },
+    async (request, reply) => {
+      const input = forgotPasswordSchema.parse(request.body);
+      await requestPasswordReset(input.email);
+      return reply.send({ message: "Ako račun postoji, poslali smo upute na e-adresu" });
+    },
+  );
 
-  app.post("/reset-password", async (request, reply) => {
+  app.post("/reset-password", { preHandler: [limitReset] }, async (request, reply) => {
     const input = resetPasswordSchema.parse(request.body);
     await resetPassword(input);
     return reply.send({ message: "Lozinka je promijenjena" });
