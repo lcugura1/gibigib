@@ -1,36 +1,57 @@
+import { randomBytes } from "node:crypto";
 import type { LoginInput, RegisterInput, ResetPasswordInput } from "@gibigib/types";
+import { Prisma } from "../generated/prisma/client";
 import { prisma } from "../utils/prisma";
 import { hashPassword, verifyPassword } from "../utils/hash";
-import { generateOtp, generateRefreshToken, hashToken } from "../utils/tokens";
+import { generateOtp, generateRefreshToken, hashesMatch, hashToken } from "../utils/tokens";
 import { env } from "../config/env";
 import { HttpError } from '../utils/errors';
 import { sendPasswordResetEmail } from './email';
 
 const RESET_TTL_MS = 15 * 60 * 1000;
+const RESET_MAX_ATTEMPTS = 5;
+const RESET_RESEND_COOLDOWN_MS = 60 * 1000;
+const INVALID_RESET_CODE = 'Neispravan ili istekao kod. Ako si ga više puta krivo upisao, zatraži novi.';
+
+// Verifying against a throwaway hash keeps login equally slow whether or not the email exists.
+const dummyPasswordHash = hashPassword(randomBytes(16).toString('hex'));
 
 export async function registerUser(input: RegisterInput) {
   const passwordHash = await hashPassword(input.password);
 
-  return prisma.user.create({
-    data: {
-      email: input.email,
-      passwordHash,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      birthDate: new Date(`${input.birthDate}T00:00:00.000Z`),
-      address: input.address,
-      oib: input.oib,
-    },
-    omit: { passwordHash: true },
-  });
+  try {
+    return await prisma.user.create({
+      data: {
+        email: input.email,
+        passwordHash,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        birthDate: new Date(`${input.birthDate}T00:00:00.000Z`),
+        address: input.address,
+        oib: input.oib,
+      },
+      omit: { passwordHash: true },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      throw new HttpError(
+        409,
+        'Registracija s tim podacima nije moguća. Ako već imaš račun, prijavi se ili obnovi lozinku.',
+      );
+    }
+    throw err;
+  }
 }
 
 export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const passwordMatches = await verifyPassword(
+    input.password,
+    user?.passwordHash ?? (await dummyPasswordHash),
+  );
 
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+  if (!user || !passwordMatches) {
     throw new HttpError(401, 'Neispravni podaci za prijavu');
-
   }
 
   const { passwordHash, ...safeUser } = user;
@@ -88,8 +109,17 @@ export async function getUserById(userId: string) {
 
 export async function requestPasswordReset(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
+  // The route answers the same either way, so it does not reveal who has an account.
   if (!user) {
-    throw new HttpError(404, 'Korisnik s tom e-adresom ne postoji');
+    return;
+  }
+
+  // Keeps the current code valid when new ones are requested in a loop to lock the member out.
+  const recentCode = await prisma.passwordResetToken.findFirst({
+    where: { userId: user.id, createdAt: { gt: new Date(Date.now() - RESET_RESEND_COOLDOWN_MS) } },
+  });
+  if (recentCode) {
+    return;
   }
 
   await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
@@ -112,8 +142,21 @@ export async function resetPassword(input: ResetPasswordInput) {
     ? await prisma.passwordResetToken.findFirst({ where: { userId: user.id } })
     : null;
 
-  if (!user || !token || token.expiresAt < new Date() || token.codeHash !== hashToken(input.code)) {
-    throw new HttpError(400, 'Neispravan ili istekao kod');
+  if (!user || !token || token.expiresAt < new Date()) {
+    throw new HttpError(400, INVALID_RESET_CODE);
+  }
+
+  // Claims an attempt before comparing, so parallel guesses cannot go past the limit.
+  const claimed = await prisma.passwordResetToken.updateMany({
+    where: { id: token.id, attempts: { lt: RESET_MAX_ATTEMPTS } },
+    data: { attempts: { increment: 1 } },
+  });
+  if (claimed.count === 0) {
+    await prisma.passwordResetToken.deleteMany({ where: { id: token.id } });
+    throw new HttpError(400, INVALID_RESET_CODE);
+  }
+  if (!hashesMatch(token.codeHash, hashToken(input.code))) {
+    throw new HttpError(400, INVALID_RESET_CODE);
   }
 
   await prisma.user.update({

@@ -53,13 +53,9 @@ export function ForgotPasswordScreen() {
       await forgotPassword(data.email);
       router.push({ pathname: '/reset-password', params: { email: data.email } });
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        setErrors({ email: error.message });
-      } else {
-        setFormError(
-          error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
-        );
-      }
+      setFormError(
+        error instanceof ApiError ? error.message : 'Nije moguće povezati se s poslužiteljem',
+      );
     } finally {
       setSubmitting(false);
     }

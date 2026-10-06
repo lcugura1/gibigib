@@ -252,6 +252,7 @@ model RefreshToken {
 model PasswordResetToken {
   id        String   @id @default(cuid())
   codeHash  String
+  attempts  Int      @default(0)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
