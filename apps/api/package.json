@@ -13,7 +13,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "device": "tsx scripts/device.ts"
   },
   "dependencies": {
     "@fastify/jwt": "^10.1.0",

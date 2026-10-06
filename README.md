@@ -79,7 +79,17 @@ pnpm dev:api
 
 `http://localhost:3000/health` should return `"database": "up"`. If macOS asks whether Node may accept incoming connections, allow it, otherwise the phone cannot reach the API.
 
-### 6. Run the mobile app
+### 6. Register the entry scanner
+
+The scanner and the door controller authenticate with a device key. Create one:
+
+```sh
+pnpm --filter @gibigib/api device create --name "Varaždin – main entrance"
+```
+
+The key is printed once. Open `http://localhost:3000/scanner/` and paste it when asked; the page remembers it. A door controller sends the same kind of key as `Authorization: Device <key>` when it polls `GET /device/commands`. `device list` shows all devices and `device revoke --id <id>` disables a lost one.
+
+### 7. Run the mobile app
 
 The app uses a development build (`expo-dev-client`), so it has to be built and installed once per device:
 
@@ -112,4 +122,5 @@ The phone and the computer must be on the same Wi-Fi network. The app reaches th
 | `pnpm typecheck` | Type-check all packages |
 | `pnpm --filter api db:migrate` | Create and apply a new migration after a schema change |
 | `pnpm --filter api db:studio` | Browse the database in Prisma Studio |
-| `http://localhost:3000/scanner/` | Web QR scanner for testing entry (camera works on `localhost` only) |
+| `pnpm --filter api device create --name "<name>"` | Create a scanner or door device and print its key |
+| `http://localhost:3000/scanner/` | Web QR scanner for testing entry (needs a device key; camera works on `localhost` only) |

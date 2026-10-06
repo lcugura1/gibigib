@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { entryScanSchema } from '@gibigib/types';
+import { requireDevice } from '../plugins/device-auth';
 import { issueEntryToken, scanEntryCode } from '../services/entry';
 
 export async function entryRoutes(app: FastifyInstance) {
@@ -7,8 +8,8 @@ export async function entryRoutes(app: FastifyInstance) {
     return issueEntryToken(request.user.userId);
   });
 
-  app.post('/scan', async (request) => {
+  app.post('/scan', { preHandler: [app.authenticateDevice] }, async (request) => {
     const { code } = entryScanSchema.parse(request.body);
-    return scanEntryCode(code);
+    return scanEntryCode(code, requireDevice(request));
   });
 }

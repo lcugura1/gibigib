@@ -44,34 +44,106 @@
     #status.ok { background: #103d24; border-color: #22c55e; color: #4ade80; }
     #status.fail { background: #421418; border-color: #ef4444; color: #f87171; }
     #status.error { background: #422a10; border-color: #f59e0b; color: #fbbf24; }
+    #key-form {
+      width: min(640px, 90vw);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #key-form label { font-size: 18px; font-weight: 600; }
+    #key-form input {
+      font: inherit;
+      font-size: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #2c2c2e;
+      background: #1c1c1e;
+      color: #f5f5f7;
+    }
+    #key-form button {
+      font: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 14px 16px;
+      border: 0;
+      border-radius: 14px;
+      background: #f5f5f7;
+      color: #0b0b0f;
+      cursor: pointer;
+    }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
   <h1>GibiGib <span>— Skener ulaza</span></h1>
   <div class="camera-frame"><video id="camera" playsinline muted></video></div>
   <div id="status">Pokrećem kameru…</div>
+  <form id="key-form" hidden>
+    <label for="device-key">Ključ uređaja</label>
+    <input id="device-key" type="password" autocomplete="off" required>
+    <button type="submit">Spremi ključ</button>
+  </form>
 
   <script src="./jsqr.js"></script>
   <script>
     const IDLE_TEXT = 'Uperi QR kod prema kameri';
     const SAME_CODE_COOLDOWN_MS = 5000;
     const RESUME_DELAY_MS = 2500;
+    const KEY_STORAGE = 'gibigib.deviceKey';
 
     const video = document.getElementById('camera');
     const status = document.getElementById('status');
+    const keyForm = document.getElementById('key-form');
+    const keyInput = document.getElementById('device-key');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     let paused = false;
+    let cameraStarted = false;
     let lastCode = '';
     let lastCodeAt = 0;
+    let deviceKey = readKey();
+
+    function readKey() {
+      try { return localStorage.getItem(KEY_STORAGE); } catch { return null; }
+    }
+
+    function storeKey(key) {
+      try { key ? localStorage.setItem(KEY_STORAGE, key) : localStorage.removeItem(KEY_STORAGE); } catch {}
+    }
 
     function setStatus(kind, text) {
       status.className = kind;
       status.textContent = text;
     }
 
+    // The scanner only works with a key created by `pnpm --filter @gibigib/api device create`.
+    function askForKey(message) {
+      paused = true;
+      deviceKey = null;
+      storeKey(null);
+      setStatus(message ? 'error' : '', message || 'Unesi ključ uređaja za ovaj skener.');
+      keyForm.hidden = false;
+      keyInput.value = '';
+      keyInput.focus();
+    }
+
+    keyForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      deviceKey = keyInput.value.trim();
+      if (!deviceKey) return;
+      storeKey(deviceKey);
+      keyForm.hidden = true;
+      paused = false;
+      cameraStarted ? setStatus('', IDLE_TEXT) : start();
+    });
+
     async function start() {
+      if (!deviceKey) {
+        askForKey();
+        return;
+      }
+      cameraStarted = true;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 1280 } },
@@ -109,9 +181,13 @@
       try {
         const response = await fetch('/entry/scan', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Device ${deviceKey}` },
           body: JSON.stringify({ code }),
         });
+        if (response.status === 401) {
+          askForKey('Ključ uređaja nije prihvaćen. Unesi ispravan ključ.');
+          return;
+        }
         const data = await response.json();
         if (data.ok) {
           setStatus('ok', data.memberName ? `${data.message} — ${data.memberName}!` : data.message);

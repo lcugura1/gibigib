@@ -3,9 +3,10 @@ import type { EntryScanResult, EntryTokenDto, OccupancyDto } from '@gibigib/type
 import { ENTRY_QR_PREFIX } from '@gibigib/types';
 import { env } from '../config/env';
 import type { EntryOutcome } from '../generated/prisma/client';
-import { queueDoorOpen } from '../utils/device-state';
+import type { AuthenticatedDevice } from '../plugins/device-auth';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
+import { queueDoorOpen } from './door';
 import { getActiveMembership } from './membership';
 
 const TOKEN_TTL_MS = 45_000;
@@ -57,15 +58,19 @@ export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
 
 async function deny(
   outcome: Exclude<EntryOutcome, 'GRANTED'>,
+  device: AuthenticatedDevice,
   entryToken?: { id: string; userId: string },
 ): Promise<EntryScanResult> {
   await prisma.entryEvent.create({
-    data: { outcome, userId: entryToken?.userId, entryTokenId: entryToken?.id },
+    data: { outcome, deviceId: device.id, userId: entryToken?.userId, entryTokenId: entryToken?.id },
   });
   return { ok: false, message: DENIED_MESSAGES[outcome] };
 }
 
-export async function scanEntryCode(code: string): Promise<EntryScanResult> {
+export async function scanEntryCode(
+  code: string,
+  device: AuthenticatedDevice,
+): Promise<EntryScanResult> {
   const raw = code.startsWith(ENTRY_QR_PREFIX) ? code.slice(ENTRY_QR_PREFIX.length) : code;
 
   const entryToken = await prisma.entryToken.findUnique({
@@ -74,21 +79,21 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
   });
 
   if (!entryToken) {
-    return deny('INVALID_TOKEN');
+    return deny('INVALID_TOKEN', device);
   }
   if (entryToken.usedAt) {
-    return deny('TOKEN_USED', entryToken);
+    return deny('TOKEN_USED', device, entryToken);
   }
   if (entryToken.expiresAt.getTime() <= Date.now()) {
-    return deny('TOKEN_EXPIRED', entryToken);
+    return deny('TOKEN_EXPIRED', device, entryToken);
   }
 
   const membership = await getActiveMembership(entryToken.userId);
   if (!membership) {
-    return deny('NO_MEMBERSHIP', entryToken);
+    return deny('NO_MEMBERSHIP', device, entryToken);
   }
   if (membership.status === 'PAUSED') {
-    return deny('MEMBERSHIP_PAUSED', entryToken);
+    return deny('MEMBERSHIP_PAUSED', device, entryToken);
   }
 
   const outcome = await prisma.$transaction(async (tx): Promise<EntryOutcome> => {
@@ -122,23 +127,27 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
       where: { userId: entryToken.userId, checkInAt: { gte: startOfToday() } },
     });
     if (!checkedInToday) {
-      const gym = await tx.gym.findFirstOrThrow();
       await tx.attendance.create({
-        data: { userId: entryToken.userId, gymId: gym.id, entryTokenId: entryToken.id },
+        data: { userId: entryToken.userId, gymId: device.gymId, entryTokenId: entryToken.id },
       });
     }
 
     await tx.entryEvent.create({
-      data: { outcome: 'GRANTED', userId: entryToken.userId, entryTokenId: entryToken.id },
+      data: {
+        outcome: 'GRANTED',
+        deviceId: device.id,
+        userId: entryToken.userId,
+        entryTokenId: entryToken.id,
+      },
     });
     return 'GRANTED';
   });
 
   if (outcome !== 'GRANTED') {
-    return deny(outcome, entryToken);
+    return deny(outcome, device, entryToken);
   }
 
-  queueDoorOpen();
+  await queueDoorOpen(device.gymId);
 
   return {
     ok: true,

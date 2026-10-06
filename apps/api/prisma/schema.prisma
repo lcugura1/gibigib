@@ -105,10 +105,45 @@ model Gym {
   workingHours String?
   capacity     Int
 
-  attendances Attendance[]
+  attendances  Attendance[]
+  devices      Device[]
+  doorCommands DoorCommand[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Scanner or door controller at a gym. It authenticates with a key whose hash is stored here.
+model Device {
+  id        String    @id @default(cuid())
+  name      String
+  gymId     String
+  keyHash   String    @unique
+  revokedAt DateTime?
+
+  gym                  Gym           @relation(fields: [gymId], references: [id])
+  entryEvents          EntryEvent[]
+  consumedDoorCommands DoorCommand[]
+
+  createdAt DateTime @default(now())
+
+  @@index([gymId])
+}
+
+// Door opening queued by a granted scan and picked up once by a door device of the same gym.
+model DoorCommand {
+  id                 String    @id @default(cuid())
+  gymId              String
+  expiresAt          DateTime
+  consumedAt         DateTime?
+  consumedByDeviceId String?
+
+  gym        Gym     @relation(fields: [gymId], references: [id])
+  consumedBy Device? @relation(fields: [consumedByDeviceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([gymId, consumedAt, expiresAt])
 }
 
 model EntryToken {
@@ -142,11 +177,13 @@ model EntryEvent {
   id           String       @id @default(cuid())
   userId       String?
   entryTokenId String?
+  deviceId     String?
   outcome      EntryOutcome
   createdAt    DateTime     @default(now())
 
   user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   entryToken EntryToken? @relation(fields: [entryTokenId], references: [id], onDelete: SetNull)
+  device     Device?     @relation(fields: [deviceId], references: [id], onDelete: SetNull)
 
   @@index([userId, outcome, createdAt])
   @@index([createdAt])

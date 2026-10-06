@@ -4,6 +4,7 @@ import fastifyStatic from '@fastify/static';
 import type { ApiHealthResponse } from '@gibigib/types';
 import { prisma } from './utils/prisma';
 import { env } from './config/env';
+import deviceAuthPlugin from './plugins/device-auth';
 import jwtPlugin from './plugins/jwt';
 import { authRoutes } from './routes/auth';
 import { attendanceRoutes } from './routes/attendance';
@@ -27,6 +28,7 @@ app.setErrorHandler(errorHandler);
 app.decorate('prisma', prisma);
 
 await app.register(jwtPlugin);
+await app.register(deviceAuthPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
 await app.register(attendanceRoutes, { prefix: '/attendance' });
 await app.register(membershipRoutes, { prefix: '/memberships' });
