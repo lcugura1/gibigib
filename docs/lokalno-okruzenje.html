@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lokalno okruženje i testiranje · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Uvod</p>
+      <h1>Lokalno okruženje i testiranje</h1>
+      <p class="lede">Kako podići API s bazom i mail catcherom, registrirati uređaje i ručno provjeriti sigurnosne popravke.</p>
+      <p class="meta">Provjereno na Windows 11, Node 22.17, Docker 28, 2026-10-06</p>
+
+      <h2 id="preduvjeti">Preduvjeti</h2>
+      <ul>
+        <li>Node.js 22 ili noviji.</li>
+        <li>pnpm 11. Ako <code>pnpm</code> nije instaliran globalno, radi i <code>corepack pnpm …</code> (corepack dolazi s Node.js i koristi verziju iz <code>package.json</code>).</li>
+        <li>Docker Desktop (pokrenut).</li>
+      </ul>
+      <div class="callout warn">Skripta <code>pnpm typecheck</code> u korijenu iznutra poziva <code>pnpm</code>. Bez globalnog pnpm-a pokreni <code>corepack pnpm -r typecheck</code>.</div>
+
+      <h2 id="postavljanje">Postavljanje</h2>
+<pre><code>corepack pnpm install
+cp apps/api/.env.example apps/api/.env     # postavi POSTGRES_PASSWORD, DATABASE_URL i JWT_SECRET_KEY
+
+cd apps/api
+docker compose up -d                       # PostgreSQL + Mailpit
+corepack pnpm exec prisma migrate deploy
+corepack pnpm exec prisma db seed
+
+corepack pnpm device create --kind scanner --name "Varaždin – skener (dev)"
+corepack pnpm device create --kind door    --name "Varaždin – vrata (dev)"
+
+corepack pnpm dev                          # API na http://localhost:3000</code></pre>
+      <ul>
+        <li><code>JWT_SECRET_KEY</code>: <code>openssl rand -base64 48</code>. API se neće pokrenuti s praznom, kratkom ili "placeholder" vrijednošću.</li>
+        <li>Ključ uređaja ispisuje se samo jednom. Ako se izgubi: <code>device revoke --id …</code> pa novi <code>device create</code>.</li>
+        <li>Skener: <code>http://localhost:3000/scanner/</code>, pri prvom otvaranju traži ključ skenera.</li>
+        <li>E-mailovi (kodovi za reset lozinke): <code>http://localhost:8025</code> (Mailpit).</li>
+        <li>Nakon promjene sheme: <code>prisma migrate dev --name …</code>, pa <code>prisma generate</code>. Prisma 7 klijent se ne generira sam.</li>
+      </ul>
+
+      <h2 id="varijable">Nove varijable okruženja</h2>
+      <table>
+        <thead><tr><th>Varijabla</th><th>Zadano</th><th>Značenje</th></tr></thead>
+        <tbody>
+          <tr><td><code>ENTRY_ANTI_PASSBACK_MINUTES</code></td><td><code>30</code></td><td>Koliko minuta nakon ulaza isti član ne može ponovno ući. <code>0</code> isključuje.</td></tr>
+          <tr><td><code>TRUST_PROXY</code></td><td><code>false</code></td><td>Iza reverse proxyja: broj proxyja (obično <code>1</code>) ili njihove adrese/CIDR. <code>true</code> vjeruje svakom <code>X-Forwarded-For</code> i koristi se samo za lokalno testiranje.</td></tr>
+          <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_SECURE</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>MAIL_FROM</code></td><td>Mailpit na <code>localhost:1025</code></td><td>Slanje e-maila. Obavezno; u produkciji pravi pružatelj.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="rucna-provjera">Ručna provjera popravaka</h2>
+      <p>Svaki scenarij ispod pokrenut je 2026-10-06 skriptama protiv lokalnog API-ja i svi su prošli. Skripte zasad nisu u repozitoriju (vidi <a href="otvorena-pitanja.html">Otvorena pitanja</a>). Za scenarije s različitim IP adresama API je radio s <code>TRUST_PROXY=true</code>, a testovi su slali <code>X-Forwarded-For</code>.</p>
+      <table>
+        <thead><tr><th>#</th><th>Scenarij</th><th>Očekivano</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Isti QR skeniran dvaput</td><td>Prvi put ulaz, drugi put "Ulaznica je već iskorištena"</td></tr>
+          <tr><td>1</td><td>5 istovremenih skeniranja istog koda</td><td>Točno jedan ulaz</td></tr>
+          <tr><td>1</td><td>Novi QR odmah nakon ulaza</td><td>Odbijeno (anti-passback)</td></tr>
+          <tr><td>2</td><td>Skeniranje bez ključa, s krivim ključem, s JWT-om člana, s opozvanim ključem, s ključem vrata</td><td>401, 401, 401, 401, 403</td></tr>
+          <tr><td>3</td><td>Polling vrata bez ključa / ključem skenera</td><td>401 / 403</td></tr>
+          <tr><td>3</td><td>Jedan ulaz, 4 istovremena pollinga vrata</td><td>Točno jedan <code>open</code></td></tr>
+          <tr><td>4</td><td>4 kriva koda pa ispravan</td><td>Lozinka promijenjena</td></tr>
+          <tr><td>4</td><td>20 istovremenih krivih kodova pa ispravan</td><td>Ispravan više ne radi</td></tr>
+          <tr><td>4</td><td>Drugi zahtjev za kod unutar 60 s</td><td>Prvi kod i dalje vrijedi, drugi e-mail se ne šalje</td></tr>
+          <tr><td>5</td><td>Zaboravljena lozinka za nepostojeći e-mail</td><td>200, isti odgovor kao za postojeći</td></tr>
+          <tr><td>5</td><td>Vrijeme prijave za postojeći i nepostojeći e-mail</td><td>Podjednako (oko 12–16 ms lokalno)</td></tr>
+          <tr><td>6</td><td>Prazna, kratka i stara primjer-tajna</td><td>API se ne pokreće</td></tr>
+          <tr><td>7</td><td>11 prijava za isti e-mail s različitih IP-ova</td><td>11. je 429</td></tr>
+          <tr><td>7</td><td>51 prijava s istog IP-a za različite e-mailove</td><td>51. je 429</td></tr>
+          <tr><td>7</td><td>2 MB tijelo na loginu / 3 MB avatar</td><td>413 / prihvaćeno</td></tr>
+          <tr><td>7</td><td>Kod za reset u logu API-ja</td><td>Nema ga; stiže u Mailpit</td></tr>
+          <tr><td>7</td><td>Prijava korisnika sa starim, slabijim argon2 hashem</td><td>Hash se nadogradi na <code>m=19456,t=2,p=1</code></td></tr>
+        </tbody>
+      </table>
+      <p>Uz to: sve migracije primijenjene na praznu bazu, seed prošao, <code>prisma migrate diff</code> ne pokazuje razliku između migracija i sheme, a <code>corepack pnpm -r typecheck</code> prolazi za sva tri paketa.</p>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odluke · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Rad na projektu</p>
+      <h1>Odluke</h1>
+      <p class="lede">Svaka važnija odluka: zašto je donesena, što smo odbacili i što iz nje slijedi.</p>
+      <p class="meta">Odluke se ne brišu. Promijenjena odluka dobiva status <span class="badge bad">Zamijenjeno</span> i poveznicu na novu.</p>
+
+      <h2 id="dokumentacija">Dokumentacija</h2>
+
+      <section class="card decision" id="o-001">
+        <h3>O-001 · Dokumentacija kao HTML u <code>docs/</code> <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Odluke i razlozi iz pregleda koda nisu bili zapisani nigdje uz kod. Treba ih čuvati uz kod, čitljivo i bez dodatnih alata.</p></dd>
+          <dt>Odluka</dt><dd><p>Statične HTML stranice u <code>docs/</code>, s bočnim izbornikom poglavlja. Izbornik se gradi iz jednog popisa u <code>assets/docs.js</code>. Bez build koraka i bez vanjskih ovisnosti.</p></dd>
+          <dt>Razlozi</dt><dd><p>Otvara se dvoklikom, radi bez interneta, pregled po poglavljima je odmah tu. Markdown bi tražio alat za navigaciju po poglavljima, a generatori dokumentacije (Docusaurus, VitePress) dodaju ovisnosti i build za projekt ove veličine.</p></dd>
+          <dt>Posljedice</dt><dd><p>Novo poglavlje znači kopirati <code>_predlozak.html</code> i dodati jedan redak u <code>docs.js</code>. Bez JavaScripta izbornik se ne prikazuje, ali sadržaj ostaje čitljiv.</p></dd>
+        </dl>
+      </section>
+
+      <h2 id="ulaz">Ulaz u teretanu</h2>
+
+      <section class="card decision" id="o-002">
+        <h3>O-002 · QR kod je jednokratan i vrijedi 45 sekundi <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Iskorišteni QR kod vrijedio je do ponoći i bez provjere isteka, pa je screenshot nakon ulaza puštao bilo koga cijeli dan (nalaz #1).</p></dd>
+          <dt>Odluka</dt><dd><p>Token se troši uvjetnim upisom (<code>updateMany</code> gdje je <code>usedAt</code> prazan i token nije istekao) i provjerava se broj promijenjenih redaka. Trajanje je smanjeno sa 120 s na 45 s, aplikacija osvježava kod svakih 15 s, a server vraća isti kod samo ako vrijedi još barem 20 s.</p></dd>
+          <dt>Razlozi</dt><dd><p>Uvjetni upis je jedna SQL naredba, pa ni dva skenera u istoj milisekundi ne mogu oba proći. Kraće trajanje smanjuje prozor za dijeljenje neiskorištenog koda. Česte provjere znače da aplikacija nakon ulaza brzo prikaže novi kod.</p></dd>
+          <dt>Posljedice</dt><dd><p>Više redaka u <code>EntryToken</code> (otprilike jedan svakih 30 s dok je QR otvoren). Starija verzija aplikacije osvježava svakih 60 s, pa će često pokazati istekao kod.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/entry.ts</code>, <code>apps/mobile/features/home/hooks/use-entry-token.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-003">
+        <h3>O-003 · Anti-passback od 30 minuta, podesiv <span class="badge warn">Privremeno, čeka potvrdu</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Ni jednokratan ni kratak kod ne sprječava člana da prijatelju pošalje svjež kod uživo.</p></dd>
+          <dt>Odluka</dt><dd><p>Član ne može ponovno ući unutar <code>ENTRY_ANTI_PASSBACK_MINUTES</code> (zadano 30) od zadnjeg odobrenog ulaza. Provjera i trošenje tokena rade se u transakciji s <code>pg_advisory_xact_lock</code> po članu.</p></dd>
+          <dt>Razlozi</dt><dd><p>Bez izlaznog skenera vremenski prozor je jedini način da drugi ulaz istim računom bude odbijen. Zaključavanje po članu sprječava da dva različita koda istog člana prođu istovremeno.</p></dd>
+          <dt>Posljedice</dt><dd><p>Član koji izađe i vrati se unutar 30 minuta (npr. po bocu u auto) bude odbijen, a osoblje ga za sada ne može pustiti iz sustava. <b>Ovo je poslovna odluka i treba je potvrditi</b>, vidi <a href="otvorena-pitanja.html#anti-passback">Otvorena pitanja</a>.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/entry.ts</code>, <code>apps/api/src/config/env.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-004">
+        <h3>O-004 · Svako skeniranje se zapisuje u <code>EntryEvent</code> <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Drugi ulaz istog dana nije ostavljao nikakav trag, pa se zloupotreba nije mogla ni primijetiti.</p></dd>
+          <dt>Odluka</dt><dd><p>Nova tablica s ishodom (<code>GRANTED</code> ili razlog odbijanja), članom, tokenom i uređajem. Brisanje člana, tokena ili uređaja postavlja referencu na <code>NULL</code>, a zapis ostaje.</p></dd>
+          <dt>Razlozi</dt><dd><p>Dnevnik služi i kao izvor za anti-passback, a i za rješavanje sporova ("nisam ja ušao"). <code>SetNull</code> umjesto <code>Cascade</code> čuva povijest.</p></dd>
+          <dt>Posljedice</dt><dd><p>Tablica raste. Treba dogovoriti koliko dugo se čuva (GDPR), vidi <a href="otvorena-pitanja.html#retencija">Otvorena pitanja</a>.</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-005">
+        <h3>O-005 · Uređaji imaju vlastiti ključ i ulogu <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p><code>/entry/scan</code> i <code>/device/commands</code> bili su javni; svatko s mreže mogao je otvoriti vrata ili "pojesti" naredbu (nalazi #2 i #3).</p></dd>
+          <dt>Odluka</dt><dd><p>Tablica <code>Device</code> s vrstom <code>SCANNER</code> ili <code>DOOR</code>, teretanom i SHA-256 hashem ključa. Uređaj šalje <code>Authorization: Device &lt;ključ&gt;</code>. Skener smije samo skenirati, vrata samo preuzimati naredbe. Ključevi se stvaraju i opozivaju skriptom <code>pnpm device</code>.</p></dd>
+          <dt>Razlozi</dt><dd><p>API ključ radi na svakom hardveru, od mikrokontrolera do tableta. mTLS bi bio jači, ali traži upravljanje certifikatima. Uloga po ključu znači da ukradeni ključ skenera (spremljen u pregledniku) ne može blokirati vrata.</p></dd>
+          <dt>Posljedice</dt><dd><p>Prije deploya treba stvoriti ključeve, a firmware vrata mora slati zaglavlje. Dolazak se upisuje u teretanu uređaja, a ne u "prvu teretanu u bazi".</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/plugins/device-auth.ts</code>, <code>apps/api/scripts/device.ts</code>, <code>apps/api/public/index.html</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-006">
+        <h3>O-006 · Naredbe za vrata u bazi; polling ostaje <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Naredba je bila jedna varijabla u memoriji procesa: samo jedna vrata, gubi se pri restartu i ne radi s više instanci API-ja.</p></dd>
+          <dt>Odluka</dt><dd><p>Tablica <code>DoorCommand</code> po teretani, vrijedi 5 s i preuzima se uvjetnim upisom. Naredba se stvara u istoj transakciji kao i odobreni ulaz.</p></dd>
+          <dt>Razlozi</dt><dd><p>Pregled koda predložio je da vrata dobiju odluku izravno u odgovoru na skeniranje. Kontroler vrata nije u repozitoriju i ne znamo mu firmware, pa smo zadržali njegov protokol. Odgovor skenera (<code>ok: true</code>) ionako već sadrži odluku za uređaj koji radi oboje. Ista transakcija sprječava da prolazna greška baze odobri ulaz bez otvaranja vrata, nakon čega bi anti-passback zaključao člana na 30 minuta.</p></dd>
+          <dt>Posljedice</dt><dd><p>Ako teretana ima više vrata, prva koja pitaju dobiju naredbu. Tablica raste i treba čišćenje.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/door.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <h2 id="prijava">Prijava i lozinka</h2>
+
+      <section class="card decision" id="o-007">
+        <h3>O-007 · Kod od 6 znamenki uz 5 pokušaja i pauzu od 60 s <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Kod se mogao pogađati bez ograničenja (nalaz #4).</p></dd>
+          <dt>Odluka</dt><dd><p>Polje <code>attempts</code> na kodu. Pokušaj se "rezervira" atomskim uvećanjem prije usporedbe, a nakon petog kod se briše. Novi kod za isti račun ne izdaje se unutar 60 s od prethodnog. Usporedba je u konstantnom vremenu.</p></dd>
+          <dt>Razlozi</dt><dd><p>Rezervacija prije usporedbe znači da ni 1000 istovremenih pogađanja ne dobije više od 5 pokušaja. Pauza sprječava da netko stalnim traženjem novih kodova onemogući žrtvi reset. Kod od 6 znamenki ostaje jer se lako prepiše na mobitelu; link s dugim tokenom razmotrit ćemo kad dođe deep linking.</p></dd>
+          <dt>Posljedice</dt><dd><p>Netko tko zna tuđi e-mail može potrošiti 5 pokušaja i poništiti kod. Žrtva tada mora tražiti novi, ali ništa ne gubi. Korisnik koji u roku od minute ponovno zatraži kod ne dobiva novi e-mail; prvi kod vrijedi.</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-008">
+        <h3>O-008 · Odgovori ne otkrivaju postoji li račun <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Zaboravljena lozinka vraćala je 404 za nepostojeći e-mail, a prijava je bila brža za nepostojeće račune (nalaz #5).</p></dd>
+          <dt>Odluka</dt><dd><p>Zaboravljena lozinka uvijek vraća 200 i isti tekst, a e-mail se šalje u pozadini. Prijava za nepostojeći račun provjerava lozinku nad lažnim hashem. Dvostruka registracija vraća neutralnu poruku.</p></dd>
+          <dt>Razlozi</dt><dd><p>Preporuka OWASP-a. Članstvo u teretani otkriva gdje i kada osoba boravi.</p></dd>
+          <dt>Posljedice</dt><dd><p>Registracija i dalje vraća 409 umjesto 201, pa se postojanje računa može zaključiti. Pravo rješenje je potvrda e-maila, vidi <a href="otvorena-pitanja.html#registracija">Otvorena pitanja</a>. Ekran zaboravljene lozinke u aplikaciji više ne prikazuje "korisnik ne postoji".</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-009">
+        <h3>O-009 · JWT tajna mora biti stvarna <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Primjer tajne iz <code>.env.example</code> (javno na GitHubu) prolazio je provjeru (nalaz #6).</p></dd>
+          <dt>Odluka</dt><dd><p>Najmanje 32 znaka i odbijanje vrijednosti koje sadrže "replace", "change_me", "example" ili "secret". U primjeru je polje prazno.</p></dd>
+          <dt>Razlozi</dt><dd><p>Bolje je da se server odbije pokrenuti nego da tiho radi s poznatom tajnom.</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-010">
+        <h3>O-010 · Argon2 parametri su eksplicitni, stari hashevi se nadograđuju <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Parametri hashiranja lozinke ovisili su o zadanim vrijednostima biblioteke.</p></dd>
+          <dt>Odluka</dt><dd><p>Argon2id s 19 MiB, 2 iteracije i 1 thread (minimum prema OWASP-u). Pri uspješnoj prijavi hash s drugačijim parametrima se zamjenjuje.</p></dd>
+          <dt>Razlozi</dt><dd><p>Provjereno je da su zadane postavke <code>@node-rs/argon2</code> već upravo te, pa postojeći hashevi ostaju valjani. Eksplicitni parametri štite od promjene zadanih postavki u novoj verziji biblioteke, a nadogradnja pri prijavi omogućuje podizanje parametara bez resetiranja lozinki.</p></dd>
+        </dl>
+      </section>
+
+      <h2 id="zastita">Zaštita od zlouporabe</h2>
+
+      <section class="card decision" id="o-011">
+        <h3>O-011 · Ograničenja zahtjeva složena po ruti <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Nije bilo nikakvog ograničenja broja zahtjeva (nalaz #7).</p></dd>
+          <dt>Odluka</dt><dd><p><code>@fastify/rate-limit</code> s labavom globalnom granicom (1200/min po IP-u), a na osjetljivim rutama više ograničenja odjednom: po IP-u i po e-mailu. Rutna ograničenja koriste <code>createRateLimit</code> i naš helper <code>limitRequests</code>.</p></dd>
+          <dt>Razlozi</dt><dd><p>Plugin po zahtjevu pokreće samo jednu svoju kuku, a globalna se uvijek izvrši prva. Zato rutna ograničenja preko <code>config.rateLimit</code> ili <code>app.rateLimit()</code> uz globalno ne bi djelovala; to je testom i potvrđeno. Ograničenje po e-mailu zaustavlja pogađanje jednog računa s mnogo adresa, a ograničenje po IP-u pogađanje mnogo računa s jedne adrese.</p></dd>
+          <dt>Posljedice</dt><dd><p>Brojači su u memoriji procesa: restart ih briše, a s više instanci treba Redis. Netko tko zna tuđi e-mail može toj osobi blokirati prijavu na 15 minuta.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/plugins/rate-limit.ts</code>, <code>apps/api/src/routes/auth.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-012">
+        <h3>O-012 · <code>TRUST_PROXY</code> kao broj proxyja ili popis adresa <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>Iza reverse proxyja svi klijenti imaju istu IP adresu, pa bi ograničenja po IP-u blokirala sve korisnike odjednom.</p></dd>
+          <dt>Odluka</dt><dd><p><code>TRUST_PROXY</code> prima <code>false</code> (zadano), broj proxyja ili adrese/CIDR. Vrijednost <code>true</code> postoji samo za lokalno testiranje.</p></dd>
+          <dt>Razlozi</dt><dd><p><code>true</code> vjeruje svakom <code>X-Forwarded-For</code>, pa klijent može lažirati adresu i zaobići ograničenja.</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-013">
+        <h3>O-013 · E-mail preko SMTP-a, lokalno Mailpit <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Kontekst</dt><dd><p>"Slanje" e-maila bilo je <code>console.log</code> s kodom: u produkciji reset lozinke ne radi, a kodovi završavaju u logovima.</p></dd>
+          <dt>Odluka</dt><dd><p><code>nodemailer</code> preko SMTP-a. U <code>docker-compose.yml</code> je Mailpit (<code>localhost:8025</code>) koji hvata poštu u razvoju. S korisničkim imenom i bez <code>SMTP_SECURE</code> traži se STARTTLS. U log ide samo kod greške, nikad kod ni adresa.</p></dd>
+          <dt>Razlozi</dt><dd><p>SMTP radi sa svakim pružateljem (Resend, Postmark, Amazon SES) bez vezanja uz jedan API. Mailpit omogućuje testiranje stvarnog slanja bez računa i bez slanja pravih mailova.</p></dd>
+          <dt>Posljedice</dt><dd><p><code>SMTP_HOST</code>, <code>SMTP_PORT</code> i <code>MAIL_FROM</code> su obavezni; postojeći <code>.env</code> treba dopuniti.</p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-014">
+        <h3>O-014 · Veliko tijelo zahtjeva samo za avatar <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-06</dd>
+          <dt>Odluka</dt><dd><p>Globalno vrijedi Fastifyjeva zadana granica od 1 MiB, a samo <code>PUT /profile/avatar</code> prima do 6 MiB.</p></dd>
+          <dt>Razlozi</dt><dd><p>Ranije je svaka ruta, uključujući prijavu, primala 6 MiB, što olakšava preopterećenje servera.</p></dd>
+        </dl>
+      </section>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

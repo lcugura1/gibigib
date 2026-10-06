@@ -23,6 +23,10 @@ mobile application available on iOS and Android.
 | FZ07 | News and events |
 | FZ08 | Gym info (location, hours, contact) |
 
+## Documentation
+
+Project decisions, what was changed and why, and open questions are kept as HTML pages in [`docs/`](docs/index.html). Open `docs/index.html` in a browser; chapters are in the sidebar.
+
 ## Getting started
 
 ### Prerequisites

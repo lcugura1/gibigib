@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dnevnik promjena · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Rad na projektu</p>
+      <h1>Dnevnik promjena</h1>
+      <p class="lede">Grane i commitovi kronološki, najnovije na vrhu.</p>
+
+      <h2 id="2026-10-06-security-hardening">2026-10-06 · <code>fix/security-hardening</code></h2>
+      <p><span class="badge warn">Lokalno</span> Nije pushano i nema pull requesta; spaja se u <code>develop</code> tek nakon dogovora.</p>
+      <p>Popravci sedam kritičnih sigurnosnih nalaza iz pregleda backenda, ispravci iz pregleda koda i ova dokumentacija. Detalji su u <a href="sigurnosni-popravci.html">Sigurnosnim popravcima</a>.</p>
+      <table>
+        <thead><tr><th>Commit</th><th>Poruka</th><th>Nalazi</th></tr></thead>
+        <tbody>
+          <tr><td><code>a60e3c5</code></td><td><code>[fix]: make entry tokens single use and log every scan</code></td><td>#1</td></tr>
+          <tr><td><code>ceedb51</code></td><td><code>[fix]: authenticate entry scanners and door devices</code></td><td>#2, #3</td></tr>
+          <tr><td><code>9453f9b</code></td><td><code>[fix]: limit password reset attempts and stop revealing accounts</code></td><td>#4, #5</td></tr>
+          <tr><td><code>66e58dd</code></td><td><code>[fix]: refuse to start with a placeholder jwt secret</code></td><td>#6</td></tr>
+          <tr><td><code>27702e3</code></td><td><code>[fix]: rate limit auth and scan routes and send reset codes by email</code></td><td>#7</td></tr>
+          <tr><td><code>705c827</code></td><td><code>[fix]: scope device keys by role and open the door inside the entry transaction</code></td><td>pregled koda</td></tr>
+          <tr><td>zadnji na grani</td><td><code>[docs]: add html project docs with decisions and security fixes</code></td><td>dokumentacija</td></tr>
+        </tbody>
+      </table>
+      <p>Nove ovisnosti: <code>@fastify/rate-limit</code>, <code>nodemailer</code> (i <code>@types/nodemailer</code>). Novi Docker servis: <code>axllent/mailpit:v1.31.4</code>.</p>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

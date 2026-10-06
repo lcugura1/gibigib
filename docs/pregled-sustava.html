@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pregled sustava · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Uvod</p>
+      <h1>Pregled sustava</h1>
+      <p class="lede">Kako su složeni API, baza i mobilna aplikacija, i kako teku glavni procesi.</p>
+      <p class="meta">Stanje: grana <code>fix/security-hardening</code>, 2026-10-06</p>
+
+      <h2 id="monorepo">Monorepo</h2>
+      <table>
+        <thead><tr><th>Paket</th><th>Tehnologija</th><th>Uloga</th></tr></thead>
+        <tbody>
+          <tr><td><code>apps/api</code></td><td>Node 22, Fastify 5, Prisma 7, PostgreSQL 17, Zod 4</td><td>REST API, baza, skener na <code>/scanner/</code></td></tr>
+          <tr><td><code>apps/mobile</code></td><td>Expo / React Native, expo-router</td><td>Aplikacija za članove</td></tr>
+          <tr><td><code>packages/types</code></td><td>Zod sheme i TypeScript tipovi</td><td>Ista validacija na serveru i u aplikaciji</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="slojevi">Slojevi API-ja</h2>
+      <ul>
+        <li><b>Rute</b> (<code>src/routes/*</code>) su tanke: provjere pristupa i ograničenja zahtjeva u <code>preHandler</code>, Zod validacija tijela, poziv servisa.</li>
+        <li><b>Servisi</b> (<code>src/services/*</code>) drže svu poslovnu logiku i upite prema bazi.</li>
+        <li><b>Pluginovi</b> (<code>src/plugins/*</code>): <code>jwt.ts</code> za članove, <code>device-auth.ts</code> za uređaje, <code>rate-limit.ts</code> za ograničenje broja zahtjeva.</li>
+        <li><b>Greške</b> se bacaju kao <code>HttpError(status, poruka)</code> i oblikuju u <code>src/middleware/error-handler.ts</code>.</li>
+        <li><b>Konfiguracija</b> se validira u <code>src/config/env.ts</code>; API se ne pokreće ako nešto nedostaje ili je neispravno.</li>
+      </ul>
+
+      <h2 id="pristup">Tko smije što</h2>
+      <table>
+        <thead><tr><th>Ruta</th><th>Pristup</th><th>Ograničenje zahtjeva</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /auth/register</code></td><td>javno</td><td>10 na sat po IP-u</td></tr>
+          <tr><td><code>POST /auth/login</code></td><td>javno</td><td>50 / 15 min po IP-u i 10 / 15 min po e-mailu</td></tr>
+          <tr><td><code>POST /auth/forgot-password</code></td><td>javno</td><td>20 na sat po IP-u i 3 na sat po e-mailu</td></tr>
+          <tr><td><code>POST /auth/reset-password</code></td><td>javno</td><td>20 / 15 min po IP-u, uz 5 pokušaja po kodu</td></tr>
+          <tr><td><code>POST /auth/refresh</code>, <code>/auth/logout</code></td><td>refresh token</td><td>globalno</td></tr>
+          <tr><td><code>/auth/me</code>, <code>/memberships/*</code>, <code>/attendance/*</code>, <code>/profile/*</code>, <code>/occupancy</code>, <code>GET /entry/token</code></td><td>član (JWT)</td><td>globalno</td></tr>
+          <tr><td><code>POST /entry/scan</code></td><td>uređaj vrste <code>SCANNER</code></td><td>60 u minuti po uređaju</td></tr>
+          <tr><td><code>GET /device/commands</code></td><td>uređaj vrste <code>DOOR</code></td><td>globalno</td></tr>
+          <tr><td><code>POST /demo/reset</code></td><td>javno, samo uz <code>DEMO_RESET=1</code></td><td>globalno</td></tr>
+        </tbody>
+      </table>
+      <p>"Globalno" znači gornju granicu od 1200 zahtjeva u minuti po IP-u, koja vrijedi za sve rute.</p>
+
+      <h2 id="model">Model podataka</h2>
+      <table>
+        <thead><tr><th>Tablica</th><th>Čemu služi</th></tr></thead>
+        <tbody>
+          <tr><td><code>User</code></td><td>Član; lozinka kao argon2id hash.</td></tr>
+          <tr><td><code>MembershipProgram</code>, <code>Membership</code>, <code>MembershipPause</code></td><td>Programi, članarine i pauze.</td></tr>
+          <tr><td><code>Gym</code></td><td>Teretana; uređaji i dolasci vezani su uz nju.</td></tr>
+          <tr><td><code>EntryToken</code></td><td>QR kod za ulaz: vrijedi 45 s i iskoristiv je jednom.</td></tr>
+          <tr><td><code>EntryEvent</code></td><td>Zapis svakog skeniranja, odobrenog ili odbijenog, s razlogom (<code>EntryOutcome</code>).</td></tr>
+          <tr><td><code>Attendance</code></td><td>Prvi ulazak člana u danu (za kalendar i popunjenost).</td></tr>
+          <tr><td><code>Device</code></td><td>Skener ili kontroler vrata; vrsta <code>SCANNER</code>/<code>DOOR</code>, hash ključa, opoziv.</td></tr>
+          <tr><td><code>DoorCommand</code></td><td>Naredba "otvori vrata" za teretanu, vrijedi 5 s i preuzima se jednom.</td></tr>
+          <tr><td><code>RefreshToken</code>, <code>PasswordResetToken</code></td><td>Sesije i kodovi za reset lozinke (hashirani; kod ima brojač pokušaja).</td></tr>
+          <tr><td><code>TrainingTag</code>, <code>News</code></td><td>Oznake treninga; vijesti (još se ne koriste).</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="ulaz">Ulaz u teretanu</h2>
+      <ol>
+        <li>Aplikacija svakih 15 s traži <code>GET /entry/token</code>. Server vraća postojeći neiskorišteni token ako vrijedi još barem 20 s, inače stvara novi koji vrijedi 45 s.</li>
+        <li>Skener pročita QR i pošalje <code>POST /entry/scan</code> sa svojim ključem.</li>
+        <li>Server provjeri token (postoji, nije iskorišten, nije istekao) i članarinu (aktivna, nije pauzirana).</li>
+        <li>U jednoj transakciji, zaključanoj po članu: provjera anti-passbacka (zadnji odobreni ulaz unutar <code>ENTRY_ANTI_PASSBACK_MINUTES</code>), trošenje tokena uvjetnim upisom, prvi dolazak u danu, zapis <code>GRANTED</code> i naredba za vrata.</li>
+        <li>Svako odbijanje zapisuje se u <code>EntryEvent</code> s razlogom.</li>
+        <li>Kontroler vrata anketira <code>GET /device/commands</code> svojim ključem i jednom dobije <code>open</code>.</li>
+      </ol>
+      <p>Kod: <code>apps/api/src/services/entry.ts</code>, <code>services/door.ts</code>, <code>plugins/device-auth.ts</code>; aplikacija <code>apps/mobile/features/home/hooks/use-entry-token.ts</code>.</p>
+
+      <h2 id="lozinka">Zaboravljena lozinka</h2>
+      <ol>
+        <li><code>POST /auth/forgot-password</code> uvijek odgovara isto: "Ako račun postoji, poslali smo upute na e-adresu".</li>
+        <li>Ako račun postoji i u zadnjih 60 s nije poslan kod, server generira 6-znamenkasti kod (vrijedi 15 min, u bazi samo hash) i šalje ga e-mailom u pozadini.</li>
+        <li><code>POST /auth/reset-password</code> prije usporedbe "potroši" jedan od 5 pokušaja. Nakon petog kod se briše.</li>
+        <li>Uspješan reset mijenja lozinku i briše sve sesije člana.</li>
+      </ol>
+      <p>Kod: <code>apps/api/src/services/auth.ts</code>, <code>services/email.ts</code>.</p>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>
