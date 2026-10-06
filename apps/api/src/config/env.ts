@@ -14,7 +14,15 @@ const schema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number(),
   PORT: z.coerce.number(),
   HOST: z.string(),
-  TRUST_PROXY: z.stringbool().default(false),
+  // false, a hop count, or comma-separated proxy addresses/CIDRs; true trusts any X-Forwarded-For.
+  TRUST_PROXY: z
+    .string()
+    .default('false')
+    .transform((value): boolean | number | string => {
+      if (value === '' || value === 'false') return false;
+      if (value === 'true') return true;
+      return /^\d+$/.test(value) ? Number(value) : value;
+    }),
   DEMO_RESET: z.string().optional(),
   ENTRY_ANTI_PASSBACK_MINUTES: z.coerce.number().int().min(0).default(30),
   SMTP_HOST: z.string().min(1),

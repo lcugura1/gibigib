@@ -5,6 +5,8 @@ const transport = nodemailer.createTransport({
   host: env.SMTP_HOST,
   port: env.SMTP_PORT,
   secure: env.SMTP_SECURE,
+  // With credentials, refuse to talk to the server unless STARTTLS succeeds.
+  requireTLS: !env.SMTP_SECURE && Boolean(env.SMTP_USER),
   auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
 });
 

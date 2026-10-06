@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { LoginInput, RegisterInput, ResetPasswordInput } from "@gibigib/types";
 import { Prisma } from "../generated/prisma/client";
 import { prisma } from "../utils/prisma";
-import { hashPassword, verifyPassword } from "../utils/hash";
+import { hashPassword, needsRehash, verifyPassword } from "../utils/hash";
 import { generateOtp, generateRefreshToken, hashesMatch, hashToken } from "../utils/tokens";
 import { env } from "../config/env";
 import { HttpError } from '../utils/errors';
@@ -14,7 +14,10 @@ const RESET_RESEND_COOLDOWN_MS = 60 * 1000;
 const INVALID_RESET_CODE = 'Neispravan ili istekao kod. Ako si ga više puta krivo upisao, zatraži novi.';
 
 // Verifying against a throwaway hash keeps login equally slow whether or not the email exists.
-const dummyPasswordHash = hashPassword(randomBytes(16).toString('hex'));
+let dummyPasswordHash: Promise<string> | undefined;
+function getDummyPasswordHash() {
+  return (dummyPasswordHash ??= hashPassword(randomBytes(16).toString('hex')));
+}
 
 export async function registerUser(input: RegisterInput) {
   const passwordHash = await hashPassword(input.password);
@@ -47,11 +50,18 @@ export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
   const passwordMatches = await verifyPassword(
     input.password,
-    user?.passwordHash ?? (await dummyPasswordHash),
+    user?.passwordHash ?? (await getDummyPasswordHash()),
   );
 
   if (!user || !passwordMatches) {
     throw new HttpError(401, 'Neispravni podaci za prijavu');
+  }
+
+  if (needsRehash(user.passwordHash)) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(input.password) },
+    });
   }
 
   const { passwordHash, ...safeUser } = user;
@@ -134,8 +144,9 @@ export async function requestPasswordReset(email: string) {
   });
 
   // Sent in the background so the response time does not reveal whether the account exists.
-  sendPasswordResetEmail(email, code, RESET_TTL_MS / 60_000).catch((err) => {
-    console.error('[email] password reset email failed:', err instanceof Error ? err.message : err);
+  sendPasswordResetEmail(email, code, RESET_TTL_MS / 60_000).catch((err: { code?: string }) => {
+    // Only the error code: SMTP messages can contain the recipient's address.
+    console.error(`[email] password reset email failed: ${err?.code ?? 'unknown error'}`);
   });
 }
 

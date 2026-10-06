@@ -15,7 +15,7 @@ export async function entryRoutes(app: FastifyInstance) {
     key: (request) => request.device?.id ?? request.ip,
   });
 
-  app.post('/scan', { preHandler: [app.authenticateDevice, limitScanPerDevice] }, async (request) => {
+  app.post('/scan', { preHandler: [app.authenticateDevice('SCANNER'), limitScanPerDevice] }, async (request) => {
     const { code } = entryScanSchema.parse(request.body);
     return scanEntryCode(code, requireDevice(request));
   });

@@ -1,10 +1,11 @@
+import type { Prisma } from '../generated/prisma/client';
 import type { AuthenticatedDevice } from '../plugins/device-auth';
 import { prisma } from '../utils/prisma';
 
 const DOOR_COMMAND_TTL_MS = 5000;
 
-export async function queueDoorOpen(gymId: string) {
-  await prisma.doorCommand.create({
+export async function queueDoorOpen(gymId: string, db: Prisma.TransactionClient = prisma) {
+  await db.doorCommand.create({
     data: { gymId, expiresAt: new Date(Date.now() + DOOR_COMMAND_TTL_MS) },
   });
 }

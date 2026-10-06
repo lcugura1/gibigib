@@ -113,10 +113,16 @@ model Gym {
   updatedAt DateTime @updatedAt
 }
 
+enum DeviceKind {
+  SCANNER
+  DOOR
+}
+
 // Scanner or door controller at a gym. It authenticates with a key whose hash is stored here.
 model Device {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
+  kind      DeviceKind
   gymId     String
   keyHash   String    @unique
   revokedAt DateTime?
@@ -144,6 +150,7 @@ model DoorCommand {
   createdAt DateTime @default(now())
 
   @@index([gymId, consumedAt, expiresAt])
+  @@index([consumedByDeviceId])
 }
 
 model EntryToken {
@@ -181,12 +188,15 @@ model EntryEvent {
   outcome      EntryOutcome
   createdAt    DateTime     @default(now())
 
-  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // SetNull keeps the scan history when a member or device is deleted.
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   entryToken EntryToken? @relation(fields: [entryTokenId], references: [id], onDelete: SetNull)
   device     Device?     @relation(fields: [deviceId], references: [id], onDelete: SetNull)
 
   @@index([userId, outcome, createdAt])
   @@index([createdAt])
+  @@index([entryTokenId])
+  @@index([deviceId])
 }
 
 model Attendance {

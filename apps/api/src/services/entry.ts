@@ -140,14 +140,14 @@ export async function scanEntryCode(
         entryTokenId: entryToken.id,
       },
     });
+    // In the same transaction, so a granted entry and its door opening are saved together or not at all.
+    await queueDoorOpen(device.gymId, tx);
     return 'GRANTED';
   });
 
   if (outcome !== 'GRANTED') {
     return deny(outcome, device, entryToken);
   }
-
-  await queueDoorOpen(device.gymId);
 
   return {
     ok: true,

@@ -6,7 +6,7 @@ import { consumeDoorCommand } from '../services/door';
 export async function deviceRoutes(app: FastifyInstance) {
   app.get(
     '/commands',
-    { preHandler: [app.authenticateDevice] },
+    { preHandler: [app.authenticateDevice('DOOR')] },
     async (request): Promise<DeviceCommandsDto> => {
       return { door: await consumeDoorCommand(requireDevice(request)) };
     },

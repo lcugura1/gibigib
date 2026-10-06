@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin';
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
+import type { DeviceKind } from '../generated/prisma/client';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
 import { hashToken } from '../utils/tokens';
@@ -8,7 +9,8 @@ export type AuthenticatedDevice = { id: string; gymId: string };
 
 declare module 'fastify' {
   interface FastifyInstance {
-    authenticateDevice: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    // A scanner key cannot poll door commands and a door key cannot scan.
+    authenticateDevice: (kind: DeviceKind) => (request: FastifyRequest) => Promise<void>;
   }
   interface FastifyRequest {
     device: AuthenticatedDevice | null;
@@ -27,17 +29,20 @@ export function requireDevice(request: FastifyRequest): AuthenticatedDevice {
 export default fp(async (app) => {
   app.decorateRequest('device', null);
 
-  app.decorate('authenticateDevice', async (request: FastifyRequest, reply: FastifyReply) => {
+  app.decorate('authenticateDevice', (kind: DeviceKind) => async (request: FastifyRequest) => {
     const key = DEVICE_AUTH_PATTERN.exec(request.headers.authorization ?? '')?.[1];
     const device = key
       ? await prisma.device.findUnique({
           where: { keyHash: hashToken(key) },
-          select: { id: true, gymId: true, revokedAt: true },
+          select: { id: true, gymId: true, kind: true, revokedAt: true },
         })
       : null;
 
     if (!device || device.revokedAt) {
-      return reply.code(401).send({ statusCode: 401, message: 'Nepoznat uređaj' });
+      throw new HttpError(401, 'Nepoznat uređaj');
+    }
+    if (device.kind !== kind) {
+      throw new HttpError(403, 'Uređaj nema ovlast za ovu radnju');
     }
 
     request.device = { id: device.id, gymId: device.gymId };
