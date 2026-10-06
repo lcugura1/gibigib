@@ -46,6 +46,7 @@ model User {
 
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  entryEvents         EntryEvent[]
 }
 
 model MembershipProgram {
@@ -117,12 +118,38 @@ model EntryToken {
   expiresAt DateTime
   usedAt    DateTime?
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attendance Attendance?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance  Attendance?
+  entryEvents EntryEvent[]
 
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+enum EntryOutcome {
+  GRANTED
+  INVALID_TOKEN
+  TOKEN_USED
+  TOKEN_EXPIRED
+  NO_MEMBERSHIP
+  MEMBERSHIP_PAUSED
+  ANTI_PASSBACK
+}
+
+// One row per scan attempt, granted or denied, so misuse leaves a trace.
+model EntryEvent {
+  id           String       @id @default(cuid())
+  userId       String?
+  entryTokenId String?
+  outcome      EntryOutcome
+  createdAt    DateTime     @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryToken EntryToken? @relation(fields: [entryTokenId], references: [id], onDelete: SetNull)
+
+  @@index([userId, outcome, createdAt])
+  @@index([createdAt])
 }
 
 model Attendance {

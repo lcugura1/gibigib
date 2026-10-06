@@ -10,10 +10,14 @@ export async function demoRoutes(app: FastifyInstance) {
       where: { checkInAt: { gte: startOfDay } },
     });
     const tokens = await prisma.entryToken.deleteMany({ where: { usedAt: null } });
+    const events = await prisma.entryEvent.deleteMany({
+      where: { createdAt: { gte: startOfDay } },
+    });
 
     return {
       attendanceDeleted: attendance.count,
       tokensDeleted: tokens.count,
+      entryEventsDeleted: events.count,
     };
   });
 }

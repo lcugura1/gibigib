@@ -9,6 +9,7 @@ const schema = z.object({
   PORT: z.coerce.number(),
   HOST: z.string(),
   DEMO_RESET: z.string().optional(),
+  ENTRY_ANTI_PASSBACK_MINUTES: z.coerce.number().int().min(0).default(30),
 });
 
 const parsed = schema.safeParse(process.env);
