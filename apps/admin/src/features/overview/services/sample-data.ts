@@ -7,6 +7,7 @@ import type {
   AnalyticsRange,
 } from '@gibigib/types';
 import { GYMS, NOW, PLANS, PLAN_MIX, at, local, noise, type GymId } from '../../../shared/mock/fixtures';
+import { gymRecord, occupancyWindow$ } from '../../../shared/mock/gym-store';
 
 const EARLY_MORNING = new Date(2026, 9, 13, 6, 5);
 
@@ -290,11 +291,19 @@ export function sampleOverview({ gymId, range }: OverviewQuery, empty = false): 
   };
 }
 
+const BASE_WINDOW_MINUTES = 60;
+
 export function sampleLiveStatus(empty = false): LiveStatusDto {
+  const windowMinutes = occupancyWindow$.value;
   return {
-    windowMinutes: 60,
+    windowMinutes,
     updatedAt: local(clock(empty)),
-    gyms: GYMS.map(({ id, name, capacity, count }) => ({ id, name, capacity, count: empty ? 0 : count })),
+    gyms: GYMS.map(({ id, count }) => {
+      const record = gymRecord(id);
+      const capacity = record?.capacity ?? 0;
+      const scaled = Math.round((count * windowMinutes) / BASE_WINDOW_MINUTES);
+      return { id, name: record?.name ?? id, capacity, count: empty ? 0 : Math.min(scaled, capacity) };
+    }),
     offlineDevices: empty ? [] : [{ gymId: 'v2', kind: 'reader', offlineSince: local(at(10, 13, 17, 42)) }],
   };
 }

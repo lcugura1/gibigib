@@ -1,0 +1,39 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+  min-inline-size: 0;
+  padding: var(--space-24);
+  border-radius: var(--radius-24);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+
+  @media (width < 768px) {
+    gap: var(--space-16);
+    padding: var(--space-16);
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.flush {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+
+  & > * + * {
+    border-block-start: 1px solid var(--divider);
+  }
+}

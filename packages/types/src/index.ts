@@ -24,3 +24,4 @@ export * from './admin-audit';
 export * from './admin-events';
 export * from './admin-trainers';
 export * from './admin-devices';
+export * from './admin-settings';

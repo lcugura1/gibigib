@@ -1,0 +1,84 @@
+.owner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.avatar {
+  inline-size: 3.5rem;
+  aspect-ratio: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--tile-fill);
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+}
+
+.name {
+  font-size: var(--text-button);
+  font-weight: 700;
+}
+
+.scope {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.outlined {
+  overflow: hidden;
+  border-radius: var(--radius-14);
+  border: 1px solid var(--surface-border);
+}
+
+.row {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-14);
+  min-block-size: 3.125rem;
+  padding: var(--space-12) var(--space-16);
+  border: 0;
+  background: none;
+  font-size: var(--text-button);
+  text-align: start;
+}
+
+button.row:hover {
+  background: var(--tile-fill);
+}
+
+.rowLabel {
+  flex: 1;
+}
+
+.value {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.danger svg {
+  color: var(--danger);
+}
+
+.signOutCard {
+  overflow: hidden;
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}

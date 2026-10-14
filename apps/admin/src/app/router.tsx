@@ -10,6 +10,7 @@ import { PlansScreen } from '../features/plans/screens/plans-screen';
 import { EventsScreen } from '../features/events/screens/events-screen';
 import { TrainersScreen } from '../features/trainers/screens/trainers-screen';
 import { DevicesScreen } from '../features/devices/screens/devices-screen';
+import { SettingsScreen } from '../features/settings/screens/settings-screen';
 import {
   AUDIT_HREF,
   DEVICES_HREF,
@@ -19,6 +20,7 @@ import {
   MEMBERS_HREF,
   PLANS_HREF,
   REVENUE_HREF,
+  SETTINGS_HREF,
   TRAINERS_HREF,
 } from '../shared/layout/navigation';
 import { AppLayout } from './app-layout';
@@ -43,6 +45,7 @@ export const router = createBrowserRouter([
       { path: TRAINERS_HREF, element: <TrainersScreen /> },
       { path: `${TRAINERS_HREF}/:trainerId`, element: <TrainersScreen /> },
       { path: DEVICES_HREF, element: <DevicesScreen /> },
+      { path: SETTINGS_HREF, element: <SettingsScreen /> },
       { path: '*', element: <ComingSoonScreen /> },
     ],
   },

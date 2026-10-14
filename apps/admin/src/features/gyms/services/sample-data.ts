@@ -1,16 +1,17 @@
 import type { GymDetailDto } from '@gibigib/types';
 import { GYMS, NOW, local, noise } from '../../../shared/mock/fixtures';
+import { gymRecord } from '../../../shared/mock/gym-store';
 import { sampleRecentEntries } from '../../entries/services/sample-data';
 import { hourlyProfile, sampleLiveStatus } from '../../overview/services/sample-data';
 
 const FIRST_HOUR = 6;
 const LAST_HOUR = 23;
 const AVERAGE_SHARE = 0.92;
-const OPENING_HOURS = { weekdays: { from: 6, to: 23 }, weekend: { from: 8, to: 20 } };
 
 export function sampleGymDetail(gymId: string): GymDetailDto | undefined {
   const gym = GYMS.find((g) => g.id === gymId);
-  if (!gym) return undefined;
+  const record = gymRecord(gymId);
+  if (!gym || !record) return undefined;
   const live = sampleLiveStatus(false);
   const count = live.gyms.find((g) => g.id === gymId)?.count ?? 0;
   const weekday = (NOW.getDay() + 6) % 7;
@@ -38,11 +39,11 @@ export function sampleGymDetail(gymId: string): GymDetailDto | undefined {
     asOf: local(NOW),
     gym: {
       id: gym.id,
-      name: gym.name,
-      address: gym.address,
-      city: gym.city,
-      capacity: gym.capacity,
-      openingHours: OPENING_HOURS,
+      name: record.name,
+      address: record.street,
+      city: record.city,
+      capacity: record.capacity,
+      openingHours: record.openingHours,
     },
     devices: {
       reader: { online: !reader, offlineSince: reader?.offlineSince ?? null },
