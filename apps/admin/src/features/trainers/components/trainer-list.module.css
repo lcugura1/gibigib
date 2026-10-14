@@ -1,0 +1,136 @@
+.photo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--tile-fill);
+  color: var(--text-secondary);
+  font-weight: 700;
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.regular {
+  inline-size: 4.5rem;
+  font-size: var(--text-title-card);
+}
+
+.small {
+  inline-size: 3.5rem;
+  font-size: 1.0625rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--space-12);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  block-size: 100%;
+  padding: var(--space-20);
+  border-radius: var(--radius-24);
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  border: 1px solid var(--card-border);
+
+  &:hover {
+    border-color: var(--border);
+  }
+}
+
+.selected {
+  outline: 2px solid var(--text-primary);
+  outline-offset: -1px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.years {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  b {
+    font-size: var(--text-title-card);
+    line-height: 1.25;
+    font-weight: 700;
+
+    .row & {
+      font-size: 1.0625rem;
+    }
+  }
+
+  span {
+    font-size: var(--text-body-secondary);
+    color: var(--text-secondary);
+  }
+}
+
+.gym {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-block-start: auto;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+
+  &::before {
+    content: '';
+    inline-size: 0.5625rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--tag);
+  }
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-14);
+  padding: var(--space-16);
+  border-radius: var(--radius-18);
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  border: 1px solid var(--card-border);
+}
+
+.rowBody {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
