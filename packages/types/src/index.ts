@@ -18,4 +18,5 @@ export * from './admin-catalog';
 export * from './admin-member-detail';
 export * from './admin-entries';
 export * from './admin-gym';
+export * from './admin-revenue';
 export * from './admin-audit';

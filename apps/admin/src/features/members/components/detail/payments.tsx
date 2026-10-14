@@ -1,16 +1,10 @@
-import type { MemberDetailDto, PaymentStatus } from '@gibigib/types';
+import type { MemberDetailDto } from '@gibigib/types';
 import { SectionLabel } from '../../../../shared/components/section-label';
 import { StatusPill } from '../../../../shared/components/status-pill';
+import { PAYMENT_STATUS } from '../../../../shared/domain/payments';
 import { useViewport } from '../../../../shared/layout/viewport';
 import { formatCurrency, formatDate } from '../../../../shared/lib/format';
 import styles from './payments.module.css';
-
-const PAYMENT: Record<PaymentStatus, { label: string; level: 'ok' | 'warn' | 'danger' | 'muted' }> = {
-  PAID: { label: 'Plaćeno', level: 'ok' },
-  PENDING: { label: 'Na čekanju', level: 'warn' },
-  FAILED: { label: 'Neuspjelo', level: 'danger' },
-  REFUNDED: { label: 'Povrat', level: 'muted' },
-};
 
 interface PaymentsProps {
   member: MemberDetailDto;
@@ -38,7 +32,9 @@ export function Payments({ member, className }: PaymentsProps) {
                   {formatDate(payment.date)} · {payment.method}
                 </p>
               </div>
-              <StatusPill level={PAYMENT[payment.status].level}>{PAYMENT[payment.status].label}</StatusPill>
+              <StatusPill level={PAYMENT_STATUS[payment.status].level}>
+                {PAYMENT_STATUS[payment.status].label}
+              </StatusPill>
             </li>
           ))}
         </ul>
@@ -63,7 +59,9 @@ export function Payments({ member, className }: PaymentsProps) {
                   <td>{payment.description}</td>
                   <td>{payment.method}</td>
                   <td>
-                    <StatusPill level={PAYMENT[payment.status].level}>{PAYMENT[payment.status].label}</StatusPill>
+                    <StatusPill level={PAYMENT_STATUS[payment.status].level}>
+                      {PAYMENT_STATUS[payment.status].label}
+                    </StatusPill>
                   </td>
                   <td className={`${styles.numeric} ${payment.status === 'FAILED' ? styles.failed : ''}`}>
                     {formatCurrency(payment.amount)}
