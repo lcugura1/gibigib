@@ -86,10 +86,11 @@
 
   <script src="./jsqr.js"></script>
   <script>
-    const IDLE_TEXT = 'Uperi QR kod prema kameri';
+    const IDLE_TEXT = 'Uperi QR kod prema kameri ili čitaču';
     const SAME_CODE_COOLDOWN_MS = 5000;
     const RESUME_DELAY_MS = 2500;
     const KEY_STORAGE = 'gibigib.deviceKey';
+    const READER_IDLE_RESET_MS = 1000;
 
     const video = document.getElementById('camera');
     const status = document.getElementById('status');
@@ -103,6 +104,8 @@
     let lastCode = '';
     let lastCodeAt = 0;
     let deviceKey = readKey();
+    let readerBuffer = '';
+    let readerLastKeyAt = 0;
 
     function readKey() {
       try { return localStorage.getItem(KEY_STORAGE); } catch { return null; }
@@ -154,7 +157,7 @@
         setStatus('', IDLE_TEXT);
         requestAnimationFrame(tick);
       } catch {
-        setStatus('error', 'Kamera nije dostupna — dopusti pristup kameri i osvježi stranicu.');
+        setStatus('error', 'Kamera nije dostupna. USB čitač i dalje radi, a za kameru dopusti pristup i osvježi stranicu.');
       }
     }
 
@@ -203,6 +206,22 @@
         setStatus('', IDLE_TEXT);
       }, RESUME_DELAY_MS);
     }
+
+    // A USB QR reader acts as a keyboard: it types the code quickly and presses Enter.
+    document.addEventListener('keydown', (event) => {
+      if (!keyForm.hidden || !deviceKey) return;
+      const now = Date.now();
+      if (now - readerLastKeyAt > READER_IDLE_RESET_MS) readerBuffer = '';
+      readerLastKeyAt = now;
+
+      if (event.key === 'Enter') {
+        const code = readerBuffer.trim();
+        readerBuffer = '';
+        if (code && !paused) handleCode(code);
+      } else if (event.key.length === 1) {
+        readerBuffer += event.key;
+      }
+    });
 
     start();
   </script>
