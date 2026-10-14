@@ -96,6 +96,20 @@ pnpm --filter @gibigib/api device create --kind door --name "Varaždin – main 
 
 Each key is printed once. Open `http://localhost:3000/scanner/` and paste the scanner key when asked; the page remembers it. The door controller sends its key as `Authorization: Device <key>` when it polls `GET /device/commands`. `device list` shows all devices and `device revoke --id <id>` disables a lost one.
 
+The scanner page also accepts a USB QR reader, which types the code like a keyboard.
+
+#### Hikvision terminal (bridge and simulator)
+
+A Hikvision terminal reads the app's QR code as a card number. `apps/bridge` listens to the terminal's events, checks each code with `POST /entry/scan` and opens the door over ISAPI. Without a terminal, run the bundled simulator instead:
+
+```sh
+cp apps/bridge/.env.example apps/bridge/.env   # set DEVICE_KEY to a scanner key
+pnpm --filter @gibigib/bridge simulator         # fake terminal on http://localhost:8090
+pnpm --filter @gibigib/bridge start             # the bridge
+```
+
+Open `http://localhost:8090`, show the app's QR code to the camera or type the number, and the page shows the door opening. See `docs/ulaz-hikvision.html`.
+
 ### 7. Run the mobile app
 
 The app uses a development build (`expo-dev-client`), so it has to be built and installed once per device:
@@ -131,3 +145,4 @@ The phone and the computer must be on the same Wi-Fi network. The app reaches th
 | `pnpm --filter api db:studio` | Browse the database in Prisma Studio |
 | `pnpm --filter api device create --kind scanner\|door --name "<name>"` | Create a scanner or door device and print its key |
 | `http://localhost:3000/scanner/` | Web QR scanner for testing entry (needs a device key; camera works on `localhost` only) |
+| `pnpm --filter @gibigib/bridge simulator` | Fake Hikvision terminal for testing the bridge on `http://localhost:8090` |
