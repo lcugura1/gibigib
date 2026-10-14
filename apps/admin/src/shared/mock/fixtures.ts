@@ -60,3 +60,7 @@ export function noise(seed: number) {
 }
 
 export const mockState = new URLSearchParams(window.location.search).get('state');
+
+const loadedAt = Date.now();
+
+export const mockNow = () => new Date(NOW.getTime() + (Date.now() - loadedAt));

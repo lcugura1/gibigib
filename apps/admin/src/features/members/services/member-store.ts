@@ -6,6 +6,7 @@ import type {
   PaymentStatus,
 } from '@gibigib/types';
 import { GYMS, NOW, PLANS, local, noise } from '../../../shared/mock/fixtures';
+import { recordChange } from '../../audit/services/audit-store';
 import { daysBetween } from '../inactivity';
 import { MEMBERS } from './sample-data';
 
@@ -298,6 +299,7 @@ function update(id: string, change: (detail: MemberRecord['detail']) => void, lo
   if (!record || !member) throw new Error(`Unknown member ${id}`);
   change(record.detail);
   record.detail.changeLog.unshift({ id: `${id}-${record.detail.changeLog.length + 1}`, at: now, actor: OWNER, ...log });
+  recordChange({ kind: 'MEMBERSHIP', title: log.title, details: [member.name, log.detail], gymId: member.homeGymId });
   Object.assign(member, {
     status: record.detail.membership.status,
     planSlug: record.detail.membership.planSlug,
