@@ -23,3 +23,4 @@ export * from './admin-plans';
 export * from './admin-audit';
 export * from './admin-events';
 export * from './admin-trainers';
+export * from './admin-devices';

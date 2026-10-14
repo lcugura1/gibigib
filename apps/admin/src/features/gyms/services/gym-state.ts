@@ -53,6 +53,8 @@ export const gymEntries$ = (gymId: string) =>
 
 const doorOpened$ = new Subject<string>();
 
+export const doorOpenings$ = doorOpened$.asObservable();
+
 export const doorUnlocked$ = (gymId: string) =>
   doorOpened$.pipe(
     filter((id) => id === gymId),

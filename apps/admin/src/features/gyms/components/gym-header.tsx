@@ -85,11 +85,7 @@ export function GymHeader({ detail, color }: GymHeaderProps) {
       {controllerOffline && <p className={styles.doorNote}>Kontroler vrata je offline pa se vrata ne mogu otvoriti.</p>}
 
       {dialogOpen && (
-        <OpenDoorDialog
-          detail={detail}
-          presentation={compact ? 'sheet' : 'popup'}
-          onClose={() => setDialogOpen(false)}
-        />
+        <OpenDoorDialog gym={gym} presentation={compact ? 'sheet' : 'popup'} onClose={() => setDialogOpen(false)} />
       )}
     </header>
   );

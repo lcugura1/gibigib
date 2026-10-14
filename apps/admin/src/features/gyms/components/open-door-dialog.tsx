@@ -1,18 +1,16 @@
 import { useId } from 'react';
-import type { GymDetailDto } from '@gibigib/types';
 import { Dialog, type DialogPresentation } from '../../../shared/components/dialog';
 import { Highlight, Popup } from '../../../shared/components/popup';
 import { openDoor } from '../services/gym-state';
 
 interface OpenDoorDialogProps {
-  detail: GymDetailDto;
+  gym: { id: string; name: string; address: string };
   presentation: DialogPresentation;
   onClose: () => void;
 }
 
-export function OpenDoorDialog({ detail, presentation, onClose }: OpenDoorDialogProps) {
+export function OpenDoorDialog({ gym, presentation, onClose }: OpenDoorDialogProps) {
   const titleId = useId();
-  const { gym } = detail;
 
   return (
     <Dialog presentation={presentation} labelledBy={titleId} onClose={onClose}>
