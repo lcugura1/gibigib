@@ -5,7 +5,8 @@ import glassStyles from '../components/glass.module.css';
 import { Icon } from '../components/icon';
 import { SectionLabel } from '../components/section-label';
 import { StatusPill } from '../components/status-pill';
-import { DEVICES_HREF, GYMS_NAV, MANAGEMENT_NAV, type NavStatus } from './navigation';
+import { setSignedIn } from '../mock/session';
+import { DEVICES_HREF, GYMS_NAV, LOGIN_HREF, MANAGEMENT_NAV, type NavStatus } from './navigation';
 import styles from './more-sheet.module.css';
 
 interface MoreSheetProps {
@@ -56,7 +57,15 @@ export function MoreSheet({ status, onClose }: MoreSheetProps) {
 
       <ul className={styles.list}>
         <li>
-          <NavLink className={`${styles.row} ${styles.danger}`} to="/prijava" onClick={dismissDialog}>
+          <NavLink
+            className={`${styles.row} ${styles.danger}`}
+            to={LOGIN_HREF}
+            replace
+            onClick={(event) => {
+              setSignedIn(false);
+              dismissDialog(event);
+            }}
+          >
             <Icon name="logout" />
             <span className={styles.label}>Odjava</span>
           </NavLink>
