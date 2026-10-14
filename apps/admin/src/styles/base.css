@@ -1,0 +1,60 @@
+@layer tokens, base;
+
+@layer base {
+  html {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: none;
+  }
+
+  body {
+    margin: 0;
+    min-block-size: 100dvh;
+    background: linear-gradient(135deg, var(--bg-gradient-from), var(--bg-gradient-mid) 50%, var(--background));
+  }
+
+  :where(*, *::before, *::after) {
+    box-sizing: border-box;
+  }
+
+  :where(h1, h2, h3, p, ul, ol, figure) {
+    margin: 0;
+  }
+
+  :where(ul, ol) {
+    padding: 0;
+    list-style: none;
+  }
+
+  :where(button, input, select) {
+    font: inherit;
+    color: inherit;
+  }
+
+  :where(button) {
+    cursor: pointer;
+  }
+
+  :where(a) {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(*, *::before, *::after) {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}

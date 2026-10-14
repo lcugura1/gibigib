@@ -1,0 +1,8 @@
+.label {
+  font-size: var(--text-section-label);
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--label-color, var(--text-secondary));
+}

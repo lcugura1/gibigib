@@ -6,6 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev:admin": "pnpm --filter @gibigib/admin dev",
     "dev:api": "pnpm --filter @gibigib/api dev",
     "dev:mobile": "pnpm --filter @gibigib/mobile start",
     "typecheck": "pnpm -r typecheck"

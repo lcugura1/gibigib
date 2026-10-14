@@ -1,0 +1,12 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.comparison {
+  margin-inline-start: auto;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}

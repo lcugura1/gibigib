@@ -1,0 +1,14 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  align-items: start;
+}
+
+.main {
+  inline-size: 100%;
+  max-inline-size: var(--content-max);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  padding: var(--page-gutter);
+}

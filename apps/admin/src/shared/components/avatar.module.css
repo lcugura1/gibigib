@@ -1,0 +1,19 @@
+.avatar {
+  inline-size: var(--avatar-size, 2rem);
+  aspect-ratio: 1;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-border);
+  color: var(--text-secondary);
+  font-size: var(--text-label-small);
+  font-weight: 700;
+}
+
+.light {
+  --avatar-size: 2.25rem;
+  background: var(--surface-on-light-muted);
+  color: var(--text-on-light-secondary);
+  font-size: var(--text-section-label);
+}

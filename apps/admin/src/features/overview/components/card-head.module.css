@@ -1,0 +1,17 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.sub {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-body-secondary);
+  color: var(--muted-color, var(--text-secondary));
+}
+
+.aside {
+  text-align: end;
+}

@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.donut {
+  position: relative;
+  inline-size: min(100%, 12.5rem);
+  margin-inline: auto;
+}
+
+.ring {
+  inline-size: 100%;
+  block-size: auto;
+  fill: none;
+  stroke-width: 28;
+}
+
+.centre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.planName {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--tag);
+}
+
+.share {
+  font-size: var(--text-metric-donut);
+  line-height: 1.1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.count {
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-8);
+}

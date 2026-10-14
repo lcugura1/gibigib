@@ -1,0 +1,59 @@
+.screen {
+  container: overview / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.board {
+  display: grid;
+  gap: var(--space-24);
+  align-items: start;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  min-inline-size: 0;
+}
+
+@container overview (inline-size >= 60rem) {
+  .board {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .wide {
+    grid-column: span 8;
+  }
+
+  .narrow {
+    grid-column: span 4;
+  }
+
+  .stretch {
+    align-self: stretch;
+  }
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-32) var(--space-24);
+  text-align: center;
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+.retry {
+  block-size: 3.125rem;
+  padding-inline: var(--space-20);
+  border: 0;
+  border-radius: var(--radius-14);
+  background: linear-gradient(135deg, var(--button-primary-from), var(--button-primary-to));
+  color: var(--text-on-light);
+  font-size: var(--text-button);
+  font-weight: 700;
+}

@@ -1,0 +1,83 @@
+@layer tokens {
+  :root {
+    color-scheme: dark;
+
+    --background: #000;
+    --bg-gradient-from: #1a1b1f;
+    --bg-gradient-mid: #0c0c0e;
+    --surface: #0e0e10;
+    --surface-border: #1f1f22;
+    --card-from: #1a1b1e;
+    --card-to: #0c0c0e;
+    --card-border: #26272b;
+    --card-light: #fff;
+    --surface-on-light-muted: #efeff2;
+
+    --text-primary: #fff;
+    --text-secondary: #8e8e93;
+    --text-on-light: #000;
+    --text-on-light-secondary: #6b6b70;
+
+    --border: #3a3a3a;
+    --border-focused: #fff;
+    --button-primary-from: #fff;
+    --button-primary-to: #cfcfcf;
+
+    --accent: #c5f23d;
+    --warning: #ff9f0a;
+    --danger: #ff3b30;
+
+    --tag-lime: #c5f23d;
+    --tag-blue: #4da3ff;
+    --tag-orange: #ff9f45;
+    --tag-violet: #b57bff;
+
+    --tile-fill: rgb(255 255 255 / 5%);
+    --divider: rgb(255 255 255 / 6%);
+    --divider-on-light: rgb(0 0 0 / 8%);
+    --count-pill: rgb(255 255 255 / 8%);
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+
+    --space-2: 0.125rem;
+    --space-4: 0.25rem;
+    --space-6: 0.375rem;
+    --space-8: 0.5rem;
+    --space-10: 0.625rem;
+    --space-12: 0.75rem;
+    --space-14: 0.875rem;
+    --space-16: 1rem;
+    --space-20: 1.25rem;
+    --space-24: 1.5rem;
+    --space-32: 2rem;
+
+    --radius-pill: 999px;
+    --radius-24: 1.5rem;
+    --radius-18: 1.125rem;
+    --radius-16: 1rem;
+    --radius-14: 0.875rem;
+    --radius-12: 0.75rem;
+    --radius-10: 0.625rem;
+    --radius-4: 0.25rem;
+
+    --opacity-dimmed: 0.4;
+
+    --text-badge: 0.6875rem;
+    --text-label-small: 0.75rem;
+    --text-section-label: 0.8125rem;
+    --text-body-secondary: 0.875rem;
+    --text-body: 0.9375rem;
+    --text-button: 1rem;
+    --text-title-card: 1.25rem;
+    --text-unit: 1.375rem;
+    --text-price: 1.625rem;
+    --text-title-tab: 1.875rem;
+    --text-metric-donut: 2.5rem;
+    --text-metric-xl: 2.875rem;
+
+    --page-gutter: clamp(var(--space-16), 2.5vw, var(--space-32));
+    --sidebar-width: 15rem;
+    --content-max: 90rem;
+  }
+}

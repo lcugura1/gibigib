@@ -1,0 +1,24 @@
+.track {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  border-radius: var(--radius-16);
+  background: var(--tile-fill);
+}
+
+.option {
+  padding: var(--space-8) var(--space-16);
+  border: 0;
+  border-radius: var(--radius-12);
+  background: none;
+  font-size: var(--text-body);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.22s, color 0.22s;
+
+  &[aria-pressed='true'] {
+    background: var(--text-primary);
+    color: var(--text-on-light);
+  }
+}
