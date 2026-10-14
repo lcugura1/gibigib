@@ -25,6 +25,7 @@ const schema = z.object({
     }),
   DEMO_RESET: z.string().optional(),
   ENTRY_ANTI_PASSBACK_MINUTES: z.coerce.number().int().min(0).default(30),
+  OCCUPANCY_WINDOW_MINUTES: z.coerce.number().int().positive().default(60),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().positive(),
   SMTP_SECURE: z.stringbool().default(false),

@@ -12,6 +12,7 @@ import { getActiveMembership } from './membership';
 const TOKEN_TTL_MS = 45_000;
 const TOKEN_REUSE_MIN_MS = 20_000;
 const ANTI_PASSBACK_MS = env.ENTRY_ANTI_PASSBACK_MINUTES * 60_000;
+const OCCUPANCY_WINDOW_MS = env.OCCUPANCY_WINDOW_MINUTES * 60_000;
 
 const DENIED_MESSAGES: Record<Exclude<EntryOutcome, 'GRANTED'>, string> = {
   INVALID_TOKEN: 'Nevažeća ulaznica',
@@ -166,14 +167,18 @@ export async function scanEntryCode(
   };
 }
 
+// Nothing records leaving the gym, so everyone who entered within the window counts as inside.
 export async function getOccupancy(): Promise<OccupancyDto> {
-  const [members, gym] = await Promise.all([
-    prisma.attendance.groupBy({
-      by: ['userId'],
-      where: { checkInAt: { gte: startOfToday() } },
-    }),
-    prisma.gym.findFirstOrThrow(),
-  ]);
+  const gym = await prisma.gym.findFirstOrThrow();
+  const members = await prisma.entryEvent.groupBy({
+    by: ['userId'],
+    where: {
+      outcome: 'GRANTED',
+      userId: { not: null },
+      device: { gymId: gym.id },
+      createdAt: { gte: new Date(Date.now() - OCCUPANCY_WINDOW_MS) },
+    },
+  });
 
   return { count: members.length, capacity: gym.capacity };
 }
