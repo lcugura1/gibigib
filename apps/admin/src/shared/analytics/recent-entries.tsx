@@ -18,6 +18,7 @@ interface RecentEntriesProps {
   live: LiveStatusDto;
   gymId: string | undefined;
   scopeLabel?: string;
+  onShowAll?: () => void;
   className?: string;
 }
 
@@ -40,7 +41,7 @@ function emptyMessage(live: LiveStatusDto, gymId: string | undefined, last: Entr
   return `Još nema ulaza danas. Zadnji ulaz bio je ${lastEntryWhen(last.at, live.updatedAt)} (${gymName}).`;
 }
 
-export function RecentEntries({ entries, live, gymId, scopeLabel, className }: RecentEntriesProps) {
+export function RecentEntries({ entries, live, gymId, scopeLabel, onShowAll, className }: RecentEntriesProps) {
   const compact = useViewport() === 'phone';
   const singleGym = gymId !== undefined;
   const gymIds = live.gyms.map((gym) => gym.id);
@@ -52,7 +53,7 @@ export function RecentEntries({ entries, live, gymId, scopeLabel, className }: R
     <Card variant="flat" className={`${styles.card} ${className ?? ''}`} aria-labelledby="entries-heading">
       <div className={styles.head}>
         <SectionLabel id="entries-heading">Zadnji ulazi{scopeLabel && ` · ${scopeLabel}`}</SectionLabel>
-        <Link className={styles.all} to={ENTRIES_HREF}>
+        <Link className={styles.all} to={ENTRIES_HREF} onClick={onShowAll}>
           {compact ? 'Svi' : 'Svi ulazi'}
           <Icon name="chevron" />
         </Link>

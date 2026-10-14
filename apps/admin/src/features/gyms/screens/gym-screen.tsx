@@ -6,6 +6,7 @@ import { KpiRow } from '../../../shared/analytics/kpi-row';
 import { PeakHours } from '../../../shared/analytics/peak-hours';
 import { PlanMix } from '../../../shared/analytics/plan-mix';
 import { RecentEntries } from '../../../shared/analytics/recent-entries';
+import { showTodayEntries } from '../../entries/services/entries-state';
 import { useCatalog } from '../../../shared/catalog/catalog';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { LoadError } from '../../../shared/components/load-error';
@@ -129,6 +130,7 @@ export function GymScreen() {
                   live={live}
                   gymId={gymId}
                   scopeLabel={gymName}
+                  onShowAll={() => showTodayEntries(gymId)}
                 />
               </div>
             </>

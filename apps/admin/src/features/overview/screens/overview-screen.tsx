@@ -19,6 +19,7 @@ import { OverviewSkeleton } from '../components/overview-skeleton';
 import { PeakHours } from '../../../shared/analytics/peak-hours';
 import { PlanMix } from '../../../shared/analytics/plan-mix';
 import { RecentEntries } from '../../../shared/analytics/recent-entries';
+import { showTodayEntries } from '../../entries/services/entries-state';
 import {
   overview$,
   range$,
@@ -94,7 +95,13 @@ export function OverviewScreen() {
             />
             <AttentionCard className={layout.attention} attention={overview.data.attention} gyms={live.gyms} />
             <PlanMix className={layout.plans} planMix={overview.data.planMix} />
-            <RecentEntries className={layout.entries} entries={entries} live={live} gymId={gymId} />
+            <RecentEntries
+              className={layout.entries}
+              entries={entries}
+              live={live}
+              gymId={gymId}
+              onShowAll={() => showTodayEntries(scope)}
+            />
           </div>
         </>
       )}

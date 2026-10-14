@@ -31,6 +31,12 @@ export const goToPage = (page: number) => pageRequest$.next({ page, append: fals
 export const loadOlder = (page: number) => pageRequest$.next({ page, append: true });
 export const retryEntries = () => retry$.next();
 
+export function showTodayEntries(scope: string) {
+  scope$.next(scope);
+  range$.next('today');
+  result$.next('all');
+}
+
 const currentCriteria = (): EntriesCriteria => ({
   gymId: gymIdOf(scope$.value),
   range: range$.value,
