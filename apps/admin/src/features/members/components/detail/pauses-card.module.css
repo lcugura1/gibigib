@@ -1,0 +1,68 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.headline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-10);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.count {
+  font-size: var(--text-metric-donut);
+  line-height: 1;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.segments {
+  display: flex;
+  gap: var(--space-6);
+
+  span {
+    flex: 1;
+    block-size: var(--space-6);
+    border-radius: 3px;
+    background: var(--surface-border);
+  }
+
+  .on {
+    background: var(--accent);
+  }
+}
+
+.rule {
+  font-size: var(--text-body-secondary);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.history {
+  li {
+    display: flex;
+    gap: var(--space-24);
+    padding-block: var(--space-12);
+    border-block-start: 1px solid var(--divider);
+    font-size: var(--text-body-secondary);
+  }
+}
+
+.when {
+  inline-size: 6rem;
+  flex: none;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,5 +1,8 @@
 import { createBrowserRouter } from 'react-router';
+import { MemberDetailScreen } from '../features/members/screens/member-detail-screen';
+import { MembersScreen } from '../features/members/screens/members-screen';
 import { OverviewScreen } from '../features/overview/screens/overview-screen';
+import { MEMBERS_HREF } from '../shared/layout/navigation';
 import { AppLayout } from './app-layout';
 import { ComingSoonScreen } from './coming-soon-screen';
 
@@ -8,6 +11,8 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <OverviewScreen /> },
+      { path: MEMBERS_HREF, element: <MembersScreen /> },
+      { path: `${MEMBERS_HREF}/:memberId`, element: <MemberDetailScreen /> },
       { path: '*', element: <ComingSoonScreen /> },
     ],
   },

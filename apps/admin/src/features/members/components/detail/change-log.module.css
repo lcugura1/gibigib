@@ -1,0 +1,54 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.all {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+
+  @media (width < 1200px) {
+    min-block-size: 2.75rem;
+  }
+}
+
+.entry {
+  display: flex;
+  gap: var(--space-16);
+  padding-block: var(--space-12);
+  font-size: var(--text-body-secondary);
+
+  & + & {
+    border-block-start: 1px solid var(--divider);
+  }
+
+  b {
+    font-weight: 700;
+  }
+}
+
+.when {
+  inline-size: 6rem;
+  flex: none;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+
+  @media (width < 768px) {
+    inline-size: 3.5rem;
+  }
+}
+
+.actor {
+  color: var(--text-secondary);
+}

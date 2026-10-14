@@ -1,0 +1,131 @@
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16) var(--space-24);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-20);
+  min-inline-size: 0;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-inline-size: 0;
+}
+
+.name {
+  font-size: 2.125rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.email {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6) var(--space-12);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.gym {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+
+  &::before {
+    content: '';
+    inline-size: 0.5625rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--tag);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.primary,
+.outline,
+.danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  block-size: 3.125rem;
+  padding-inline: var(--space-20);
+  border-radius: var(--radius-14);
+  font-size: var(--text-button);
+  white-space: nowrap;
+}
+
+.primary {
+  border: 0;
+  background: linear-gradient(135deg, var(--button-primary-from), var(--button-primary-to));
+  color: var(--text-on-light);
+  font-weight: 700;
+}
+
+.outline,
+.danger {
+  border: 1px solid var(--border);
+  background: none;
+  font-weight: 600;
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+
+  .identity {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-12);
+  }
+
+  .names {
+    align-items: center;
+  }
+
+  .name {
+    font-size: var(--text-title-tab);
+  }
+
+  .meta {
+    justify-content: center;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .primary {
+    grid-column: 1 / -1;
+  }
+
+  .outline,
+  .danger {
+    block-size: 3rem;
+  }
+}

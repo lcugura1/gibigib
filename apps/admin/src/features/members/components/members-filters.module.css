@@ -1,0 +1,38 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+
+  @media (width < 768px) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-inline: calc(-1 * var(--space-16));
+    padding-inline: var(--space-16);
+    scrollbar-width: none;
+  }
+}
+
+.toggle {
+  flex: none;
+  block-size: 2.5rem;
+  white-space: nowrap;
+
+  @media (width < 1200px) {
+    block-size: 2.75rem;
+  }
+}
+
+.clear {
+  flex: none;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-8);
+  border: 0;
+  background: none;
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
