@@ -7,9 +7,11 @@ import { OverviewScreen } from '../features/overview/screens/overview-screen';
 import { AuditScreen } from '../features/audit/screens/audit-screen';
 import { RevenueScreen } from '../features/revenue/screens/revenue-screen';
 import { PlansScreen } from '../features/plans/screens/plans-screen';
+import { EventsScreen } from '../features/events/screens/events-screen';
 import {
   AUDIT_HREF,
   ENTRIES_HREF,
+  EVENTS_HREF,
   GYMS_NAV,
   MEMBERS_HREF,
   PLANS_HREF,
@@ -32,6 +34,8 @@ export const router = createBrowserRouter([
       { path: REVENUE_HREF, element: <RevenueScreen /> },
       { path: PLANS_HREF, element: <PlansScreen /> },
       { path: `${PLANS_HREF}/:planId`, element: <PlansScreen /> },
+      { path: EVENTS_HREF, element: <EventsScreen /> },
+      { path: `${EVENTS_HREF}/:eventId`, element: <EventsScreen /> },
       { path: '*', element: <ComingSoonScreen /> },
     ],
   },
