@@ -37,5 +37,6 @@ export function useEntryToken(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { qrValue: token ? `${ENTRY_QR_PREFIX}${token}` : null };
+  // The QR holds the bare numeric token, which a Hikvision reader can read as a card number.
+  return { qrValue: token };
 }

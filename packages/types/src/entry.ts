@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
+// Older app builds put this before the token; scanners still strip it.
 export const ENTRY_QR_PREFIX = 'gibigib:';
+
+// Hikvision readers pass a QR code on as a card number, which holds at most 20 digits.
+export const ENTRY_TOKEN_DIGITS = 20;
 
 export const entryTokenDtoSchema = z.object({
   token: z.string(),
@@ -10,7 +14,7 @@ export const entryTokenDtoSchema = z.object({
 export type EntryTokenDto = z.infer<typeof entryTokenDtoSchema>;
 
 export const entryScanSchema = z.object({
-  code: z.string().min(1, 'Nevažeća ulaznica'),
+  code: z.string().trim().min(1, 'Nevažeća ulaznica').max(200, 'Nevažeća ulaznica'),
 });
 
 export type EntryScanInput = z.infer<typeof entryScanSchema>;

@@ -1,6 +1,6 @@
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 import type { EntryScanResult, EntryTokenDto, OccupancyDto } from '@gibigib/types';
-import { ENTRY_QR_PREFIX } from '@gibigib/types';
+import { ENTRY_QR_PREFIX, ENTRY_TOKEN_DIGITS } from '@gibigib/types';
 import { env } from '../config/env';
 import type { EntryOutcome } from '../generated/prisma/client';
 import type { AuthenticatedDevice } from '../plugins/device-auth';
@@ -28,6 +28,16 @@ function startOfToday() {
   return date;
 }
 
+// Digits only, so a Hikvision reader can pass it on as a card number. The first digit is never 0
+// because readers may drop leading zeros. That leaves about 66 random bits.
+function generateEntryToken() {
+  let token = String(randomInt(1, 10));
+  while (token.length < ENTRY_TOKEN_DIGITS) {
+    token += String(randomInt(0, 10));
+  }
+  return token;
+}
+
 export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
   const membership = await getActiveMembership(userId);
   if (!membership) {
@@ -47,7 +57,7 @@ export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
     existing ??
     (await prisma.entryToken.create({
       data: {
-        token: randomBytes(16).toString('hex'),
+        token: generateEntryToken(),
         userId,
         expiresAt: new Date(now + TOKEN_TTL_MS),
       },
