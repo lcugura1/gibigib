@@ -14,6 +14,7 @@ import { deviceRoutes } from './routes/device';
 import { entryRoutes } from './routes/entry';
 import { membershipRoutes } from './routes/memberships';
 import { occupancyRoutes } from './routes/occupancy';
+import { paymentRoutes } from './routes/payments';
 import { profileRoutes } from './routes/profile';
 import { errorHandler } from './middleware/error-handler';
 
@@ -34,6 +35,7 @@ await app.register(deviceAuthPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
 await app.register(attendanceRoutes, { prefix: '/attendance' });
 await app.register(membershipRoutes, { prefix: '/memberships' });
+await app.register(paymentRoutes, { prefix: '/payments' });
 await app.register(profileRoutes, { prefix: '/profile' });
 await app.register(entryRoutes, { prefix: '/entry' });
 await app.register(occupancyRoutes);

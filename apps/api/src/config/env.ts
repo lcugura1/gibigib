@@ -1,6 +1,11 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+// An empty value in .env means "not set".
+function optional<T extends z.ZodType>(schema: T) {
+  return z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
+}
+
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET_KEY: z
@@ -32,6 +37,10 @@ const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().min(1),
+  // Optional so the API runs without Stripe; payment routes then answer 503.
+  STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_\w+$/, 'STRIPE_SECRET_KEY must be a Stripe secret key')),
+  STRIPE_PUBLISHABLE_KEY: optional(z.string().regex(/^pk_(test|live)_\w+$/, 'STRIPE_PUBLISHABLE_KEY must start with pk_')),
+  STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith('whsec_', 'STRIPE_WEBHOOK_SECRET must start with whsec_')),
 });
 
 const parsed = schema.safeParse(process.env);

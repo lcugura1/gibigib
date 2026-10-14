@@ -29,7 +29,13 @@
       "expo-image",
       "expo-secure-store",
       "expo-maps",
-      "./plugins/with-pod-deployment-target"
+      "./plugins/with-pod-deployment-target",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "enableGooglePay": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

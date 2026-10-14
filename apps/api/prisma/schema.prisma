@@ -47,6 +47,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   entryEvents         EntryEvent[]
+  payments            Payment[]
 }
 
 model MembershipProgram {
@@ -59,6 +60,7 @@ model MembershipProgram {
   isActive     Boolean @default(true)
 
   memberships Membership[]
+  payments    Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,9 +74,10 @@ model Membership {
   endDate   DateTime
   status    MembershipStatus @default(ACTIVE)
 
-  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  program MembershipProgram @relation(fields: [programId], references: [id])
-  pauses  MembershipPause[]
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program  MembershipProgram @relation(fields: [programId], references: [id])
+  pauses   MembershipPause[]
+  payments Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -95,6 +98,47 @@ model MembershipPause {
   createdAt DateTime @default(now())
 
   @@index([membershipId, startedAt])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REFUNDED
+}
+
+// One card payment for a membership. The amount is copied from the program when the payment
+// starts, and the membership is granted only after Stripe confirms it.
+model Payment {
+  id                    String        @id @default(cuid())
+  userId                String
+  programId             String
+  membershipId          String?
+  amountCents           Int
+  currency              String
+  status                PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?       @unique
+  paidAt                DateTime?
+  refundedAt            DateTime?
+
+  // Restrict: payments are accounting records, so a member with payments cannot be deleted.
+  user       User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  program    MembershipProgram @relation(fields: [programId], references: [id])
+  membership Membership?       @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([membershipId])
+}
+
+// Stripe webhook events already handled. Stripe can deliver an event more than once.
+model StripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
 }
 
 model Gym {
