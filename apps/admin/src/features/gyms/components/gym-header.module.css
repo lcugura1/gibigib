@@ -1,0 +1,148 @@
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: var(--space-8) var(--space-20);
+
+  .doorNote {
+    grid-column: 1 / -1;
+    text-align: end;
+  }
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-inline-size: 0;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  font-size: 2.125rem;
+  line-height: 1.15;
+  font-weight: 700;
+
+  &::before {
+    content: '';
+    inline-size: 0.75rem;
+    aspect-ratio: 1;
+    flex: none;
+    border-radius: 50%;
+    background: var(--tag);
+  }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6) var(--space-20);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  svg {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-8);
+}
+
+.devices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.lastEvent {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+
+  a {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+}
+
+.door {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  block-size: 3.125rem;
+  padding-inline: var(--space-20);
+  border: 0;
+  border-radius: var(--radius-14);
+  background: var(--accent);
+  color: var(--text-on-light);
+  font-size: var(--text-button);
+  font-weight: 700;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.doorNote {
+  font-size: var(--text-section-label);
+  color: var(--danger);
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+
+  .name {
+    font-size: var(--text-title-tab);
+  }
+
+  .meta {
+    gap: var(--space-6);
+  }
+
+  .status {
+    align-items: flex-start;
+  }
+
+  .door {
+    margin-block-start: var(--space-4);
+  }
+}
+
+@media (768px <= width < 1200px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .status {
+      grid-row: 2;
+      grid-column: 1;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .door {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+      align-self: center;
+    }
+  }
+}

@@ -1,0 +1,133 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.sub {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-14);
+  font-size: var(--text-label-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+
+    &::before {
+      content: '';
+      inline-size: 1rem;
+      border-block-start: 2px solid currentColor;
+    }
+  }
+}
+
+.legendText {
+  color: var(--text-secondary);
+}
+
+.legend .average::before {
+  border-block-start-style: dashed;
+}
+
+.legend .threshold::before {
+  border-block-start-color: var(--danger);
+  border-block-start-style: dotted;
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  grid-template-rows: 12.5rem auto;
+  row-gap: var(--space-8);
+
+  @media (width < 768px) {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-rows: 10.5rem auto;
+  }
+}
+
+.yAxis,
+.xAxis {
+  position: relative;
+  font-size: var(--text-label-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.yAxis span {
+  position: absolute;
+  inset-inline-end: var(--space-8);
+  inset-block-start: var(--at);
+  translate: 0 -50%;
+}
+
+.xAxis {
+  grid-column: 2;
+  block-size: 1.25rem;
+
+  span {
+    position: absolute;
+    inset-inline-start: var(--at);
+    translate: -50% 0;
+    white-space: nowrap;
+
+    &:first-child {
+      translate: none;
+    }
+
+    &:last-child {
+      translate: -100% 0;
+    }
+  }
+}
+
+.plot {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--divider);
+  vector-effect: non-scaling-stroke;
+}
+
+.limit {
+  stroke: var(--danger);
+  stroke-width: 2;
+  stroke-dasharray: 2 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.averageLine,
+.todayLine {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.averageLine {
+  stroke: var(--text-secondary);
+  stroke-dasharray: 4 4;
+}
