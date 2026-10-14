@@ -10,6 +10,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
 .buttons {
   display: flex;
   gap: var(--space-6);

@@ -13,3 +13,14 @@ export const viewport$ = defer(() =>
 ).pipe(distinctUntilChanged(), shareReplay({ bufferSize: 1, refCount: true }));
 
 export const useViewport = () => useObservable(viewport$, readViewport());
+
+const split = window.matchMedia('(width >= 1024px)');
+
+export const splitLayout$ = defer(() =>
+  fromEvent(split, 'change').pipe(
+    map(() => split.matches),
+    startWith(split.matches),
+  ),
+).pipe(distinctUntilChanged(), shareReplay({ bufferSize: 1, refCount: true }));
+
+export const useSplitLayout = () => useObservable(splitLayout$, split.matches);

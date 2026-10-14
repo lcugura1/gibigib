@@ -3,6 +3,7 @@ const LOCALE = 'hr-HR';
 const integer = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 0 });
 const oneDecimal = new Intl.NumberFormat(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const currency = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: 'EUR' });
+const amount = new Intl.NumberFormat(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const percent = new Intl.NumberFormat(LOCALE, { style: 'percent', maximumFractionDigits: 0 });
 const time = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' });
 const longWeekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'long' });
@@ -21,6 +22,8 @@ export const formatInteger = (value: number) => integer.format(value);
 export const formatDecimal = (value: number) => oneDecimal.format(value);
 
 export const formatCurrency = (value: number) => currency.format(value);
+
+export const formatAmount = (value: number) => amount.format(value);
 
 export const formatShare = (part: number, whole: number) => percent.format(whole === 0 ? 0 : part / whole);
 
@@ -41,6 +44,11 @@ export function formatDate(iso: string) {
 export function formatFullDate(iso: string) {
   const date = new Date(iso);
   return `${capitalize(longWeekday.format(date))}, ${dayMonthOf(date)} ${date.getFullYear()}.`;
+}
+
+export function formatWeekdayDay(iso: string) {
+  const date = new Date(iso);
+  return `${capitalize(longWeekday.format(date))}, ${dayMonthOf(date)}`;
 }
 
 export const formatWeekdayShort = (iso: string) => capitalize(shortWeekday.format(new Date(iso)));

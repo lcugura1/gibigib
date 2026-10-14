@@ -1,0 +1,36 @@
+.toggle {
+  position: relative;
+  flex: none;
+  inline-size: 3.1875rem;
+  block-size: 1.9375rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-border);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 0.125rem;
+    inset-inline-start: 0.125rem;
+    inline-size: 1.6875rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--text-primary);
+    transition: translate 0.2s;
+  }
+
+  &[aria-checked='true'] {
+    background: var(--accent);
+
+    &::after {
+      translate: 1.25rem 0;
+      background: var(--text-on-light);
+    }
+  }
+
+  &:disabled {
+    opacity: var(--opacity-dimmed);
+    cursor: default;
+  }
+}

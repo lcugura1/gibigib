@@ -1,0 +1,101 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.label {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  block-size: 12.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-12);
+  border: 1px dashed var(--border);
+  background: var(--tile-fill);
+  color: var(--text-secondary);
+  text-align: center;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--border-focused);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+}
+
+.dragging {
+  border-style: solid;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.filled {
+  border-style: solid;
+}
+
+.invalid {
+  border-color: var(--danger);
+}
+
+.prompt {
+  font-size: var(--text-body);
+}
+
+.rules {
+  font-size: var(--text-label-small);
+}
+
+.preview {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.error {
+  font-size: var(--text-section-label);
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-16);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}

@@ -24,10 +24,23 @@ export function ProfileButton() {
   );
 }
 
-export function PageHeader({ title, subtitle, phoneAction }: PageHeaderProps) {
-  const viewport = useViewport();
+export function MemberSearch({ className }: { className?: string }) {
   const search = useObservable(memberSearch$, memberSearch$.value);
   const navigate = useNavigate();
+  const onMembers = useLocation().pathname === MEMBERS_HREF;
+
+  return (
+    <SearchField
+      className={className}
+      value={search}
+      onChange={setMemberSearch}
+      onSubmit={() => !onMembers && navigate(MEMBERS_HREF)}
+    />
+  );
+}
+
+export function PageHeader({ title, subtitle, phoneAction }: PageHeaderProps) {
+  const viewport = useViewport();
   const onMembers = useLocation().pathname === MEMBERS_HREF;
   const titles = (
     <div className={styles.titles}>
@@ -59,12 +72,7 @@ export function PageHeader({ title, subtitle, phoneAction }: PageHeaderProps) {
   return (
     <header className={styles.header}>
       {titles}
-      <SearchField
-        className={styles.search}
-        value={search}
-        onChange={setMemberSearch}
-        onSubmit={() => !onMembers && navigate(MEMBERS_HREF)}
-      />
+      <MemberSearch className={styles.search} />
       <ProfileButton />
     </header>
   );

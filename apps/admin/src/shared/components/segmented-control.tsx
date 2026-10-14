@@ -4,6 +4,7 @@ import styles from './segmented-control.module.css';
 export interface SegmentOption<T extends string> {
   value: T;
   label: ReactNode;
+  count?: ReactNode;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -37,6 +38,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
         >
           {option.label}
+          {option.count !== undefined && <span className={styles.count}>{option.count}</span>}
         </button>
       ))}
     </div>

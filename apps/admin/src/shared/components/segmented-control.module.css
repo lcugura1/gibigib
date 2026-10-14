@@ -39,3 +39,16 @@
     min-inline-size: 0;
   }
 }
+
+.count {
+  margin-inline-start: var(--space-6);
+  padding: 0.0625rem var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--count-pill);
+  font-size: var(--text-label-small);
+  font-weight: 700;
+
+  .option[aria-pressed='true'] & {
+    background: rgb(0 0 0 / 0.16);
+  }
+}

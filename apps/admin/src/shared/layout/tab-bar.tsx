@@ -1,7 +1,8 @@
-import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { Icon } from '../components/icon';
+import { useObservable } from '../lib/use-observable';
 import { MoreSheet } from './more-sheet';
+import { closeMoreSheet, moreSheetOpen$, openMoreSheet } from './more-sheet-state';
 import { TAB_NAV, type NavStatus } from './navigation';
 import styles from './tab-bar.module.css';
 
@@ -13,7 +14,7 @@ const isUnder = (pathname: string, href: string) =>
   href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
 export function TabBar({ status }: TabBarProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
+  const moreOpen = useObservable(moreSheetOpen$, moreSheetOpen$.value);
   const { pathname } = useLocation();
   const inMoreSection = !TAB_NAV.some((item) => isUnder(pathname, item.href));
 
@@ -35,7 +36,7 @@ export function TabBar({ status }: TabBarProps) {
               className={`${styles.tab} ${inMoreSection ? styles.current : ''}`}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
-              onClick={() => setMoreOpen(true)}
+              onClick={openMoreSheet}
             >
               <Icon name="more" />
               Više
@@ -43,7 +44,7 @@ export function TabBar({ status }: TabBarProps) {
           </li>
         </ul>
       </nav>
-      {moreOpen && <MoreSheet status={status} onClose={() => setMoreOpen(false)} />}
+      {moreOpen && <MoreSheet status={status} onClose={closeMoreSheet} />}
     </>
   );
 }
