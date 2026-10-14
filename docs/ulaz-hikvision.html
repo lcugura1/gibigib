@@ -32,7 +32,7 @@
                          └──────── PUT .../door/1 (otvori vrata) ←───────────┘</code></pre>
 
       <h2 id="most">Most</h2>
-      <p>Mali Node proces bez baze, koji radi na računalu u lokalnoj mreži teretane, uz terminal. Terminal prima samo HTTP Digest prijavu, pa most ima vlastitu implementaciju (<code>src/digest.ts</code>). Kad veza padne, most se ponovno spaja nakon 1, 2, 4… do 30 sekundi. Događaje s istim <code>serialNo</code> obrađuje samo jednom.</p>
+      <p>Mali Node proces bez baze, koji radi na računalu u lokalnoj mreži teretane, uz terminal. Terminal prima samo HTTP Digest prijavu, pa most ima vlastitu implementaciju (<code>src/digest.ts</code>). Kad veza padne, ili 60 sekundi ne stigne ništa (ni otkucaj), most se ponovno spaja nakon 1, 2, 4… do 30 sekundi. Isti događaj (<code>serialNo</code> i vrijeme) obrađuje samo jednom, osim ako API nije odgovorio. U log ne upisuje imena članova.</p>
       <table>
         <thead><tr><th>Varijabla</th><th>Značenje</th></tr></thead>
         <tbody>
@@ -44,7 +44,7 @@
       </table>
 
       <h2 id="simulator">Simulator</h2>
-      <p><code>apps/bridge/simulator</code> glumi terminal: traži Digest prijavu, šalje <code>alertStream</code> u istom obliku kao uređaj (s otkucajem svakih 10 s) i prima naredbu za otvaranje vrata. Na <code>http://localhost:8090</code> ima stranicu s kamerom i poljem za unos broja. Kod koji nije broj do 20 znamenki odbija, jer ga ni pravi čitač ne bi prihvatio. Most se na simulator spaja jednako kao na uređaj, pa se testira isti kod koji će raditi u teretani.</p>
+      <p><code>apps/bridge/simulator</code> glumi terminal: traži Digest prijavu, šalje <code>alertStream</code> u istom obliku kao uređaj (s otkucajem svakih 10 s) i prima naredbu za otvaranje vrata. Sluša samo na <code>127.0.0.1</code>, a na <code>http://localhost:8090</code> ima stranicu s kamerom i poljem za unos broja. Kod koji nije broj do 20 znamenki odbija, jer ga ni pravi čitač ne bi prihvatio. Most se na simulator spaja jednako kao na uređaj, pa se testira isti kod koji će raditi u teretani.</p>
 <pre><code># 1. API (apps/api), kao i inače
 corepack pnpm --filter @gibigib/api device create --kind scanner --name "Most (dev)"
 
@@ -66,7 +66,8 @@ corepack pnpm --filter @gibigib/bridge start       # most</code></pre>
         <li>stari kod s prefiksom <code>gibigib:</code> i razmacima API i dalje prepoznaje;</li>
         <li>ISAPI bez Digest prijave dobiva 401;</li>
         <li>most se nakon pada simulatora sam ponovno spoji;</li>
-        <li>ulazak stariji od 60 minuta ne ulazi u popunjenost.</li>
+        <li>ulazak stariji od 60 minuta ne ulazi u popunjenost;</li>
+        <li>čitanje toka: dio razlomljen preko više paketa, slika, XML bez <code>Content-Length</code> i neaktivan događaj.</li>
       </ul>
       <div class="callout warn">Simulator je napisan prema Hikvisionovoj dokumentaciji. Oblik događaja, Digest i ponašanje veze treba potvrditi na pravom uređaju, vidi <a href="otvorena-pitanja.html#hikvision-uredaj">Otvorena pitanja</a>.</div>
 

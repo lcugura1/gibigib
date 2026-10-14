@@ -209,12 +209,14 @@
 
     // A USB QR reader acts as a keyboard: it types the code quickly and presses Enter.
     document.addEventListener('keydown', (event) => {
-      if (!keyForm.hidden || !deviceKey) return;
+      if (!keyForm.hidden || !deviceKey || event.ctrlKey || event.metaKey || event.altKey) return;
       const now = Date.now();
       if (now - readerLastKeyAt > READER_IDLE_RESET_MS) readerBuffer = '';
       readerLastKeyAt = now;
 
-      if (event.key === 'Enter') {
+      // Readers end a code with Enter, some with Tab.
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
         const code = readerBuffer.trim();
         readerBuffer = '';
         if (code && !paused) handleCode(code);

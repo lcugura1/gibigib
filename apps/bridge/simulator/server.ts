@@ -109,7 +109,10 @@ function readBody(request: IncomingMessage) {
     request.setEncoding('utf8');
     request.on('data', (chunk) => {
       body += chunk;
-      if (body.length > 10_000) request.destroy();
+      if (body.length > 10_000) {
+        request.destroy();
+        reject(new Error('body too large'));
+      }
     });
     request.on('end', () => resolve(body));
     request.on('error', reject);
@@ -195,6 +198,7 @@ createServer((request, response) => {
     if (!response.headersSent) response.writeHead(400);
     response.end();
   });
-}).listen(env.SIMULATOR_PORT, () => {
+  // Local only: the card endpoint has no authentication.
+}).listen(env.SIMULATOR_PORT, '127.0.0.1', () => {
   console.log(`Hikvision simulator on http://localhost:${env.SIMULATOR_PORT}`);
 });

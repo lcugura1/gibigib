@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { ENTRY_QR_PREFIX } from '@gibigib/types';
 import { fetchEntryToken } from '@/features/home/services/entry';
 
 // Tokens live 45 s and are single use, so refresh often enough to show a fresh code soon after entry.

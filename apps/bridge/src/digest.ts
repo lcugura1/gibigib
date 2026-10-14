@@ -19,8 +19,10 @@ export type DigestInput = {
   cnonce?: string;
 };
 
+const SUPPORTED_ALGORITHMS = ['MD5', 'SHA-256'];
+
 function hash(algorithm: string, value: string) {
-  return createHash(algorithm.toUpperCase().startsWith('SHA-256') ? 'sha256' : 'md5')
+  return createHash(algorithm.toUpperCase() === 'SHA-256' ? 'sha256' : 'md5')
     .update(value)
     .digest('hex');
 }
@@ -46,12 +48,15 @@ function parseChallenge(header: string | null): Challenge | null {
   if (!header || !/^Digest\s/i.test(header)) return null;
   const params = parseAuthParams(header);
   if (!params.realm || !params.nonce) return null;
+  // The -sess variants hash differently; a clear refusal beats a confusing 401.
+  const algorithm = (params.algorithm ?? 'MD5').toUpperCase();
+  if (!SUPPORTED_ALGORITHMS.includes(algorithm)) return null;
   return {
     realm: params.realm,
     nonce: params.nonce,
     qop: params.qop?.split(',').map((value) => value.trim()).find((value) => value === 'auth'),
     opaque: params.opaque,
-    algorithm: params.algorithm ?? 'MD5',
+    algorithm,
   };
 }
 

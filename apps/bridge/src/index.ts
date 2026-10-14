@@ -1,3 +1,4 @@
+import { setTimeout as sleep } from 'node:timers/promises';
 import { config } from './config';
 import { openDoor, readAlertStream, type CardEvent } from './hikvision';
 
@@ -5,10 +6,10 @@ type ScanResult = { ok: boolean; message: string; memberName?: string };
 
 const RECONNECT_MIN_MS = 1_000;
 const RECONNECT_MAX_MS = 30_000;
-const SEEN_SERIALS_LIMIT = 200;
+const SEEN_EVENTS_LIMIT = 200;
 
 const controller = new AbortController();
-const seenSerials: string[] = [];
+const seenEvents: string[] = [];
 
 function log(message: string) {
   console.log(`${new Date().toISOString()} ${message}`);
@@ -32,28 +33,40 @@ async function scan(code: string): Promise<ScanResult> {
   };
 }
 
-// The terminal can send the same event twice after a reconnect; the serial number tells them apart.
-function alreadySeen(event: CardEvent) {
-  if (!event.serialNo) return false;
-  if (seenSerials.includes(event.serialNo)) return true;
-  seenSerials.push(event.serialNo);
-  if (seenSerials.length > SEEN_SERIALS_LIMIT) seenSerials.shift();
-  return false;
+// The terminal can resend an event after a reconnect. Serial numbers restart after a reboot, so the
+// event time is part of the key.
+function eventKey(event: CardEvent) {
+  return event.serialNo ? `${event.serialNo}|${event.dateTime ?? ''}` : null;
 }
 
 async function handle(event: CardEvent) {
-  if (alreadySeen(event)) return;
+  const key = eventKey(event);
+  if (key) {
+    if (seenEvents.includes(key)) return;
+    seenEvents.push(key);
+    if (seenEvents.length > SEEN_EVENTS_LIMIT) seenEvents.shift();
+  }
+
+  let result: ScanResult;
+  try {
+    result = await scan(event.cardNo);
+  } catch (err) {
+    // Not answered, so a resent copy of this event may still be handled.
+    if (key) seenEvents.splice(seenEvents.indexOf(key), 1);
+    log(`scan failed: ${(err as Error).message}`);
+    return;
+  }
+
+  if (!result.ok) {
+    log(`denied: ${result.message}`);
+    return;
+  }
 
   try {
-    const result = await scan(event.cardNo);
-    if (!result.ok) {
-      log(`denied: ${result.message}`);
-      return;
-    }
     await openDoor();
-    log(`granted, door opened${result.memberName ? ` for ${result.memberName}` : ''}`);
+    log('granted, door opened');
   } catch (err) {
-    log(`scan failed: ${(err as Error).message}`);
+    log(`granted, but the door did not open: ${(err as Error).message}`);
   }
 }
 
@@ -63,8 +76,11 @@ async function run() {
   while (!controller.signal.aborted) {
     try {
       log(`connecting to ${config.HIKVISION_URL}`);
-      for await (const event of readAlertStream(controller.signal)) {
+      const onConnected = () => {
         delay = RECONNECT_MIN_MS;
+        log('connected');
+      };
+      for await (const event of readAlertStream(controller.signal, onConnected)) {
         void handle(event);
       }
       log('alert stream closed');
@@ -73,7 +89,11 @@ async function run() {
       log(`alert stream error: ${(err as Error).message}`);
     }
 
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      await sleep(delay, undefined, { signal: controller.signal });
+    } catch {
+      break;
+    }
     delay = Math.min(delay * 2, RECONNECT_MAX_MS);
   }
 }
