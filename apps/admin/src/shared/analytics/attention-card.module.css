@@ -1,0 +1,121 @@
+.card {
+  --ink: var(--text-on-light);
+  --ink-muted: var(--text-on-light-secondary);
+  --ink-inverse: var(--text-primary);
+  --line: var(--divider-on-light);
+  --action-fill: var(--text-on-light);
+  --action-text: var(--text-primary);
+  --action-border: var(--text-on-light);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.count {
+  font-size: var(--text-section-label);
+  color: var(--ink-muted);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-block-size: 2.25rem;
+  padding-inline: var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+
+  b {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ink-inverse);
+
+    b {
+      color: var(--text-secondary);
+    }
+  }
+}
+
+.hint {
+  font-size: var(--text-section-label);
+  color: var(--ink-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding-block: var(--space-12);
+
+  & + & {
+    border-block-start: 1px solid var(--line);
+  }
+}
+
+.who {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.name {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.meta {
+  font-size: var(--text-section-label);
+  color: var(--ink-muted);
+}
+
+.action {
+  block-size: 2.75rem;
+  padding-inline: var(--space-14);
+  border: 0;
+  border-radius: var(--radius-12);
+  border: 1px solid var(--action-border);
+  background: var(--action-fill);
+  color: var(--action-text);
+  font-size: var(--text-body-secondary);
+  font-weight: 700;
+  white-space: nowrap;
+
+  @media (width >= 1200px) {
+    block-size: 2.5rem;
+  }
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-block-size: 2.75rem;
+  gap: var(--space-4);
+  font-size: var(--text-body-secondary);
+  font-weight: 700;
+}
+
+.flat {
+  --ink: var(--text-primary);
+  --ink-muted: var(--text-secondary);
+  --ink-inverse: var(--text-on-light);
+  --line: var(--divider);
+  --action-fill: none;
+  --action-text: var(--text-primary);
+  --action-border: var(--border);
+}

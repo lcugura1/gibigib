@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react';
 import styles from './segmented-control.module.css';
 
 export interface SegmentOption<T extends string> {
   value: T;
-  label: string;
+  label: ReactNode;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -10,11 +11,23 @@ interface SegmentedControlProps<T extends string> {
   options: readonly SegmentOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  size?: 'regular' | 'small';
+  fill?: boolean;
+  className?: string;
 }
 
-export function SegmentedControl<T extends string>({ label, options, value, onChange }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  size = 'regular',
+  fill = false,
+  className,
+}: SegmentedControlProps<T>) {
+  const classes = [styles.track, styles[size], fill ? styles.fill : '', className ?? ''].join(' ');
   return (
-    <div className={styles.track} role="group" aria-label={label}>
+    <div className={classes} role="group" aria-label={label}>
       {options.map((option) => (
         <button
           key={option.value}

@@ -4,9 +4,12 @@ import styles from './status-pill.module.css';
 
 interface StatusPillProps {
   level: Level | 'muted';
+  solid?: boolean;
+  onLight?: boolean;
   children: ReactNode;
 }
 
-export function StatusPill({ level, children }: StatusPillProps) {
-  return <span className={`${styles.pill} ${styles[level]}`}>{children}</span>;
+export function StatusPill({ level, solid = false, onLight = false, children }: StatusPillProps) {
+  const variant = solid ? styles.solid : onLight ? styles.onLight : '';
+  return <span className={`${styles.pill} ${styles[level]} ${variant}`}>{children}</span>;
 }

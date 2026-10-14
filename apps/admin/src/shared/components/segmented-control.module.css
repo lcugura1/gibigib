@@ -15,10 +15,27 @@
   font-size: var(--text-body);
   font-weight: 600;
   white-space: nowrap;
-  transition: background-color 0.22s, color 0.22s;
+  transition:
+    background-color 0.22s,
+    color 0.22s;
 
   &[aria-pressed='true'] {
     background: var(--text-primary);
     color: var(--text-on-light);
+  }
+}
+
+.small .option {
+  padding: 0.4375rem var(--space-12);
+  font-size: var(--text-body-secondary);
+}
+
+.fill {
+  display: flex;
+  flex-wrap: nowrap;
+
+  .option {
+    flex: 1;
+    min-inline-size: 0;
   }
 }

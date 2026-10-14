@@ -1,0 +1,53 @@
+.chip {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  block-size: 2.5rem;
+  padding-inline: var(--space-14) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border);
+  font-size: var(--text-body);
+  white-space: nowrap;
+
+  &:focus-within {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+
+  @media (width < 1200px) {
+    block-size: 2.75rem;
+  }
+}
+
+.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.label {
+  color: var(--text-secondary);
+}
+
+.value {
+  font-weight: 700;
+}
+
+.chevron {
+  color: var(--text-secondary);
+}
+
+.select {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  opacity: 0;
+  font-size: var(--text-button);
+  cursor: pointer;
+
+  option {
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+}

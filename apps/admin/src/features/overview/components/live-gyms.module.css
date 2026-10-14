@@ -17,20 +17,16 @@
   color: var(--text-secondary);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-12);
-
-  @container overview (inline-size >= 60rem) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 .gym {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name level'
+    'value value'
+    'bar bar'
+    'note note';
+  align-items: center;
+  gap: var(--space-12) var(--space-8);
   transition: background 0.15s;
 
   &:hover {
@@ -39,17 +35,90 @@
 }
 
 .name {
+  grid-area: name;
   display: flex;
   align-items: center;
   gap: var(--space-8);
   font-size: var(--text-title-card);
   font-weight: 700;
+  white-space: nowrap;
 
   &::before {
     content: '';
     inline-size: 0.5625rem;
     aspect-ratio: 1;
+    flex: none;
     border-radius: 50%;
     background: var(--tag);
+  }
+}
+
+.level {
+  grid-area: level;
+  justify-self: end;
+}
+
+.value {
+  grid-area: value;
+}
+
+.bar {
+  grid-area: bar;
+}
+
+.note {
+  grid-area: note;
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+}
+
+.short {
+  display: none;
+}
+
+@media (1024px <= width < 1360px) {
+  .gym {
+    grid-template-areas:
+      'name name'
+      'value value'
+      'bar bar'
+      'note level';
+  }
+
+  .name {
+    font-size: 1.125rem;
+  }
+
+  .long {
+    display: none;
+  }
+
+  .short {
+    display: block;
+  }
+}
+
+.gym.compact {
+  --card-padding: var(--space-14);
+  --metric-size: 2rem;
+  --metric-unit-size: var(--text-button);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'name'
+    'value'
+    'bar'
+    'level';
+  gap: var(--space-8);
+
+  .name {
+    font-size: var(--text-button);
+  }
+
+  .level {
+    justify-self: start;
+  }
+
+  .note {
+    display: none;
   }
 }

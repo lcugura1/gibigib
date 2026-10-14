@@ -1,0 +1,117 @@
+.badge {
+  inline-size: 3rem;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 15%, transparent);
+}
+
+.accent {
+  --tone: var(--accent);
+}
+
+.danger {
+  --tone: var(--danger);
+}
+
+.muted {
+  --tone: var(--text-secondary);
+}
+
+.title {
+  font-size: var(--text-headline);
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.description {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-body);
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.highlight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-20);
+  border-radius: var(--radius-18);
+  background: var(--background);
+}
+
+.highlightLabel {
+  font-size: var(--text-label-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.highlightValue {
+  font-size: var(--text-title-tab);
+  line-height: 1.15;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlightNote {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.error {
+  font-size: var(--text-body-secondary);
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.confirm,
+.confirmDanger,
+.confirmAccent,
+.dismiss {
+  block-size: 3.125rem;
+  border-radius: var(--radius-14);
+  font-size: var(--text-button);
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.confirm {
+  border: 0;
+  background: linear-gradient(135deg, var(--button-primary-from), var(--button-primary-to));
+  color: var(--text-on-light);
+  font-weight: 700;
+}
+
+.confirmDanger {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.dismiss {
+  block-size: 2.75rem;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.confirmAccent {
+  border: 0;
+  background: var(--accent);
+  color: var(--text-on-light);
+  font-weight: 700;
+}

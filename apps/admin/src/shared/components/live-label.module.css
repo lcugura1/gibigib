@@ -1,0 +1,26 @@
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.dot {
+  inline-size: 0.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  outline: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    outline-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}

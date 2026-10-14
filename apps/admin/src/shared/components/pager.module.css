@@ -1,0 +1,36 @@
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-block-start: 1px solid var(--surface-border);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-6);
+
+  button {
+    inline-size: 2.75rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: var(--radius-12);
+    border: 1px solid var(--surface-border);
+    background: none;
+
+    &:disabled {
+      opacity: var(--opacity-dimmed);
+      cursor: default;
+    }
+
+    @media (width >= 1200px) {
+      inline-size: 2.25rem;
+    }
+  }
+}

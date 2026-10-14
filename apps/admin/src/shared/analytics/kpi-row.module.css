@@ -1,0 +1,45 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-12);
+
+  @media (width >= 1200px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-block-size: 12.75rem;
+  padding-inline: 0;
+  padding-block-end: 0;
+  overflow: hidden;
+
+  & > :not(.spark) {
+    margin-inline: var(--card-padding);
+  }
+
+  &:not(:has(.spark)) {
+    padding-block-end: var(--card-padding);
+  }
+}
+
+.kpi.compact {
+  --card-padding: var(--space-14);
+  --metric-size: 1.875rem;
+  --metric-unit-size: var(--text-button);
+  --label-size: var(--text-label-small);
+  --spark-height: 2.5rem;
+  gap: var(--space-8);
+  min-block-size: 0;
+}
+
+.spark {
+  margin-block-start: auto;
+}
+
+.pill {
+  align-self: flex-start;
+}

@@ -13,3 +13,8 @@ export * from './attendance';
 export * from './membership';
 export * from './entry';
 export * from './admin-overview';
+export * from './admin-members';
+export * from './admin-catalog';
+export * from './admin-member-detail';
+export * from './admin-entries';
+export * from './admin-gym';

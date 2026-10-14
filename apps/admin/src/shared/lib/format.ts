@@ -25,13 +25,18 @@ export const formatCurrency = (value: number) => currency.format(value);
 export const formatShare = (part: number, whole: number) => percent.format(whole === 0 ? 0 : part / whole);
 
 export const formatSigned = (value: number, format: (abs: number) => string = formatInteger) =>
-  `${value < 0 ? MINUS : '+'}${format(Math.abs(value))}`;
+  `${value < 0 ? MINUS : value === 0 ? '±' : '+'}${format(Math.abs(value))}`;
 
 export const formatTime = (iso: string) => time.format(new Date(iso));
 
 const dayMonthOf = (date: Date) => `${date.getDate()}. ${date.getMonth() + 1}.`;
 
 export const formatDayMonth = (iso: string) => dayMonthOf(new Date(iso));
+
+export function formatDate(iso: string) {
+  const date = new Date(iso);
+  return `${dayMonthOf(date)} ${date.getFullYear()}.`;
+}
 
 export function formatFullDate(iso: string) {
   const date = new Date(iso);
@@ -54,6 +59,9 @@ export function pluralize(count: number, forms: { one: string; few: string; othe
 
 export const formatMembers = (count: number) =>
   `${formatInteger(count)} ${pluralize(count, { one: 'član', few: 'člana', other: 'članova' })}`;
+
+export const formatMembersGenitive = (count: number) =>
+  `${formatInteger(count)} ${pluralize(count, { one: 'člana', few: 'člana', other: 'članova' })}`;
 
 export const formatDays = (count: number) =>
   `${formatInteger(count)} ${pluralize(count, { one: 'dan', few: 'dana', other: 'dana' })}`;

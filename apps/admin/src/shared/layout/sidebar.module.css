@@ -12,21 +12,7 @@
 }
 
 .brand {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-8);
   padding: var(--space-2) var(--space-12) var(--space-20);
-  font-size: 1.1875rem;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: 0.03em;
-
-  small {
-    font-size: var(--text-badge);
-    font-style: normal;
-    font-weight: 700;
-    color: var(--text-secondary);
-  }
 }
 
 .group {

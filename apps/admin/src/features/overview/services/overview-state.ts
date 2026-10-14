@@ -1,4 +1,4 @@
-import type { OverviewDto, OverviewRange } from '@gibigib/types';
+import type { AnalyticsRange } from '@gibigib/types';
 import {
   BehaviorSubject,
   EMPTY,
@@ -6,44 +6,27 @@ import {
   catchError,
   combineLatest,
   map,
-  of,
   shareReplay,
   startWith,
   switchMap,
-  timer,
 } from 'rxjs';
+import { ALL_GYMS, gymIdOf } from '../../../shared/domain/scope';
+import { remote } from '../../../shared/lib/remote';
+import { livePoll$ } from '../../../shared/live/live-status';
 import { overviewApi } from './overview-api';
 
-export const ALL_GYMS = 'all';
-
-const LIVE_POLL_MS = 30_000;
-
-export type Remote<T> = { status: 'ready'; data: T } | { status: 'error' };
-
 export const scope$ = new BehaviorSubject<string>(ALL_GYMS);
-export const range$ = new BehaviorSubject<OverviewRange>('30d');
+export const range$ = new BehaviorSubject<AnalyticsRange>('30d');
 const retry$ = new Subject<void>();
 
 export const selectScope = (scope: string) => scope$.next(scope);
-export const selectRange = (range: OverviewRange) => range$.next(range);
+export const selectRange = (range: AnalyticsRange) => range$.next(range);
 export const retryOverview = () => retry$.next();
 
-const gymFilter$ = scope$.pipe(map((scope) => (scope === ALL_GYMS ? undefined : scope)));
+const gymFilter$ = scope$.pipe(map(gymIdOf));
 
 export const overview$ = combineLatest([gymFilter$, range$, retry$.pipe(startWith(undefined))]).pipe(
-  switchMap(([gymId, range]) =>
-    overviewApi.overview({ gymId, range }).pipe(
-      map((data): Remote<OverviewDto> => ({ status: 'ready', data })),
-      catchError(() => of<Remote<OverviewDto>>({ status: 'error' })),
-    ),
-  ),
-  shareReplay({ bufferSize: 1, refCount: true }),
-);
-
-const livePoll$ = timer(0, LIVE_POLL_MS);
-
-export const liveStatus$ = livePoll$.pipe(
-  switchMap(() => overviewApi.liveStatus().pipe(catchError(() => EMPTY))),
+  switchMap(([gymId, range]) => remote(overviewApi.overview({ gymId, range }))),
   shareReplay({ bufferSize: 1, refCount: true }),
 );
 

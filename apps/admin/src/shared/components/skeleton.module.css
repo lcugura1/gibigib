@@ -1,0 +1,44 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+  padding: var(--space-16);
+  border-radius: var(--radius-24);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+
+.bone {
+  display: block;
+  flex: none;
+  background: var(--surface-border);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.line {
+  border-radius: var(--radius-4);
+}
+
+.block {
+  border-radius: var(--space-8);
+}
+
+.pill {
+  border-radius: var(--radius-pill);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

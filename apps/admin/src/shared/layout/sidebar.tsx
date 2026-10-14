@@ -1,36 +1,32 @@
+import { NavLink } from 'react-router';
 import { Icon } from '../components/icon';
 import { SectionLabel } from '../components/section-label';
+import { Brand } from './brand';
 import { MANAGEMENT_NAV, PRIMARY_NAV, type NavItem } from './navigation';
 import styles from './sidebar.module.css';
 
-interface SidebarProps {
-  currentHref: string;
-}
-
-function NavLinks({ items, currentHref }: { items: readonly NavItem[]; currentHref: string }) {
+function NavLinks({ items }: { items: readonly NavItem[] }) {
   return (
     <ul className={styles.group}>
       {items.map((item) => (
         <li key={item.href}>
-          <a className={styles.link} href={item.href} aria-current={item.href === currentHref ? 'page' : undefined}>
+          <NavLink className={styles.link} to={item.href} end={item.href === '/'}>
             <Icon name={item.icon} />
             {item.label}
-          </a>
+          </NavLink>
         </li>
       ))}
     </ul>
   );
 }
 
-export function Sidebar({ currentHref }: SidebarProps) {
+export function Sidebar() {
   return (
     <nav className={styles.sidebar} aria-label="Glavna navigacija">
-      <a className={styles.brand} href="/">
-        GIBI GIB<small>ADMIN</small>
-      </a>
-      <NavLinks items={PRIMARY_NAV} currentHref={currentHref} />
+      <Brand className={styles.brand} />
+      <NavLinks items={PRIMARY_NAV} />
       <SectionLabel className={styles.groupLabel}>Upravljanje</SectionLabel>
-      <NavLinks items={MANAGEMENT_NAV} currentHref={currentHref} />
+      <NavLinks items={MANAGEMENT_NAV} />
       <div className={styles.owner}>
         <span className={styles.ownerIcon}>
           <Icon name="person" />

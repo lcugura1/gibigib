@@ -1,7 +1,15 @@
 .shell {
   display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
+
+  &[data-viewport='tablet'] {
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  }
+
+  &[data-viewport='desktop'] {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  }
 }
 
 .main {
@@ -10,5 +18,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-24);
-  padding: var(--page-gutter);
+  padding: var(--space-16) var(--space-16) var(--tab-bar-clearance);
+
+  [data-viewport='tablet'] > & {
+    padding: var(--space-24);
+  }
+
+  [data-viewport='desktop'] > & {
+    padding: var(--space-32);
+  }
 }

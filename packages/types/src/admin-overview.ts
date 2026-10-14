@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-export const overviewRangeSchema = z.enum(['today', '7d', '30d', '12m']);
+export const analyticsRangeSchema = z.enum(['today', '7d', '30d', '12m']);
 
-export type OverviewRange = z.infer<typeof overviewRangeSchema>;
+export type AnalyticsRange = z.infer<typeof analyticsRangeSchema>;
 
 export const overviewQuerySchema = z.object({
   gymId: z.string().optional(),
-  range: overviewRangeSchema,
+  range: analyticsRangeSchema,
 });
 
 export type OverviewQuery = z.infer<typeof overviewQuerySchema>;
@@ -106,7 +106,9 @@ export type EntryDenialReason = z.infer<typeof entryDenialReasonSchema>;
 export const entryLogDtoSchema = z.object({
   id: z.string(),
   at: z.string(),
+  memberId: z.string().nullable(),
   memberName: z.string(),
+  device: z.string(),
   gymId: z.string(),
   approved: z.boolean(),
   denialReason: entryDenialReasonSchema.nullable(),

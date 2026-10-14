@@ -21,13 +21,28 @@
 }
 
 .text {
-  flex: 1 1 16rem;
+  flex: 1 1 12rem;
+}
+
+.pill {
+  @media (width < 1024px) {
+    display: none;
+  }
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-secondary);
 }
 
 .title {
   font-size: var(--text-body);
   font-weight: 600;
   color: var(--danger);
+
+  a & {
+    color: var(--text-primary);
+  }
 }
 
 .detail {
@@ -38,11 +53,15 @@
 .action {
   display: inline-flex;
   align-items: center;
-  block-size: 2.5rem;
+  block-size: 2.75rem;
   padding-inline: var(--space-14);
   border-radius: var(--radius-12);
   border: 1px solid var(--border);
   font-size: var(--text-body-secondary);
   font-weight: 600;
   white-space: nowrap;
+
+  @media (width >= 1200px) {
+    block-size: 2.5rem;
+  }
 }

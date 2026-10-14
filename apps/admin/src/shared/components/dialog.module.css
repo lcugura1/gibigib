@@ -1,0 +1,105 @@
+.dialog {
+  padding: 0;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  overscroll-behavior: contain;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  &::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background-color: transparent;
+    transition-property: background-color, display, overlay;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
+  }
+
+  &:is([open]):where(:not([data-closing]))::backdrop {
+    background-color: var(--scrim);
+
+    @starting-style {
+      background-color: transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.1s;
+
+    &::backdrop {
+      transition-duration: 0.1s;
+    }
+  }
+}
+
+.sheet {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  max-block-size: calc(100dvh - var(--space-32));
+  margin: auto 0 0;
+  border-width: 1px 0 0;
+  border-radius: var(--radius-24) var(--radius-24) 0 0;
+  translate: 0 100%;
+  transition-property: translate, display, overlay;
+
+  &:is([open]):where(:not([data-closing])) {
+    translate: 0 0;
+
+    @starting-style {
+      translate: 0 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    translate: none;
+  }
+
+  .body {
+    padding: var(--space-12) var(--space-24) max(2.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+.popup {
+  inline-size: min(100% - var(--space-32), 26.25rem);
+  max-block-size: calc(100dvh - var(--space-32));
+  margin: auto;
+  border-radius: var(--radius-24);
+  opacity: 0;
+  scale: 0.96;
+  transition-property: opacity, scale, display, overlay;
+
+  &:is([open]):where(:not([data-closing])) {
+    opacity: 1;
+    scale: 1;
+
+    @starting-style {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    scale: none;
+  }
+
+  .body {
+    padding: var(--space-24);
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.grabber {
+  inline-size: 2.5rem;
+  block-size: 0.3125rem;
+  margin: 0 auto var(--space-4);
+  border-radius: 3px;
+  background: var(--grabber);
+}

@@ -1,0 +1,41 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.scope {
+  @media (768px <= width < 1024px) {
+    display: flex;
+    flex-basis: 100%;
+    flex-wrap: nowrap;
+
+    & > button {
+      flex: 1;
+    }
+  }
+}
+
+.allRest {
+  @media (768px <= width < 1024px) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.comparison {
+  margin-inline-start: auto;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}

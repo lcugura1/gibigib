@@ -1,6 +1,6 @@
 .spark {
   inline-size: 100%;
-  block-size: 3.25rem;
+  block-size: var(--spark-height, 3.25rem);
   overflow: visible;
 }
 

@@ -6,14 +6,15 @@ interface ChipProps {
   active: boolean;
   meta?: ReactNode;
   onToggle: () => void;
+  className?: string;
   children: ReactNode;
 }
 
-export function Chip({ color, active, meta, onToggle, children }: ChipProps) {
+export function Chip({ color, active, meta, onToggle, className, children }: ChipProps) {
   return (
     <button
       type="button"
-      className={styles.chip}
+      className={`${styles.chip} ${className ?? ''}`}
       style={{ '--tag': color } as CSSProperties}
       aria-pressed={active}
       onClick={onToggle}
