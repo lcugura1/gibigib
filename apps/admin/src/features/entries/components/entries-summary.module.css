@@ -1,0 +1,47 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-12);
+}
+
+.compact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
+
+  .card {
+    --card-padding: var(--space-14);
+    --metric-size: 1.875rem;
+    --label-size: var(--text-label-small);
+    gap: var(--space-6);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.note {
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+
+  b {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.bad {
+  font-size: var(--text-section-label);
+  font-weight: 700;
+  color: var(--danger);
+}

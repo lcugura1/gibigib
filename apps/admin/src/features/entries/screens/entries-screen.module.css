@@ -1,0 +1,44 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+
+  @media (width < 768px) {
+    gap: var(--space-16);
+  }
+}
+
+.summarySkeleton {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-12);
+}
+
+.toolbar {
+  scroll-margin-block-start: var(--space-16);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.emptyCard {
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+
+.more {
+  block-size: 3rem;
+  border-radius: var(--radius-14);
+  border: 1px solid var(--border);
+  background: none;
+  font-size: var(--text-button);
+  font-weight: 600;
+
+  &:disabled {
+    opacity: var(--opacity-dimmed);
+    cursor: default;
+  }
+}

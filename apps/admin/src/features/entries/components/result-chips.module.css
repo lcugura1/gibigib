@@ -1,0 +1,13 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.chip {
+  block-size: 2.5rem;
+
+  @media (width < 1200px) {
+    block-size: 2.75rem;
+  }
+}

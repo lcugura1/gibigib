@@ -1,0 +1,9 @@
+.time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.day,
+.seconds {
+  color: var(--text-secondary);
+}
