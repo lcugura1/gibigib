@@ -25,7 +25,7 @@
       <p>Član koji izađe i vrati se unutar 30 minuta bude odbijen, a osoblje ga zasad ne može pustiti iz sustava. Opcije: kraći prozor, ručno odobrenje ulaza (treba admin dio), izlazni skener. Vrijednost se mijenja varijablom <code>ENTRY_ANTI_PASSBACK_MINUTES</code> bez promjene koda. Odluka <a href="odluke.html#o-003">O-003</a>.</p>
 
       <h3 id="logika">Poglavlje "Ozbiljno: logika" (nalazi #8–#13)</h3>
-      <p>Vremenske zone, kupnja bez transakcije i zapisa o plaćanju, utrka kod rotacije refresh tokena, 500 umjesto 404 te lažni dolasci u aplikaciji. Popunjenost je riješena odlukom <a href="odluke.html#o-016">O-016</a>. Čeka dogovor prije rada.</p>
+      <p>Vremenske zone, utrka kod rotacije refresh tokena, 500 umjesto 404 te lažni dolasci u aplikaciji. Popunjenost je riješena odlukom <a href="odluke.html#o-016">O-016</a>, a kupnja bez zapisa o plaćanju odlukom <a href="odluke.html#o-018">O-018</a>. Čeka dogovor prije rada.</p>
 
       <h3 id="registracija">Registracija i dalje otkriva postoji li račun</h3>
       <p>Odgovor je 409 umjesto 201, iako je tekst neutralan. Pravo rješenje je potvrda e-maila: na postojeći račun pošalje se poruka "već imate račun". Za sada štiti ograničenje od 10 registracija na sat po IP-u.</p>
@@ -43,6 +43,12 @@
         <li>uključenost opcije "Notify Surveillance Center".</li>
       </ul>
       <p>Vidi <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a>.</p>
+
+      <h3 id="fiskalizacija">Računi i fiskalizacija uz Stripe uplate</h3>
+      <p>Kartično plaćanje mora se fiskalizirati, a račun izdaje teretana: treba joj FINA certifikat, prijavljen poslovni prostor i naplatni uređaj. Prijedlog je servis za račune s API-jem, koji se poziva iz webhooka nakon <code>payment_intent.succeeded</code> i šalje PDF na e-mail. Prije toga ide testna izvedba bez JIR-a. Treba odabrati servis zajedno s knjigovođom.</p>
+
+      <h3 id="povrat">Pravilo za povrat novca</h3>
+      <p>Povrat cijelog iznosa oduzima cijelo trajanje plana, a djelomični povrat ne mijenja članarinu (<a href="odluke.html#o-019">O-019</a>). Treba potvrdu vlasnika teretane.</p>
 
       <h2 id="kasnije">Ostavljeno za kasnije</h2>
       <ul>

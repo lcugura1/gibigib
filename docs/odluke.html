@@ -219,6 +219,32 @@
         </dl>
       </section>
 
+      <h2 id="placanje">Plaćanje</h2>
+
+      <section class="card decision" id="o-018">
+        <h3>O-018 · Stripe PaymentSheet, članarina tek nakon webhooka <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-14</dd>
+          <dt>Kontekst</dt><dd><p>Kupnja je bila lažna: <code>POST /memberships</code> je čekao 700 ms i aktivirao članarinu bez naplate. Apple za fizičke usluge (teretanu) traži plaćanje mimo In-App Purchasea (pravilo 3.1.3(e)).</p></dd>
+          <dt>Odluka</dt><dd><p>Stripe PaymentIntent na serveru i Stripeov PaymentSheet u aplikaciji. Iznos uzima server iz baze. Članarina se aktivira samo u webhooku <code>payment_intent.succeeded</code> s provjerenim potpisom, u transakciji koja upisuje i <code>StripeEvent.id</code>. Lažna kupnja je uklonjena.</p></dd>
+          <dt>Razlozi</dt><dd><p>PaymentSheet sam rješava kartice, 3-D Secure i novčanike, a podaci o kartici ne dolaze do nas (PCI SAQ A). Odgovor aplikacije "plaćeno" ne može se lažirati, jer odlučuje samo potpisani Stripe događaj. Stripe Checkout u pregledniku je odbačen jer je dogovor plaćanje u aplikaciji. IAP je odbačen jer ga Apple za fizičke usluge ne dopušta, a uzima 15–30 %.</p></dd>
+          <dt>Posljedice</dt><dd><p>Aplikacija nakon plaćanja nekoliko sekundi čeka webhook. Bez ključeva rute za plaćanje vraćaju 503. Mobilnu aplikaciju treba ponovno izgraditi zbog nativnog modula. Račun teretane i fiskalizacija su odvojen posao.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/payment.ts</code>, <code>apps/api/src/routes/payments.ts</code>, <code>apps/mobile/features/payments/checkout.ts</code>, opis u <a href="placanje.html">Plaćanje (Stripe)</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-019">
+        <h3>O-019 · Povrat cijelog iznosa oduzima vrijeme članarine <span class="badge warn">Privremeno, čeka potvrdu</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-14</dd>
+          <dt>Kontekst</dt><dd><p>Kad osoblje u Stripeu vrati novac, članarina ne smije ostati produljena.</p></dd>
+          <dt>Odluka</dt><dd><p>Na <code>charge.refunded</code> s cijelim iznosom uplata postaje <code>REFUNDED</code>, a članarini se oduzme trajanje tog plana. Ako joj ne ostane vremena, otkazuje se (<code>CANCELLED</code>). Djelomični povrat bilježi samo Stripe i članarinu ne dira.</p></dd>
+          <dt>Razlozi</dt><dd><p>Najjednostavnije pravilo koje se ne može zloupotrijebiti (platiti, ući, zatražiti povrat). Djelomični povrat je poslovna odluka osoblja (npr. pola mjeseca), pa ga sustav ne pogađa.</p></dd>
+          <dt>Posljedice</dt><dd><p>Član kojemu se vrati novac za već iskorišteno razdoblje gubi i dane koje je u međuvremenu iskoristio. Pravilo treba potvrditi s vlasnikom teretane.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/payment.ts</code> (<code>handleRefunded</code>), <code>apps/api/src/services/membership.ts</code> (<code>revokeMembershipTime</code>)</p></dd>
+        </dl>
+      </section>
+
       <footer>GibiGib · projektna dokumentacija</footer>
     </div>
   </main>

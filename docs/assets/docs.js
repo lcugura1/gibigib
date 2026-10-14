@@ -8,6 +8,7 @@ const CHAPTERS = [
   ] },
   { group: 'Sustav', items: [
     { file: 'ulaz-hikvision.html', title: 'Ulaz preko Hikvisiona' },
+    { file: 'placanje.html', title: 'Plaćanje (Stripe)' },
   ] },
   { group: 'Rad na projektu', items: [
     { file: 'odluke.html', title: 'Odluke' },

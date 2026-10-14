@@ -110,7 +110,17 @@ pnpm --filter @gibigib/bridge start             # the bridge
 
 Open `http://localhost:8090`, show the app's QR code to the camera or type the number, and the page shows the door opening. See `docs/ulaz-hikvision.html`.
 
-### 7. Run the mobile app
+### 7. Payments (Stripe, optional)
+
+Memberships are paid with Stripe. Without Stripe keys the API runs, but `/payments` answers 503. With a Stripe account in test mode (no registered business needed), put the test keys from Dashboard → Developers → API keys into `apps/api/.env`, then forward webhooks with the [Stripe CLI](https://docs.stripe.com/stripe-cli):
+
+```sh
+stripe listen --forward-to localhost:3000/payments/webhook \n  --events payment_intent.succeeded,payment_intent.payment_failed,payment_intent.canceled,charge.refunded
+```
+
+Copy the printed `whsec_…` into `STRIPE_WEBHOOK_SECRET` and restart the API. The test card `4242 4242 4242 4242` with any future date and any CVC succeeds. See `docs/placanje.html`.
+
+### 8. Run the mobile app
 
 The app uses a development build (`expo-dev-client`), so it has to be built and installed once per device:
 

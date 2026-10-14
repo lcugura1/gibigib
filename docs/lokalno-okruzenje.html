@@ -55,6 +55,7 @@ corepack pnpm dev                          # API na http://localhost:3000</code>
         <tbody>
           <tr><td><code>ENTRY_ANTI_PASSBACK_MINUTES</code></td><td><code>30</code></td><td>Koliko minuta nakon ulaza isti član ne može ponovno ući. <code>0</code> isključuje.</td></tr>
           <tr><td><code>OCCUPANCY_WINDOW_MINUTES</code></td><td><code>60</code></td><td>Članovi koji su ušli unutar ovoliko minuta broje se kao da su u teretani.</td></tr>
+          <tr><td><code>STRIPE_SECRET_KEY</code>, <code>STRIPE_PUBLISHABLE_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code></td><td>prazno</td><td>Plaćanje. Bez njih rute <code>/payments</code> vraćaju 503, vidi <a href="placanje.html#postavljanje">Plaćanje</a>.</td></tr>
           <tr><td><code>TRUST_PROXY</code></td><td><code>false</code></td><td>Iza reverse proxyja: broj proxyja (obično <code>1</code>) ili njihove adrese/CIDR. <code>true</code> vjeruje svakom <code>X-Forwarded-For</code> i koristi se samo za lokalno testiranje.</td></tr>
           <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_SECURE</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>MAIL_FROM</code></td><td>Mailpit na <code>localhost:1025</code></td><td>Slanje e-maila. Obavezno; u produkciji pravi pružatelj.</td></tr>
         </tbody>
