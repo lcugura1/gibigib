@@ -64,7 +64,7 @@
           <tr><td><code>Gym</code></td><td>Teretana; uređaji i dolasci vezani su uz nju.</td></tr>
           <tr><td><code>EntryToken</code></td><td>QR kod za ulaz: vrijedi 45 s i iskoristiv je jednom.</td></tr>
           <tr><td><code>EntryEvent</code></td><td>Zapis svakog skeniranja, odobrenog ili odbijenog, s razlogom (<code>EntryOutcome</code>).</td></tr>
-          <tr><td><code>Attendance</code></td><td>Prvi ulazak člana u danu (za kalendar i popunjenost).</td></tr>
+          <tr><td><code>Attendance</code></td><td>Prvi ulazak člana u danu (za kalendar). Popunjenost se računa iz <code>EntryEvent</code>.</td></tr>
           <tr><td><code>Device</code></td><td>Skener ili kontroler vrata; vrsta <code>SCANNER</code>/<code>DOOR</code>, hash ključa, opoziv.</td></tr>
           <tr><td><code>DoorCommand</code></td><td>Naredba "otvori vrata" za teretanu, vrijedi 5 s i preuzima se jednom.</td></tr>
           <tr><td><code>RefreshToken</code>, <code>PasswordResetToken</code></td><td>Sesije i kodovi za reset lozinke (hashirani; kod ima brojač pokušaja).</td></tr>

@@ -181,6 +181,44 @@
         </dl>
       </section>
 
+      <h2 id="hikvision">Hikvision i popunjenost</h2>
+
+      <section class="card decision" id="o-015">
+        <h3>O-015 · QR sadrži samo broj od 20 znamenki <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-14</dd>
+          <dt>Kontekst</dt><dd><p>Hikvision terminali QR kod prosljeđuju kao broj kartice, a to polje prima najviše 20 znamenki. Dosadašnji QR (<code>gibigib:</code> i 32 heksadecimalna znaka) uređaj ne bi pročitao.</p></dd>
+          <dt>Odluka</dt><dd><p>Token je 20 nasumičnih znamenki iz <code>crypto.randomInt</code>, prva nikad nije 0. QR sadrži samo taj broj, bez prefiksa. API i dalje skida prefiks <code>gibigib:</code> i razmake, zbog starijih verzija aplikacije i USB čitača.</p></dd>
+          <dt>Razlozi</dt><dd><p>Oko 66 bita slučajnosti uz trajanje od 45 s, jednokratnost i ograničenje od 60 skeniranja u minuti po uređaju ne ostavlja realnu mogućnost pogađanja. Vodeća nula se izbjegava jer je neki čitači odbace kad broj tretiraju kao brojku.</p></dd>
+          <dt>Posljedice</dt><dd><p>Isti QR radi na web skeneru, USB čitaču i Hikvisionu. Tokeni izdani prije promjene istječu za 45 s, pa migracija nije potrebna.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/entry.ts</code>, <code>packages/types/src/entry.ts</code>, <code>apps/mobile/features/home/hooks/use-entry-token.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-016">
+        <h3>O-016 · Popunjenost broji ulaske u zadnjih 60 minuta <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-14</dd>
+          <dt>Kontekst</dt><dd><p>Popunjenost je brojala sve članove koji su ušli od ponoći, pa je navečer pokazivala cijeli dan umjesto trenutnog stanja (jedan od nalaza iz poglavlja "Ozbiljno: logika"). Izlaz se ne bilježi.</p></dd>
+          <dt>Odluka</dt><dd><p>Broje se različiti članovi s odobrenim ulazom (<code>EntryEvent</code> GRANTED) na uređajima te teretane u zadnjih <code>OCCUPANCY_WINDOW_MINUTES</code> minuta (zadano 60).</p></dd>
+          <dt>Razlozi</dt><dd><p>Bez izlaznog skenera procjena prema prosječnom trajanju treninga najbliža je stvarnom stanju. <code>EntryEvent</code> već ima indeks po vremenu i bilježi svaki ulaz, a <code>Attendance</code> samo prvi u danu.</p></dd>
+          <dt>Posljedice</dt><dd><p>Član koji trenira dulje od sat vremena nakon 60 minuta više se ne broji. Točan broj tražio bi izlazni skener ili okretište.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/entry.ts</code> (<code>getOccupancy</code>), <code>apps/api/src/config/env.ts</code></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-017">
+        <h3>O-017 · Most prema Hikvisionu i simulator u <code>apps/bridge</code> <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-14</dd>
+          <dt>Kontekst</dt><dd><p>Terminal ne zna ništa o našim članarinama, a API ne smije biti izložen u lokalnoj mreži teretane niti držati otvorene veze prema uređajima. Uređaj još nemamo.</p></dd>
+          <dt>Odluka</dt><dd><p>Zaseban proces u lokalnoj mreži teretane sluša <code>alertStream</code> terminala, zove <code>POST /entry/scan</code> s ključem skenera i nakon odobrenja otvara vrata preko ISAPI-ja. Simulator govori iste ISAPI pozive (Digest, multipart događaji, otvaranje vrata), pa se most testira bez preinaka.</p></dd>
+          <dt>Razlozi</dt><dd><p>Odluka o ulazu ostaje na jednom mjestu (API), a terminal služi samo kao čitač i brava. Most otvara vrata na temelju odgovora skeniranja, bez čekanja na <code>DoorCommand</code>, jer je to jedan poziv manje i brže otvaranje. Odbačeno: registrirati tokene kao kartice na uređaju, jer bi trebalo stalno sinkronizirati tokene koji traju 45 s.</p></dd>
+          <dt>Posljedice</dt><dd><p>Za granted ulaz i dalje nastaje <code>DoorCommand</code>, koji uz most nitko ne preuzme i istekne za 5 s. Most treba računalo uz terminal (mini PC ili Raspberry Pi). Oblik događaja treba potvrditi na uređaju.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/bridge/src</code>, <code>apps/bridge/simulator</code>, opis u <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a></p></dd>
+        </dl>
+      </section>
+
       <footer>GibiGib · projektna dokumentacija</footer>
     </div>
   </main>

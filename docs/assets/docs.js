@@ -6,6 +6,9 @@ const CHAPTERS = [
     { file: 'pregled-sustava.html', title: 'Pregled sustava' },
     { file: 'lokalno-okruzenje.html', title: 'Lokalno okruženje i testiranje' },
   ] },
+  { group: 'Sustav', items: [
+    { file: 'ulaz-hikvision.html', title: 'Ulaz preko Hikvisiona' },
+  ] },
   { group: 'Rad na projektu', items: [
     { file: 'odluke.html', title: 'Odluke' },
     { file: 'sigurnosni-popravci.html', title: 'Sigurnosni popravci' },

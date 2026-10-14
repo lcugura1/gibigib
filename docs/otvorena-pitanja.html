@@ -17,7 +17,7 @@
       <p class="eyebrow">Rad na projektu</p>
       <h1>Otvorena pitanja</h1>
       <p class="lede">Što još treba dogovoriti ili je namjerno ostavljeno za kasnije. Kad se pitanje riješi, prebaci ga u Odluke.</p>
-      <p class="meta">Stanje: 2026-10-06</p>
+      <p class="meta">Stanje: 2026-10-14</p>
 
       <h2 id="odluke">Treba odlučiti</h2>
 
@@ -25,13 +25,24 @@
       <p>Član koji izađe i vrati se unutar 30 minuta bude odbijen, a osoblje ga zasad ne može pustiti iz sustava. Opcije: kraći prozor, ručno odobrenje ulaza (treba admin dio), izlazni skener. Vrijednost se mijenja varijablom <code>ENTRY_ANTI_PASSBACK_MINUTES</code> bez promjene koda. Odluka <a href="odluke.html#o-003">O-003</a>.</p>
 
       <h3 id="logika">Poglavlje "Ozbiljno: logika" (nalazi #8–#13)</h3>
-      <p>Vremenske zone, kupnja bez transakcije i zapisa o plaćanju, utrka kod rotacije refresh tokena, 500 umjesto 404, popunjenost koja broji dnevne ulaske te lažni dolasci u aplikaciji. Čeka dogovor prije rada.</p>
+      <p>Vremenske zone, kupnja bez transakcije i zapisa o plaćanju, utrka kod rotacije refresh tokena, 500 umjesto 404 te lažni dolasci u aplikaciji. Popunjenost je riješena odlukom <a href="odluke.html#o-016">O-016</a>. Čeka dogovor prije rada.</p>
 
       <h3 id="registracija">Registracija i dalje otkriva postoji li račun</h3>
       <p>Odgovor je 409 umjesto 201, iako je tekst neutralan. Pravo rješenje je potvrda e-maila: na postojeći račun pošalje se poruka "već imate račun". Za sada štiti ograničenje od 10 registracija na sat po IP-u.</p>
 
       <h3 id="login-lockout">Ograničenje prijave po e-mailu</h3>
       <p>10 pokušaja u 15 minuta po e-mailu znači da netko tko zna tuđi e-mail može toj osobi na 15 minuta blokirati prijavu. Alternativa: ključ e-mail + IP, ili ograničenje tek nakon N neuspjelih pokušaja.</p>
+
+      <h3 id="hikvision-uredaj">Most treba provjeriti na pravom Hikvisionu</h3>
+      <p>Most i simulator napisani su prema dokumentaciji. Na uređaju treba potvrditi:</p>
+      <ul>
+        <li>čita li čitač QR s ekrana mobitela;</li>
+        <li>šalje li broj od 20 znamenki bez skraćivanja;</li>
+        <li>ima li svaki dio <code>alertStream</code> zaglavlje <code>Content-Length</code>;</li>
+        <li>Digest (MD5 ili SHA-256);</li>
+        <li>uključenost opcije "Notify Surveillance Center".</li>
+      </ul>
+      <p>Vidi <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a>.</p>
 
       <h2 id="kasnije">Ostavljeno za kasnije</h2>
       <ul>

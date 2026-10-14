@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ulaz preko Hikvisiona · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Sustav</p>
+      <h1>Ulaz preko Hikvisiona</h1>
+      <p class="lede">Kako QR iz aplikacije otvara vrata preko Hikvision terminala, i kako sve to testirati bez uređaja.</p>
+      <p class="meta">Zadnja izmjena: 2026-10-14 · simunbarberic</p>
+
+      <h2 id="tok">Tok ulaska</h2>
+      <ol>
+        <li>Aplikacija prikazuje QR koji sadrži samo broj od 20 znamenki (<a href="odluke.html#o-015">O-015</a>).</li>
+        <li>Hikvision terminal QR čita kao broj kartice. Kartica mu nije poznata, pa vrata sam ne otvara, ali o očitanju javlja događaj na <code>/ISAPI/Event/notification/alertStream</code>.</li>
+        <li>Most (<code>apps/bridge</code>) drži tu vezu otvorenom, iz događaja uzima <code>cardNo</code> i šalje ga na <code>POST /entry/scan</code> s ključem skenera.</li>
+        <li>API odlučuje kao i za web skener: jednokratnost, istek, članarina, anti-passback. Svaki pokušaj ostaje u <code>EntryEvent</code>.</li>
+        <li>Ako je ulaz odobren, most terminalu šalje <code>PUT /ISAPI/AccessControl/RemoteControl/door/1</code> i vrata se otvore.</li>
+      </ol>
+<pre><code>Mobitel (QR)  →  Hikvision / simulator  →  most  →  POST /entry/scan  →  odluka + EntryEvent
+                         ↑                                                   │
+                         └──────── PUT .../door/1 (otvori vrata) ←───────────┘</code></pre>
+
+      <h2 id="most">Most</h2>
+      <p>Mali Node proces bez baze, koji radi na računalu u lokalnoj mreži teretane, uz terminal. Terminal prima samo HTTP Digest prijavu, pa most ima vlastitu implementaciju (<code>src/digest.ts</code>). Kad veza padne, most se ponovno spaja nakon 1, 2, 4… do 30 sekundi. Događaje s istim <code>serialNo</code> obrađuje samo jednom.</p>
+      <table>
+        <thead><tr><th>Varijabla</th><th>Značenje</th></tr></thead>
+        <tbody>
+          <tr><td><code>API_URL</code></td><td>Adresa API-ja</td></tr>
+          <tr><td><code>DEVICE_KEY</code></td><td>Ključ uređaja vrste <code>scanner</code> (<code>device create --kind scanner</code>)</td></tr>
+          <tr><td><code>HIKVISION_URL</code>, <code>HIKVISION_USERNAME</code>, <code>HIKVISION_PASSWORD</code></td><td>Terminal i korisnik s pravom na ISAPI</td></tr>
+          <tr><td><code>HIKVISION_DOOR</code></td><td>Broj vrata (zadano 1)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="simulator">Simulator</h2>
+      <p><code>apps/bridge/simulator</code> glumi terminal: traži Digest prijavu, šalje <code>alertStream</code> u istom obliku kao uređaj (s otkucajem svakih 10 s) i prima naredbu za otvaranje vrata. Na <code>http://localhost:8090</code> ima stranicu s kamerom i poljem za unos broja. Kod koji nije broj do 20 znamenki odbija, jer ga ni pravi čitač ne bi prihvatio. Most se na simulator spaja jednako kao na uređaj, pa se testira isti kod koji će raditi u teretani.</p>
+<pre><code># 1. API (apps/api), kao i inače
+corepack pnpm --filter @gibigib/api device create --kind scanner --name "Most (dev)"
+
+# 2. apps/bridge/.env iz .env.example, upiši DEVICE_KEY
+corepack pnpm --filter @gibigib/bridge simulator   # http://localhost:8090
+corepack pnpm --filter @gibigib/bridge start       # most</code></pre>
+      <p>Na stranici simulatora piše "Most spojen". Prisloni QR iz aplikacije na kameru ili upiši broj, pa se pojavi "Vrata otvorena". Isti kod drugi put ili novi kod unutar anti-passback prozora ne otvaraju vrata.</p>
+
+      <h2 id="usb-citac">USB čitač na web skeneru</h2>
+      <p>Web skener (<code>/scanner/</code>) uz kameru prima i USB čitač QR kodova. Takav čitač radi kao tipkovnica: brzo "utipka" kod i pritisne Enter. Za probu na recepciji dovoljan je laptop, čitač od 20–40 € i mobitel s aplikacijom. Vrata se tako ne otvaraju, ali ulazak se evidentira.</p>
+
+      <h2 id="provjereno">Što je provjereno</h2>
+      <p>2026-10-14, lokalno: API, simulator i most kao zasebni procesi. Provjereno je:</p>
+      <ul>
+        <li>token ima 20 znamenki i ne počinje nulom;</li>
+        <li>ispravan kod jednom otvori vrata, a popunjenost poraste za 1;</li>
+        <li>isti kod ponovno i novi kod unutar anti-passback prozora ne otvaraju vrata;</li>
+        <li>kod koji nije broj simulator odbija;</li>
+        <li>stari kod s prefiksom <code>gibigib:</code> i razmacima API i dalje prepoznaje;</li>
+        <li>ISAPI bez Digest prijave dobiva 401;</li>
+        <li>most se nakon pada simulatora sam ponovno spoji;</li>
+        <li>ulazak stariji od 60 minuta ne ulazi u popunjenost.</li>
+      </ul>
+      <div class="callout warn">Simulator je napisan prema Hikvisionovoj dokumentaciji. Oblik događaja, Digest i ponašanje veze treba potvrditi na pravom uređaju, vidi <a href="otvorena-pitanja.html#hikvision-uredaj">Otvorena pitanja</a>.</div>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

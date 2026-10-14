@@ -45,6 +45,7 @@ corepack pnpm dev                          # API na http://localhost:3000</code>
         <li>Ključ uređaja ispisuje se samo jednom. Ako se izgubi: <code>device revoke --id …</code> pa novi <code>device create</code>.</li>
         <li>Skener: <code>http://localhost:3000/scanner/</code>, pri prvom otvaranju traži ključ skenera.</li>
         <li>E-mailovi (kodovi za reset lozinke): <code>http://localhost:8025</code> (Mailpit).</li>
+        <li>Hikvision bez uređaja: most i simulator, vidi <a href="ulaz-hikvision.html#simulator">Ulaz preko Hikvisiona</a>.</li>
         <li>Nakon promjene sheme: <code>prisma migrate dev --name …</code>, pa <code>prisma generate</code>. Prisma 7 klijent se ne generira sam.</li>
       </ul>
 
@@ -53,6 +54,7 @@ corepack pnpm dev                          # API na http://localhost:3000</code>
         <thead><tr><th>Varijabla</th><th>Zadano</th><th>Značenje</th></tr></thead>
         <tbody>
           <tr><td><code>ENTRY_ANTI_PASSBACK_MINUTES</code></td><td><code>30</code></td><td>Koliko minuta nakon ulaza isti član ne može ponovno ući. <code>0</code> isključuje.</td></tr>
+          <tr><td><code>OCCUPANCY_WINDOW_MINUTES</code></td><td><code>60</code></td><td>Članovi koji su ušli unutar ovoliko minuta broje se kao da su u teretani.</td></tr>
           <tr><td><code>TRUST_PROXY</code></td><td><code>false</code></td><td>Iza reverse proxyja: broj proxyja (obično <code>1</code>) ili njihove adrese/CIDR. <code>true</code> vjeruje svakom <code>X-Forwarded-For</code> i koristi se samo za lokalno testiranje.</td></tr>
           <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_SECURE</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>MAIL_FROM</code></td><td>Mailpit na <code>localhost:1025</code></td><td>Slanje e-maila. Obavezno; u produkciji pravi pružatelj.</td></tr>
         </tbody>
