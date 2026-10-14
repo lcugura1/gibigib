@@ -11,6 +11,8 @@ import { PaymentSection } from "@/features/payments/components/payment-section";
 import { ScrollScreen } from "@/shared/components/scroll-screen";
 import { colors } from "@/shared/theme/colors";
 
+const PROCESSING_REFRESH_MS = 15_000;
+
 export function PlanDetailScreen({ slug }: { slug: string }) {
   const plan = getPlan(slug);
   const router = useRouter();
@@ -32,6 +34,8 @@ export function PlanDetailScreen({ slug }: { slug: string }) {
       if (result === "canceled") return;
       await refresh();
       if (result === "processing") {
+        // The server confirms shortly; refresh again so the pass appears without reopening the app.
+        setTimeout(() => void refresh(), PROCESSING_REFRESH_MS);
         Alert.alert(
           "Plaćanje je primljeno",
           "Članarina će se aktivirati za nekoliko trenutaka.",

@@ -32,7 +32,7 @@ export async function paymentRoutes(app: FastifyInstance) {
 
     webhook.post('/webhook', async (request) => {
       const signature = request.headers['stripe-signature'];
-      await handleStripeWebhook(request.body as Buffer, typeof signature === 'string' ? signature : undefined);
+      await handleStripeWebhook(request.body as Buffer, typeof signature === 'string' ? signature : undefined, request.log);
       return { received: true };
     });
   });

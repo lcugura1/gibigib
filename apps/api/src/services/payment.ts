@@ -5,9 +5,10 @@ import { env } from '../config/env';
 import type { MembershipProgram, Payment, Prisma } from '../generated/prisma/client';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
-import { grantMembership, revokeMembershipTime } from './membership';
+import { grantMembership, lockMember, revokeMembershipTime } from './membership';
 
 const CURRENCY = 'eur';
+const REUSE_PENDING_MS = 30 * 60_000;
 const UNAVAILABLE_MESSAGE = 'Plaćanje trenutno nije dostupno. Pokušaj ponovno kasnije.';
 
 let client: Stripe | null = null;
@@ -50,6 +51,36 @@ export async function createPayment(
   });
   if (!program) {
     throw new HttpError(404, 'Program nije pronađen');
+  }
+
+  // Closing the payment sheet and tapping Pay again continues the same payment instead of
+  // leaving a new unpaid one behind each time.
+  const recent = await prisma.payment.findFirst({
+    where: {
+      userId,
+      programId: program.id,
+      amountCents: program.priceCents,
+      status: 'PENDING',
+      stripePaymentIntentId: { not: null },
+      createdAt: { gt: new Date(Date.now() - REUSE_PENDING_MS) },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (recent?.stripePaymentIntentId) {
+    try {
+      const intent = await stripeClient.paymentIntents.retrieve(recent.stripePaymentIntentId);
+      if (intent.status === 'requires_payment_method' && intent.client_secret) {
+        return {
+          paymentId: recent.id,
+          clientSecret: intent.client_secret,
+          publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+          amountCents: recent.amountCents,
+          currency: recent.currency,
+        };
+      }
+    } catch (err) {
+      log.warn({ err, paymentId: recent.id }, 'Could not reuse a pending PaymentIntent');
+    }
   }
 
   const payment = await prisma.payment.create({
@@ -119,22 +150,23 @@ async function findPayment(tx: Prisma.TransactionClient, intentId: string) {
   });
 }
 
-async function lockMember(tx: Prisma.TransactionClient, userId: string) {
-  // Same per-member lock as entry scans, so membership changes for one member run one at a time.
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
-}
-
-async function handleSucceeded(tx: Prisma.TransactionClient, intent: Stripe.PaymentIntent) {
+async function handleSucceeded(tx: Prisma.TransactionClient, intent: Stripe.PaymentIntent, log: FastifyBaseLogger) {
   const payment = await findPayment(tx, intent.id);
   if (!payment) return;
 
+  // Cannot fix itself on a retry, so it is logged for staff instead of failing the webhook forever.
   if (intent.amount_received !== payment.amountCents || intent.currency !== payment.currency) {
-    throw new Error(`Payment ${payment.id} amount does not match its PaymentIntent ${intent.id}`);
+    log.error(
+      { paymentId: payment.id, paymentIntentId: intent.id, received: intent.amount_received, currency: intent.currency },
+      'Stripe amount does not match the payment; membership not granted, check and refund',
+    );
+    return;
   }
 
   await lockMember(tx, payment.userId);
   const now = new Date();
   // FAILED is included because a member can retry with another card on the same PaymentIntent.
+  // REFUNDED is not: Stripe may deliver the refund before the success.
   const claimed = await tx.payment.updateMany({
     where: { id: payment.id, status: { in: ['PENDING', 'FAILED'] } },
     data: { status: 'SUCCEEDED', paidAt: now },
@@ -155,20 +187,22 @@ async function handleRefunded(tx: Prisma.TransactionClient, charge: Stripe.Charg
   if (!payment) return;
 
   await lockMember(tx, payment.userId);
+  const current = await tx.payment.findUniqueOrThrow({ where: { id: payment.id } });
   const now = new Date();
+  // A refund delivered before the success event still counts, so the later success grants nothing.
   const refunded = await tx.payment.updateMany({
-    where: { id: payment.id, status: 'SUCCEEDED' },
+    where: { id: payment.id, status: { in: ['PENDING', 'FAILED', 'SUCCEEDED'] } },
     data: { status: 'REFUNDED', refundedAt: now },
   });
-  if (refunded.count === 1 && payment.membershipId) {
-    await revokeMembershipTime(tx, payment.membershipId, payment.program.durationDays, now);
+  if (refunded.count === 1 && current.status === 'SUCCEEDED' && current.membershipId) {
+    await revokeMembershipTime(tx, current.membershipId, payment.program.durationDays, now);
   }
 }
 
-async function handleEvent(tx: Prisma.TransactionClient, event: Stripe.Event) {
+async function handleEvent(tx: Prisma.TransactionClient, event: Stripe.Event, log: FastifyBaseLogger) {
   switch (event.type) {
     case 'payment_intent.succeeded':
-      return handleSucceeded(tx, event.data.object);
+      return handleSucceeded(tx, event.data.object, log);
     case 'payment_intent.payment_failed':
       await tx.payment.updateMany({
         where: { stripePaymentIntentId: event.data.object.id, status: 'PENDING' },
@@ -188,7 +222,11 @@ async function handleEvent(tx: Prisma.TransactionClient, event: Stripe.Event) {
 
 // Verifies Stripe's signature over the raw body, then handles each event exactly once: the event
 // id is stored in the same transaction, so a retried delivery finds it and changes nothing.
-export async function handleStripeWebhook(rawBody: Buffer, signature: string | undefined) {
+export async function handleStripeWebhook(
+  rawBody: Buffer,
+  signature: string | undefined,
+  log: FastifyBaseLogger,
+) {
   if (!env.STRIPE_WEBHOOK_SECRET) {
     throw new HttpError(503, UNAVAILABLE_MESSAGE);
   }
@@ -209,6 +247,6 @@ export async function handleStripeWebhook(rawBody: Buffer, signature: string | u
       skipDuplicates: true,
     });
     if (seen.count === 0) return;
-    await handleEvent(tx, event);
+    await handleEvent(tx, event, log);
   });
 }

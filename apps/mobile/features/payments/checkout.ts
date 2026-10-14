@@ -21,7 +21,9 @@ async function waitForConfirmation(paymentId: string): Promise<CheckoutResult> {
     try {
       const payment = await fetchPayment(paymentId);
       if (payment.status === 'SUCCEEDED') return 'paid';
-      if (payment.status === 'FAILED' || payment.status === 'CANCELED') {
+      // FAILED is not final: an earlier declined card may still be on record while the retry that
+      // the sheet just confirmed is on its way.
+      if (payment.status === 'CANCELED' || payment.status === 'REFUNDED') {
         throw new CheckoutError('Plaćanje nije uspjelo. Novac nije naplaćen.');
       }
     } catch (err) {

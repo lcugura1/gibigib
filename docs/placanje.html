@@ -38,13 +38,14 @@ API ◀── POST /payments/webhook (potpisano) ──────────�
       <table>
         <thead><tr><th>Stripe događaj</th><th>Što API napravi</th></tr></thead>
         <tbody>
-          <tr><td><code>payment_intent.succeeded</code></td><td><code>PENDING</code>/<code>FAILED</code> → <code>SUCCEEDED</code> i članarina se produlji. Ako je iznos drugačiji od spremljenog, odbije događaj (Stripe ga ponavlja, a greška ide u log).</td></tr>
+          <tr><td><code>payment_intent.succeeded</code></td><td><code>PENDING</code>/<code>FAILED</code> → <code>SUCCEEDED</code> i članarina se produlji. Ako je iznos drugačiji od spremljenog, članarina se ne daje, a greška ide u log da osoblje vrati novac. Stripeu se odgovara 200, jer ponavljanje to ne bi popravilo.</td></tr>
           <tr><td><code>payment_intent.payment_failed</code></td><td><code>PENDING</code> → <code>FAILED</code>. Član može pokušati drugom karticom, a uspjeh i dalje prolazi.</td></tr>
           <tr><td><code>payment_intent.canceled</code></td><td>→ <code>CANCELED</code></td></tr>
-          <tr><td><code>charge.refunded</code> (cijeli iznos)</td><td><code>SUCCEEDED</code> → <code>REFUNDED</code> i članarini se oduzme trajanje plana. Ako joj ne ostane vremena, otkazuje se (<a href="odluke.html#o-019">O-019</a>).</td></tr>
+          <tr><td><code>charge.refunded</code> (cijeli iznos)</td><td>→ <code>REFUNDED</code>. Ako je uplata već dala članarinu, oduzme joj se trajanje plana, a ako joj ne ostane vremena, otkazuje se (<a href="odluke.html#o-019">O-019</a>). Stripe ne jamči redoslijed, pa povrat koji stigne prije uspjeha znači da kasniji uspjeh ne daje ništa.</td></tr>
         </tbody>
       </table>
-      <p>Svaki događaj obrađuje se točno jednom: njegov <code>id</code> sprema se u <code>StripeEvent</code> u istoj transakciji s promjenom, pa ponovljena dostava ništa ne mijenja. Promjene članarine za istog člana idu jedna po jedna (isti zaključani ključ kao kod ulaza).</p>
+      <p>Svaki događaj obrađuje se točno jednom: njegov <code>id</code> sprema se u <code>StripeEvent</code> u istoj transakciji s promjenom, pa ponovljena dostava ništa ne mijenja. Promjene članarine za istog člana (uplata, povrat, pauza, nastavak) idu jedna po jedna, pod istim zaključanim ključem kao kod ulaza.</p>
+      <p>Ako član zatvori prozor za plaćanje i ponovno pritisne "Plati" unutar 30 minuta, nastavlja se ista neplaćena uplata umjesto da se otvara nova.</p>
 
       <h2 id="postavljanje">Postavljanje</h2>
       <p>U <code>apps/api/.env</code>:</p>
@@ -73,7 +74,7 @@ stripe listen --forward-to localhost:3000/payments/webhook \
         </tbody>
       </table>
       <p>Bilo koji budući datum isteka, bilo koji CVC. Povrat novca: Stripe Dashboard → Payments → plaćanje → Refund.</p>
-      <p>Provjereno 2026-10-14 na Stripe test računu, uz prave PaymentIntente i povrate, s webhookovima potpisanim lokalnom testnom tajnom. Prošlo je 27 provjera, među njima:</p>
+      <p>Provjereno 2026-10-14 na Stripe test računu, uz prave PaymentIntente i povrate, s webhookovima potpisanim lokalnom testnom tajnom. Prošla je 31 provjera, među njima:</p>
       <ul>
         <li>iznos se ne može poslati iz aplikacije;</li>
         <li>prije webhooka nema članarine;</li>
@@ -83,7 +84,9 @@ stripe listen --forward-to localhost:3000/payments/webhook \
         <li>odbijena kartica ostavlja stanje <code>FAILED</code>;</li>
         <li>tuđe plaćanje vraća 404;</li>
         <li>povrat jedine uplate otkazuje članarinu i QR;</li>
-        <li>plaćanje tijekom pauze nastavlja članarinu.</li>
+        <li>povrat koji stigne prije uspjeha ne daje članarinu;</li>
+        <li>ponovni "Plati" nastavlja istu uplatu;</li>
+        <li>plaćanje tijekom pauze nastavlja članarinu, a nastavak pauze vraća pauzirano vrijeme.</li>
       </ul>
       <p>Mobilni dio prolazi provjeru tipova, ali nije isproban na uređaju.</p>
 

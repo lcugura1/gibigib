@@ -47,12 +47,18 @@ function toMembershipDto(membership: MembershipWithRelations): MembershipDto {
   };
 }
 
+// Membership changes for one member run one at a time: pause, resume, payments and refunds.
+export async function lockMember(tx: Prisma.TransactionClient, userId: string) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+}
+
 async function endPause(
   membership: MembershipWithRelations,
   pause: MembershipPause,
   endedAt: Date,
 ): Promise<MembershipWithRelations> {
   return prisma.$transaction(async (tx) => {
+    await lockMember(tx, membership.userId);
     const closed = await tx.membershipPause.updateMany({
       where: { id: pause.id, endedAt: null },
       data: { endedAt },
@@ -60,12 +66,14 @@ async function endPause(
 
     // A concurrent request may have closed the pause already; only that one may extend the end date.
     if (closed.count === 1) {
+      // Read again under the lock: a payment may have moved the end date since the caller read it.
+      const current = await tx.membership.findUniqueOrThrow({ where: { id: membership.id } });
       const pausedMs = endedAt.getTime() - pause.startedAt.getTime();
       await tx.membership.update({
         where: { id: membership.id },
         data: {
           status: 'ACTIVE',
-          endDate: new Date(membership.endDate.getTime() + pausedMs),
+          endDate: new Date(current.endDate.getTime() + pausedMs),
         },
       });
     }
@@ -126,6 +134,7 @@ export async function pauseMembership(userId: string): Promise<MembershipDto> {
   }
 
   const paused = await prisma.$transaction(async (tx) => {
+    await lockMember(tx, userId);
     const switched = await tx.membership.updateMany({
       where: { id: membership.id, status: 'ACTIVE' },
       data: { status: 'PAUSED' },
@@ -226,7 +235,8 @@ export async function revokeMembershipTime(
     where: { id: membershipId },
     include: membershipInclude,
   });
-  if (!membership || membership.status === 'CANCELLED') return;
+  // Nothing left to take back from a membership that already ran out.
+  if (!membership || membership.status === 'CANCELLED' || membership.endDate <= now) return;
 
   const endDate = new Date(membership.endDate.getTime() - durationDays * DAY_MS);
   if (endDate > now) {

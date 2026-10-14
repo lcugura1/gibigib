@@ -240,7 +240,7 @@
           <dt>Kontekst</dt><dd><p>Kad osoblje u Stripeu vrati novac, članarina ne smije ostati produljena.</p></dd>
           <dt>Odluka</dt><dd><p>Na <code>charge.refunded</code> s cijelim iznosom uplata postaje <code>REFUNDED</code>, a članarini se oduzme trajanje tog plana. Ako joj ne ostane vremena, otkazuje se (<code>CANCELLED</code>). Djelomični povrat bilježi samo Stripe i članarinu ne dira.</p></dd>
           <dt>Razlozi</dt><dd><p>Najjednostavnije pravilo koje se ne može zloupotrijebiti (platiti, ući, zatražiti povrat). Djelomični povrat je poslovna odluka osoblja (npr. pola mjeseca), pa ga sustav ne pogađa.</p></dd>
-          <dt>Posljedice</dt><dd><p>Član kojemu se vrati novac za već iskorišteno razdoblje gubi i dane koje je u međuvremenu iskoristio. Pravilo treba potvrditi s vlasnikom teretane.</p></dd>
+          <dt>Posljedice</dt><dd><p>Članarina koja je već istekla ostaje kakva jest, jer nema što oduzeti. Član kojemu se vrati novac za već iskorišteno razdoblje gubi i dane koje je u međuvremenu iskoristio. Pravilo treba potvrditi s vlasnikom teretane.</p></dd>
           <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/payment.ts</code> (<code>handleRefunded</code>), <code>apps/api/src/services/membership.ts</code> (<code>revokeMembershipTime</code>)</p></dd>
         </dl>
       </section>
