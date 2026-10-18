@@ -245,6 +245,18 @@
         </dl>
       </section>
 
+      <section class="card decision" id="o-020">
+        <h3>O-020 · Jedna članarina u isto vrijeme <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-10-18</dd>
+          <dt>Kontekst</dt><dd><p>Druga uplata produljivala je postojeću članarinu (mjesečna + mjesečna = dva mjeseca). Leon je naglasio da to poslovno ne želimo.</p></dd>
+          <dt>Odluka</dt><dd><p>Dok član ima članarinu koja traje ili je pauzirana, ne može kupiti novu, bez obzira na plan. <code>POST /payments</code> vraća 409 "Već imaš aktivnu članarinu. Novu možeš kupiti kad ova istekne.", a aplikacija umjesto gumba "Plati" prikazuje istu poruku s datumom isteka. Ako dvije uplate krenu prije nego što ijedna završi (npr. s dva mobitela), prva daje članarinu, a drugu API u webhooku sam vrati u Stripeu (<code>reason: duplicate</code>).</p></dd>
+          <dt>Razlozi</dt><dd><p>Provjera u aplikaciji je samo za korisnika. Pravilo stvarno čuva server, jer se aplikacija može zaobići. Automatski povrat je jedini ispravan ishod za uplatu koja je prošla, a nije smjela, pa osoblje ne mora ništa ručno.</p></dd>
+          <dt>Posljedice</dt><dd><p>Nema produljenja unaprijed: novu članarinu član kupuje kad stara istekne. Plaćanje tijekom pauze više ne prekida pauzu. Ako Stripe odbije povrat, webhook ne uspije i Stripe ga ponovi, a ključ idempotentnosti sprječava dvostruki povrat.</p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/payment.ts</code> (<code>createPayment</code>, <code>handleSucceeded</code>), <code>apps/api/src/services/membership.ts</code> (<code>grantMembership</code>, <code>hasCurrentMembership</code>), <code>apps/mobile/features/home/screens/plan-detail-screen.tsx</code></p></dd>
+        </dl>
+      </section>
+
       <footer>GibiGib · projektna dokumentacija</footer>
     </div>
   </main>

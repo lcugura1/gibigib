@@ -19,12 +19,13 @@
       <p class="lede">Grane i commitovi kronološki, najnovije na vrhu.</p>
 
       <h2 id="2026-10-14-stripe-payments">2026-10-14 · <code>feature/stripe-payments</code></h2>
-      <p><span class="badge warn">Lokalno</span> Grana je napravljena na <code>feature/numeric-entry-qr</code>, pa se spaja tek nakon nje.</p>
+      <p><span class="badge info">Pushano</span> Grana je napravljena na <code>feature/numeric-entry-qr</code>, pa se spaja tek nakon nje. Nema pull requesta.</p>
       <p>Stvarno plaćanje članarine preko Stripea umjesto lažne kupnje: tablice <code>Payment</code> i <code>StripeEvent</code>, rute <code>/payments</code> i webhook, povrat novca te Stripeov prozor za plaćanje u aplikaciji. Opis je u <a href="placanje.html">Plaćanje (Stripe)</a>, a odluke su <a href="odluke.html#o-018">O-018</a> i <a href="odluke.html#o-019">O-019</a>.</p>
       <p>Nove ovisnosti: <code>stripe</code> (API) i <code>@stripe/stripe-react-native</code> (aplikacija, traži novi build). Nove varijable: <code>STRIPE_SECRET_KEY</code>, <code>STRIPE_PUBLISHABLE_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code>. Uklonjen je <code>POST /memberships</code>.</p>
+      <p>2026-10-18: član može imati samo jednu članarinu. Dok mu jedna traje ili je pauzirana, ne može kupiti novu, bilo kojeg plana (<a href="odluke.html#o-020">O-020</a>).</p>
 
       <h2 id="2026-10-14-numeric-entry-qr">2026-10-14 · <code>feature/numeric-entry-qr</code></h2>
-      <p><span class="badge warn">Lokalno</span> Grana je napravljena na <code>fix/security-hardening</code>, pa se spaja tek nakon nje.</p>
+      <p><span class="badge info">Pushano</span> Grana je napravljena na <code>fix/security-hardening</code>, pa se spaja tek nakon nje. Nema pull requesta.</p>
       <p>QR ulaz spreman za Hikvision, bez samog uređaja: numerički token, most i simulator terminala, USB čitač na web skeneru te popunjenost u zadnjih 60 minuta. Opis je u <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a>, a odluke su <a href="odluke.html#o-015">O-015</a> do <a href="odluke.html#o-017">O-017</a>.</p>
       <p>Novi paket <code>apps/bridge</code> (ovisnosti: <code>zod</code>, <code>dotenv</code>). Nova varijabla API-ja: <code>OCCUPANCY_WINDOW_MINUTES</code>.</p>
 
