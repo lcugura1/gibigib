@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sigurnosni popravci · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Rad na projektu</p>
+      <h1>Sigurnosni popravci</h1>
+      <p class="lede">Sedam kritičnih nalaza iz pregleda backenda: kakvo je bilo stanje, što je napravljeno i kako je provjereno.</p>
+      <p class="meta">Grana <code>fix/security-hardening</code> · 2026-10-06 · nije pushano ni spojeno</p>
+
+      <h2 id="postupak">Postupak</h2>
+      <ol>
+        <li>Svaki nalaz najprije je reproduciran na nepromijenjenom API-ju: isti QR je prošao dvaput, vrata su se otvorila bez ključa, za nepostojeći e-mail vraćen je 404, 12 od 12 krivih kodova je bilo prihvaćeno za provjeru, 0 od 40 prijava nije bilo ograničeno, a kod za reset je stajao u logu.</li>
+        <li>Popravak, zatim provjera tipova i automatizirana provjera protiv pokrenutog API-ja (vidi <a href="lokalno-okruzenje.html#rucna-provjera">scenarije</a>).</li>
+        <li>Jedan commit po skupini nalaza.</li>
+        <li>Pregled koda cijele grane, pa dodatni commit s ispravcima iz pregleda.</li>
+      </ol>
+
+      <h2 id="n1">#1 · QR vrijedi cijeli dan</h2>
+      <p><b>Prije:</b> token iskorišten danas prolazio je ponovno, bez provjere isteka. Drugi ulaz nije ostavljao trag.</p>
+      <p><b>Sada:</b> token je jednokratan, vrijedi 45 s, aplikacija ga osvježava svakih 15 s, uveden je anti-passback i svako skeniranje se bilježi. Odluke <a href="odluke.html#o-002">O-002</a>, <a href="odluke.html#o-003">O-003</a>, <a href="odluke.html#o-004">O-004</a>.</p>
+      <p><b>Commit:</b> <code>a60e3c5</code> · <b>Migracija:</b> <code>single_use_entry_tokens</code></p>
+
+      <h2 id="n2">#2 i #3 · Skener i vrata bez autentifikacije</h2>
+      <p><b>Prije:</b> <code>/entry/scan</code> i <code>/device/commands</code> bili su javni, a stanje vrata je bilo jedna varijabla u memoriji.</p>
+      <p><b>Sada:</b> uređaji s ključem i ulogom, naredbe za vrata u bazi, a stranica skenera traži ključ. Odluke <a href="odluke.html#o-005">O-005</a>, <a href="odluke.html#o-006">O-006</a>.</p>
+      <p><b>Commitovi:</b> <code>ceedb51</code>, <code>705c827</code> (uloge i vrata u transakciji) · <b>Migracije:</b> <code>authenticate_devices</code>, <code>scope_devices_and_keep_entry_history</code></p>
+
+      <h2 id="n4">#4 i #5 · Pogađanje koda i otkrivanje računa</h2>
+      <p><b>Prije:</b> neograničeno pogađanje 6-znamenkastog koda, 404 za nepostojeći e-mail, brža prijava za nepostojeće račune.</p>
+      <p><b>Sada:</b> 5 pokušaja po kodu, pauza od 60 s, isti odgovor za sve e-mailove, prijava jednako spora za sve. Odluke <a href="odluke.html#o-007">O-007</a>, <a href="odluke.html#o-008">O-008</a>.</p>
+      <p><b>Commit:</b> <code>9453f9b</code> · <b>Migracija:</b> <code>limit_password_reset_attempts</code></p>
+
+      <h2 id="n6">#6 · JWT tajna iz primjera</h2>
+      <p><b>Prije:</b> <code>replace-with-openssl-rand-base64-48</code> (35 znakova) prolazio je provjeru.</p>
+      <p><b>Sada:</b> takve vrijednosti se odbijaju i API se ne pokreće. Odluka <a href="odluke.html#o-009">O-009</a>.</p>
+      <p><b>Commit:</b> <code>66e58dd</code></p>
+
+      <h2 id="n7">#7 · Bez ograničenja zahtjeva i bez e-maila</h2>
+      <p><b>Prije:</b> nijedna ruta nije bila ograničena, sve rute primale su 6 MB, a e-mail je bio <code>console.log</code>.</p>
+      <p><b>Sada:</b> ograničenja po IP-u i po e-mailu, 1 MiB osim za avatar, SMTP s Mailpitom lokalno, eksplicitni argon2 parametri, <code>TRUST_PROXY</code>. Odluke <a href="odluke.html#o-010">O-010</a> do <a href="odluke.html#o-014">O-014</a>.</p>
+      <p><b>Commitovi:</b> <code>27702e3</code>, <code>705c827</code></p>
+
+      <h2 id="pregled">Ispravci iz pregleda koda</h2>
+      <table>
+        <thead><tr><th>Nalaz pregleda</th><th>Što je napravljeno</th></tr></thead>
+        <tbody>
+          <tr><td>Naredba za vrata stvarala se nakon transakcije; greška bi zaključala člana na 30 min</td><td>Naredba je u istoj transakciji kao i odobreni ulaz</td></tr>
+          <tr><td>Ključ skenera mogao je preuzimati naredbe vrata</td><td>Uloge <code>SCANNER</code> i <code>DOOR</code>, provjera po ruti (403)</td></tr>
+          <tr><td>Brisanje člana brisalo je njegov dnevnik ulazaka</td><td><code>onDelete: SetNull</code></td></tr>
+          <tr><td>Strani ključevi bez indeksa</td><td>Indeksi na <code>EntryEvent.entryTokenId</code>, <code>EntryEvent.deviceId</code> i <code>DoorCommand.consumedByDeviceId</code></td></tr>
+          <tr><td><code>TRUST_PROXY=true</code> vjeruje svakom zaglavlju</td><td>Prima broj proxyja ili popis adresa</td></tr>
+          <tr><td>SMTP bez obaveznog TLS-a; adresa u logu greške</td><td><code>requireTLS</code> uz korisničko ime; u log ide samo kod greške</td></tr>
+          <tr><td>Lažni hash stvaran pri učitavanju modula</td><td>Stvara se lijeno, pri prvoj prijavi</td></tr>
+          <tr><td>Stari hashevi s drugim parametrima</td><td>Nadogradnja pri prijavi. Provjereno je da su postojeći hashevi već s istim parametrima, pa tvrdnja iz pregleda o slabijim starim hashevima nije točna.</td></tr>
+          <tr><td>Skripta uređaja tiho bira prvu teretanu</td><td>Javlja grešku kad postoji više teretana bez <code>--gym</code>; uredna poruka za nepoznat id</td></tr>
+        </tbody>
+      </table>
+      <p>Nalazi pregleda koji traže poslovnu odluku ili spadaju u kasnija poglavlja nalaze se u <a href="otvorena-pitanja.html">Otvorenim pitanjima</a>.</p>
+
+      <h2 id="kompatibilnost">Što se mijenja za druge</h2>
+      <ul>
+        <li><b>Kontroler vrata</b> mora slati <code>Authorization: Device &lt;ključ vrata&gt;</code>. Bez toga dobiva 401 i vrata se ne otvaraju.</li>
+        <li><b>Skener</b> traži ključ skenera pri prvom otvaranju.</li>
+        <li><b>Mobilna aplikacija:</b> oblik odgovora je isti, pa stara verzija radi, ali osvježava QR rjeđe nego što kod traje, pa će često prikazivati istekao kod. Treba objaviti novu verziju.</li>
+        <li><b><code>.env</code></b> treba dopuniti varijablama <code>SMTP_*</code> i <code>MAIL_FROM</code>, a prazna ili primjer JWT tajna više ne prolazi.</li>
+        <li><b>Poruke skenera</b> su promijenjene (npr. "Ulaz je već zabilježen, pokušaj ponovno kasnije").</li>
+      </ul>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

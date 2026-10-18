@@ -1,15 +1,14 @@
-import type { MembershipDto, PurchaseMembershipInput } from '@gibigib/types';
+import type { MembershipDto } from '@gibigib/types';
 import {
   MEMBERSHIP_PAUSE_COOLDOWN_DAYS,
   MEMBERSHIP_PAUSE_MAX_DAYS,
   PAUSABLE_PROGRAM_SLUG,
 } from '@gibigib/types';
-import type { Membership, MembershipPause, MembershipProgram } from '../generated/prisma/client';
+import type { Membership, MembershipPause, MembershipProgram, Prisma } from '../generated/prisma/client';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
 
 const DAY_MS = 86_400_000;
-const FAKE_PAYMENT_DELAY_MS = 700;
 const PAUSE_MAX_MS = MEMBERSHIP_PAUSE_MAX_DAYS * DAY_MS;
 const PAUSE_COOLDOWN_MS = MEMBERSHIP_PAUSE_COOLDOWN_DAYS * DAY_MS;
 
@@ -48,12 +47,18 @@ function toMembershipDto(membership: MembershipWithRelations): MembershipDto {
   };
 }
 
+// Membership changes for one member run one at a time: pause, resume, payments and refunds.
+export async function lockMember(tx: Prisma.TransactionClient, userId: string) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+}
+
 async function endPause(
   membership: MembershipWithRelations,
   pause: MembershipPause,
   endedAt: Date,
 ): Promise<MembershipWithRelations> {
   return prisma.$transaction(async (tx) => {
+    await lockMember(tx, membership.userId);
     const closed = await tx.membershipPause.updateMany({
       where: { id: pause.id, endedAt: null },
       data: { endedAt },
@@ -61,12 +66,14 @@ async function endPause(
 
     // A concurrent request may have closed the pause already; only that one may extend the end date.
     if (closed.count === 1) {
+      // Read again under the lock: a payment may have moved the end date since the caller read it.
+      const current = await tx.membership.findUniqueOrThrow({ where: { id: membership.id } });
       const pausedMs = endedAt.getTime() - pause.startedAt.getTime();
       await tx.membership.update({
         where: { id: membership.id },
         data: {
           status: 'ACTIVE',
-          endDate: new Date(membership.endDate.getTime() + pausedMs),
+          endDate: new Date(current.endDate.getTime() + pausedMs),
         },
       });
     }
@@ -127,6 +134,7 @@ export async function pauseMembership(userId: string): Promise<MembershipDto> {
   }
 
   const paused = await prisma.$transaction(async (tx) => {
+    await lockMember(tx, userId);
     const switched = await tx.membership.updateMany({
       where: { id: membership.id, status: 'ACTIVE' },
       data: { status: 'PAUSED' },
@@ -164,46 +172,60 @@ export async function resumeMembership(userId: string): Promise<MembershipDto> {
   return toMembershipDto(await endPause(membership, pause, new Date()));
 }
 
-export async function purchaseMembership(
+// A member may hold only one membership at a time, whatever the program, so a paid program starts
+// a new membership only when none is running or paused. Returns null otherwise. Runs inside the
+// payment's transaction, under the member lock.
+export async function grantMembership(
+  tx: Prisma.TransactionClient,
   userId: string,
-  input: PurchaseMembershipInput,
-): Promise<MembershipDto> {
-  const program = await prisma.membershipProgram.findFirst({
-    where: { slug: input.programSlug, isActive: true },
+  program: MembershipProgram,
+  now = new Date(),
+): Promise<Membership | null> {
+  const current = await tx.membership.findFirst({
+    where: { userId, OR: [{ status: 'ACTIVE', endDate: { gt: now } }, { status: 'PAUSED' }] },
   });
+  if (current) return null;
 
-  if (!program) {
-    throw new HttpError(404, 'Program nije pronađen');
+  return tx.membership.create({
+    data: {
+      userId,
+      programId: program.id,
+      startDate: now,
+      endDate: new Date(now.getTime() + program.durationDays * DAY_MS),
+    },
+  });
+}
+
+export async function hasCurrentMembership(userId: string) {
+  return (await findCurrentMembership(userId)) !== null;
+}
+
+// Takes back the time a refunded payment added. A membership left with no time is cancelled.
+export async function revokeMembershipTime(
+  tx: Prisma.TransactionClient,
+  membershipId: string,
+  durationDays: number,
+  now = new Date(),
+) {
+  const membership = await tx.membership.findUnique({
+    where: { id: membershipId },
+    include: membershipInclude,
+  });
+  // Nothing left to take back from a membership that already ran out.
+  if (!membership || membership.status === 'CANCELLED' || membership.endDate <= now) return;
+
+  const endDate = new Date(membership.endDate.getTime() - durationDays * DAY_MS);
+  if (endDate > now) {
+    await tx.membership.update({ where: { id: membership.id }, data: { endDate } });
+    return;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, FAKE_PAYMENT_DELAY_MS));
-
-  const now = new Date();
-  const current = await findCurrentMembership(userId);
-  const currentPause = current?.pauses[0];
-  const active =
-    current?.status === 'PAUSED' && currentPause
-      ? await endPause(current, currentPause, now)
-      : current;
-
-  const membership = active
-    ? await prisma.membership.update({
-        where: { id: active.id },
-        data: {
-          programId: program.id,
-          endDate: new Date(active.endDate.getTime() + program.durationDays * DAY_MS),
-        },
-        include: membershipInclude,
-      })
-    : await prisma.membership.create({
-        data: {
-          userId,
-          programId: program.id,
-          startDate: now,
-          endDate: new Date(now.getTime() + program.durationDays * DAY_MS),
-        },
-        include: membershipInclude,
-      });
-
-  return toMembershipDto(membership);
+  const pause = membership.pauses[0];
+  if (pause && !pause.endedAt) {
+    await tx.membershipPause.update({ where: { id: pause.id }, data: { endedAt: now } });
+  }
+  await tx.membership.update({
+    where: { id: membership.id },
+    data: { status: 'CANCELLED', endDate: now },
+  });
 }

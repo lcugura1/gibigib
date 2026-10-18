@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { ENTRY_QR_PREFIX } from '@gibigib/types';
 import { fetchEntryToken } from '@/features/home/services/entry';
 
-const REFRESH_INTERVAL_MS = 60_000;
+// Tokens live 45 s and are single use, so refresh often enough to show a fresh code soon after entry.
+const REFRESH_INTERVAL_MS = 15_000;
 
 export function useEntryToken(enabled: boolean) {
   const [token, setToken] = useState<string | null>(null);
@@ -36,5 +36,6 @@ export function useEntryToken(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { qrValue: token ? `${ENTRY_QR_PREFIX}${token}` : null };
+  // The QR holds the bare numeric token, which a Hikvision reader can read as a card number.
+  return { qrValue: token };
 }

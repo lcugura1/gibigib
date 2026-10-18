@@ -2,42 +2,70 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Text, View } from "react-native";
-import { purchaseMembershipSchema } from "@gibigib/types";
+import { membershipProgramSlugSchema, type MembershipDto } from "@gibigib/types";
 import { ApiError } from "@/features/auth/services/auth";
 import { getPlan } from "@/features/home/data/plans";
 import { useMembership } from "@/features/membership/context/membership";
-import { purchaseMembership } from "@/features/membership/services/membership";
+import { CheckoutError, payForProgram } from "@/features/payments/checkout";
 import { PaymentSection } from "@/features/payments/components/payment-section";
 import { ScrollScreen } from "@/shared/components/scroll-screen";
 import { colors } from "@/shared/theme/colors";
 
+const PROCESSING_REFRESH_MS = 15_000;
+
+function formatDate(iso: string) {
+  const date = new Date(iso);
+  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}.`;
+}
+
+// A member holds one membership at a time; the server enforces it too.
+function activeMembershipNotice(membership: MembershipDto | null) {
+  if (!membership) return null;
+  if (membership.status === "PAUSED") {
+    return "Tvoja članarina je pauzirana. Novu možeš kupiti kad ova istekne.";
+  }
+  if (new Date(membership.endDate) <= new Date()) return null;
+  return `Već imaš aktivnu članarinu do ${formatDate(membership.endDate)} Novu možeš kupiti kad ova istekne.`;
+}
+
 export function PlanDetailScreen({ slug }: { slug: string }) {
   const plan = getPlan(slug);
   const router = useRouter();
-  const { refresh } = useMembership();
+  const { membership, refresh } = useMembership();
   const [submitting, setSubmitting] = useState(false);
 
   if (!plan) return null;
 
-  const handlePay = async (methodId: string) => {
-    const parsed = purchaseMembershipSchema.safeParse({
-      programSlug: plan.slug,
-      paymentMethod: methodId,
-    });
-    if (!parsed.success) {
+  const blockedNotice = activeMembershipNotice(membership);
+
+  const handlePay = async () => {
+
+    const programSlug = membershipProgramSlugSchema.safeParse(plan.slug);
+    if (!programSlug.success) {
       Alert.alert("Plaćanje nije uspjelo", "Ovaj plan trenutno nije dostupan za online kupnju.");
       return;
     }
 
     setSubmitting(true);
     try {
-      await purchaseMembership(parsed.data);
+      const result = await payForProgram(programSlug.data);
+      if (result === "canceled") return;
       await refresh();
+      if (result === "processing") {
+        // The server confirms shortly; refresh again so the pass appears without reopening the app.
+        setTimeout(() => void refresh(), PROCESSING_REFRESH_MS);
+        Alert.alert(
+          "Plaćanje je primljeno",
+          "Članarina će se aktivirati za nekoliko trenutaka.",
+        );
+      }
       router.back();
     } catch (err) {
       Alert.alert(
         "Plaćanje nije uspjelo",
-        err instanceof ApiError ? err.message : "Provjeri vezu i pokušaj ponovno.",
+        err instanceof ApiError || err instanceof CheckoutError
+          ? err.message
+          : "Provjeri vezu i pokušaj ponovno.",
       );
     } finally {
       setSubmitting(false);
@@ -97,7 +125,12 @@ export function PlanDetailScreen({ slug }: { slug: string }) {
       </View>
 
       {plan.amount != null ? (
-        <PaymentSection amount={plan.amount} onPay={handlePay} submitting={submitting} />
+        <PaymentSection
+          amount={plan.amount}
+          onPay={handlePay}
+          submitting={submitting}
+          blockedNotice={blockedNotice}
+        />
       ) : (
         <Text
           style={{

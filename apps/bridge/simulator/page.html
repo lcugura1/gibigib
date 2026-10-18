@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GibiGib — Simulator Hikvisiona</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: #0b0b0f;
+      color: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 32px 16px;
+    }
+    h1 { font-size: 26px; font-weight: 700; }
+    h1 span { color: #8e8e93; font-weight: 600; }
+    .panel { width: min(640px, 100%); display: flex; flex-direction: column; gap: 12px; }
+    .camera-frame {
+      aspect-ratio: 4 / 3;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #2c2c2e;
+      background: #1c1c1e;
+    }
+    video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #door {
+      border-radius: 20px;
+      padding: 22px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    #door.open { background: #103d24; border-color: #22c55e; color: #4ade80; }
+    #bridges { color: #8e8e93; font-size: 15px; text-align: center; }
+    form { display: flex; gap: 8px; }
+    input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 17px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2e;
+      background: #1c1c1e;
+      color: #f5f5f7;
+    }
+    button {
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: #f5f5f7;
+      color: #0b0b0f;
+      cursor: pointer;
+    }
+    #log { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #c7c7cc; }
+    #log li { padding: 8px 12px; border-radius: 10px; background: #1c1c1e; overflow-wrap: anywhere; }
+    #log li.warn { color: #fbbf24; }
+    #log li.ok { color: #4ade80; }
+  </style>
+</head>
+<body>
+  <h1>GibiGib <span>— Simulator Hikvisiona</span></h1>
+  <div class="panel">
+    <div class="camera-frame"><video id="camera" playsinline muted></video></div>
+    <div id="door">Vrata zatvorena</div>
+    <p id="bridges">Čekam most…</p>
+    <form id="manual">
+      <input id="code" inputmode="numeric" autocomplete="off" placeholder="Broj iz QR koda" aria-label="Broj iz QR koda">
+      <button type="submit">Očitaj</button>
+    </form>
+    <ul id="log"></ul>
+  </div>
+
+  <script src="./jsqr.js"></script>
+  <script>
+    const DOOR_OPEN_MS = 3000;
+    const SAME_CODE_COOLDOWN_MS = 5000;
+
+    const video = document.getElementById('camera');
+    const door = document.getElementById('door');
+    const bridges = document.getElementById('bridges');
+    const log = document.getElementById('log');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    let lastCode = '';
+    let lastCodeAt = 0;
+    let doorTimer = null;
+
+    function addLog(text, kind = '') {
+      const item = document.createElement('li');
+      item.className = kind;
+      item.textContent = `${new Date().toLocaleTimeString('hr-HR')} ${text}`;
+      log.prepend(item);
+      while (log.children.length > 12) log.lastChild.remove();
+    }
+
+    async function present(code) {
+      const now = Date.now();
+      if (code === lastCode && now - lastCodeAt < SAME_CODE_COOLDOWN_MS) return;
+      lastCode = code;
+      lastCodeAt = now;
+
+      const response = await fetch('/simulator/card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) addLog(data.message || 'Čitač je odbio kod.', 'warn');
+    }
+
+    document.getElementById('manual').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = document.getElementById('code');
+      const code = input.value.trim();
+      if (code) present(code);
+      input.value = '';
+    });
+
+    const events = new EventSource('/simulator/events');
+    events.onmessage = (message) => {
+      const event = JSON.parse(message.data);
+      if (event.type === 'status') {
+        bridges.textContent = event.bridges ? `Most spojen (${event.bridges})` : 'Most nije spojen';
+      } else if (event.type === 'card') {
+        addLog(event.bridges ? `Očitan kod ${event.code}` : `Očitan kod ${event.code}, ali most nije spojen`, event.bridges ? '' : 'warn');
+      } else if (event.type === 'door' && event.command === 'open') {
+        addLog(`Most je otvorio vrata ${event.door}`, 'ok');
+        door.className = 'open';
+        door.textContent = 'Vrata otvorena';
+        clearTimeout(doorTimer);
+        doorTimer = setTimeout(() => {
+          door.className = '';
+          door.textContent = 'Vrata zatvorena';
+        }, DOOR_OPEN_MS);
+      }
+    };
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 } }, audio: false });
+        video.srcObject = stream;
+        await video.play();
+        requestAnimationFrame(tick);
+      } catch {
+        addLog('Kamera nije dostupna. Upiši broj iz QR koda ručno.', 'warn');
+      }
+    }
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const result = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+        if (result && result.data) present(result.data);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    startCamera();
+  </script>
+</body>
+</html>

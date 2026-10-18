@@ -23,6 +23,10 @@ mobile application available on iOS and Android.
 | FZ07 | News and events |
 | FZ08 | Gym info (location, hours, contact) |
 
+## Documentation
+
+Project decisions, what was changed and why, and open questions are kept as HTML pages in [`docs/`](docs/index.html). Open `docs/index.html` in a browser; chapters are in the sidebar.
+
 ## Getting started
 
 ### Prerequisites
@@ -54,13 +58,15 @@ In `apps/api/.env`:
 - set `POSTGRES_PASSWORD` and use the same password in `DATABASE_URL`
 - set `JWT_SECRET_KEY` to a random value of at least 32 characters, e.g. the output of `openssl rand -base64 48`
 
-### 3. Start the database
+### 3. Start the database and the mail catcher
 
 ```sh
 cd apps/api
 docker compose up -d
 cd ../..
 ```
+
+This starts PostgreSQL and [Mailpit](https://mailpit.axllent.org/), which catches the email the API sends (password reset codes). Read it at `http://localhost:8025`. In production, point the `SMTP_*` variables in `.env` at a real mail provider.
 
 ### 4. Create the schema and seed data
 
@@ -79,7 +85,42 @@ pnpm dev:api
 
 `http://localhost:3000/health` should return `"database": "up"`. If macOS asks whether Node may accept incoming connections, allow it, otherwise the phone cannot reach the API.
 
-### 6. Run the mobile app
+### 6. Register the entry scanner
+
+The scanner and the door controller each authenticate with their own device key. A scanner key can only scan and a door key can only poll for door commands. Create them:
+
+```sh
+pnpm --filter @gibigib/api device create --kind scanner --name "Varaždin – main entrance scanner"
+pnpm --filter @gibigib/api device create --kind door --name "Varaždin – main entrance door"
+```
+
+Each key is printed once. Open `http://localhost:3000/scanner/` and paste the scanner key when asked; the page remembers it. The door controller sends its key as `Authorization: Device <key>` when it polls `GET /device/commands`. `device list` shows all devices and `device revoke --id <id>` disables a lost one.
+
+The scanner page also accepts a USB QR reader, which types the code like a keyboard.
+
+#### Hikvision terminal (bridge and simulator)
+
+A Hikvision terminal reads the app's QR code as a card number. `apps/bridge` listens to the terminal's events, checks each code with `POST /entry/scan` and opens the door over ISAPI. Without a terminal, run the bundled simulator instead:
+
+```sh
+cp apps/bridge/.env.example apps/bridge/.env   # set DEVICE_KEY to a scanner key
+pnpm --filter @gibigib/bridge simulator         # fake terminal on http://localhost:8090
+pnpm --filter @gibigib/bridge start             # the bridge
+```
+
+Open `http://localhost:8090`, show the app's QR code to the camera or type the number, and the page shows the door opening. See `docs/ulaz-hikvision.html`.
+
+### 7. Payments (Stripe, optional)
+
+Memberships are paid with Stripe. Without Stripe keys the API runs, but `/payments` answers 503. With a Stripe account in test mode (no registered business needed), put the test keys from Dashboard → Developers → API keys into `apps/api/.env`, then forward webhooks with the [Stripe CLI](https://docs.stripe.com/stripe-cli):
+
+```sh
+stripe listen --forward-to localhost:3000/payments/webhook \n  --events payment_intent.succeeded,payment_intent.payment_failed,payment_intent.canceled,charge.refunded
+```
+
+Copy the printed `whsec_…` into `STRIPE_WEBHOOK_SECRET` and restart the API. The test card `4242 4242 4242 4242` with any future date and any CVC succeeds. See `docs/placanje.html`.
+
+### 8. Run the mobile app
 
 The app uses a development build (`expo-dev-client`), so it has to be built and installed once per device:
 
@@ -112,4 +153,6 @@ The phone and the computer must be on the same Wi-Fi network. The app reaches th
 | `pnpm typecheck` | Type-check all packages |
 | `pnpm --filter api db:migrate` | Create and apply a new migration after a schema change |
 | `pnpm --filter api db:studio` | Browse the database in Prisma Studio |
-| `http://localhost:3000/scanner/` | Web QR scanner for testing entry (camera works on `localhost` only) |
+| `pnpm --filter api device create --kind scanner\|door --name "<name>"` | Create a scanner or door device and print its key |
+| `http://localhost:3000/scanner/` | Web QR scanner for testing entry (needs a device key; camera works on `localhost` only) |
+| `pnpm --filter @gibigib/bridge simulator` | Fake Hikvision terminal for testing the bridge on `http://localhost:8090` |

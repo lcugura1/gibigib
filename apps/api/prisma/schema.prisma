@@ -46,6 +46,8 @@ model User {
 
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  entryEvents         EntryEvent[]
+  payments            Payment[]
 }
 
 model MembershipProgram {
@@ -58,6 +60,7 @@ model MembershipProgram {
   isActive     Boolean @default(true)
 
   memberships Membership[]
+  payments    Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,9 +74,10 @@ model Membership {
   endDate   DateTime
   status    MembershipStatus @default(ACTIVE)
 
-  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  program MembershipProgram @relation(fields: [programId], references: [id])
-  pauses  MembershipPause[]
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program  MembershipProgram @relation(fields: [programId], references: [id])
+  pauses   MembershipPause[]
+  payments Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -96,6 +100,47 @@ model MembershipPause {
   @@index([membershipId, startedAt])
 }
 
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REFUNDED
+}
+
+// One card payment for a membership. The amount is copied from the program when the payment
+// starts, and the membership is granted only after Stripe confirms it.
+model Payment {
+  id                    String        @id @default(cuid())
+  userId                String
+  programId             String
+  membershipId          String?
+  amountCents           Int
+  currency              String
+  status                PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?       @unique
+  paidAt                DateTime?
+  refundedAt            DateTime?
+
+  // Restrict: payments are accounting records, so a member with payments cannot be deleted.
+  user       User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  program    MembershipProgram @relation(fields: [programId], references: [id])
+  membership Membership?       @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([membershipId])
+}
+
+// Stripe webhook events already handled. Stripe can deliver an event more than once.
+model StripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
 model Gym {
   id           String  @id @default(cuid())
   name         String
@@ -104,10 +149,52 @@ model Gym {
   workingHours String?
   capacity     Int
 
-  attendances Attendance[]
+  attendances  Attendance[]
+  devices      Device[]
+  doorCommands DoorCommand[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum DeviceKind {
+  SCANNER
+  DOOR
+}
+
+// Scanner or door controller at a gym. It authenticates with a key whose hash is stored here.
+model Device {
+  id        String     @id @default(cuid())
+  name      String
+  kind      DeviceKind
+  gymId     String
+  keyHash   String    @unique
+  revokedAt DateTime?
+
+  gym                  Gym           @relation(fields: [gymId], references: [id])
+  entryEvents          EntryEvent[]
+  consumedDoorCommands DoorCommand[]
+
+  createdAt DateTime @default(now())
+
+  @@index([gymId])
+}
+
+// Door opening queued by a granted scan and picked up once by a door device of the same gym.
+model DoorCommand {
+  id                 String    @id @default(cuid())
+  gymId              String
+  expiresAt          DateTime
+  consumedAt         DateTime?
+  consumedByDeviceId String?
+
+  gym        Gym     @relation(fields: [gymId], references: [id])
+  consumedBy Device? @relation(fields: [consumedByDeviceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([gymId, consumedAt, expiresAt])
+  @@index([consumedByDeviceId])
 }
 
 model EntryToken {
@@ -117,12 +204,43 @@ model EntryToken {
   expiresAt DateTime
   usedAt    DateTime?
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attendance Attendance?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance  Attendance?
+  entryEvents EntryEvent[]
 
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+enum EntryOutcome {
+  GRANTED
+  INVALID_TOKEN
+  TOKEN_USED
+  TOKEN_EXPIRED
+  NO_MEMBERSHIP
+  MEMBERSHIP_PAUSED
+  ANTI_PASSBACK
+}
+
+// One row per scan attempt, granted or denied, so misuse leaves a trace.
+model EntryEvent {
+  id           String       @id @default(cuid())
+  userId       String?
+  entryTokenId String?
+  deviceId     String?
+  outcome      EntryOutcome
+  createdAt    DateTime     @default(now())
+
+  // SetNull keeps the scan history when a member or device is deleted.
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  entryToken EntryToken? @relation(fields: [entryTokenId], references: [id], onDelete: SetNull)
+  device     Device?     @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([userId, outcome, createdAt])
+  @@index([createdAt])
+  @@index([entryTokenId])
+  @@index([deviceId])
 }
 
 model Attendance {
@@ -188,6 +306,7 @@ model RefreshToken {
 model PasswordResetToken {
   id        String   @id @default(cuid())
   codeHash  String
+  attempts  Int      @default(0)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime

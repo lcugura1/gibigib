@@ -4,7 +4,9 @@ import fastifyStatic from '@fastify/static';
 import type { ApiHealthResponse } from '@gibigib/types';
 import { prisma } from './utils/prisma';
 import { env } from './config/env';
+import deviceAuthPlugin from './plugins/device-auth';
 import jwtPlugin from './plugins/jwt';
+import rateLimitPlugin from './plugins/rate-limit';
 import { authRoutes } from './routes/auth';
 import { attendanceRoutes } from './routes/attendance';
 import { demoRoutes } from './routes/demo';
@@ -12,6 +14,7 @@ import { deviceRoutes } from './routes/device';
 import { entryRoutes } from './routes/entry';
 import { membershipRoutes } from './routes/memberships';
 import { occupancyRoutes } from './routes/occupancy';
+import { paymentRoutes } from './routes/payments';
 import { profileRoutes } from './routes/profile';
 import { errorHandler } from './middleware/error-handler';
 
@@ -20,16 +23,19 @@ const host = env.HOST ?? '0.0.0.0';
 
 const app = Fastify({
   logger: true,
-  bodyLimit: 6 * 1024 * 1024,
+  trustProxy: env.TRUST_PROXY,
 });
 
 app.setErrorHandler(errorHandler);
 app.decorate('prisma', prisma);
 
+await app.register(rateLimitPlugin);
 await app.register(jwtPlugin);
+await app.register(deviceAuthPlugin);
 await app.register(authRoutes, { prefix: '/auth' });
 await app.register(attendanceRoutes, { prefix: '/attendance' });
 await app.register(membershipRoutes, { prefix: '/memberships' });
+await app.register(paymentRoutes, { prefix: '/payments' });
 await app.register(profileRoutes, { prefix: '/profile' });
 await app.register(entryRoutes, { prefix: '/entry' });
 await app.register(occupancyRoutes);

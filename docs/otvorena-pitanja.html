@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Otvorena pitanja · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Rad na projektu</p>
+      <h1>Otvorena pitanja</h1>
+      <p class="lede">Što još treba dogovoriti ili je namjerno ostavljeno za kasnije. Kad se pitanje riješi, prebaci ga u Odluke.</p>
+      <p class="meta">Stanje: 2026-10-14</p>
+
+      <h2 id="odluke">Treba odlučiti</h2>
+
+      <h3 id="anti-passback">Anti-passback: 30 minuta i bez iznimke za osoblje</h3>
+      <p>Član koji izađe i vrati se unutar 30 minuta bude odbijen, a osoblje ga zasad ne može pustiti iz sustava. Opcije: kraći prozor, ručno odobrenje ulaza (treba admin dio), izlazni skener. Vrijednost se mijenja varijablom <code>ENTRY_ANTI_PASSBACK_MINUTES</code> bez promjene koda. Odluka <a href="odluke.html#o-003">O-003</a>.</p>
+
+      <h3 id="logika">Poglavlje "Ozbiljno: logika" (nalazi #8–#13)</h3>
+      <p>Vremenske zone, utrka kod rotacije refresh tokena, 500 umjesto 404 te lažni dolasci u aplikaciji. Popunjenost je riješena odlukom <a href="odluke.html#o-016">O-016</a>, a kupnja bez zapisa o plaćanju odlukom <a href="odluke.html#o-018">O-018</a>. Čeka dogovor prije rada.</p>
+
+      <h3 id="registracija">Registracija i dalje otkriva postoji li račun</h3>
+      <p>Odgovor je 409 umjesto 201, iako je tekst neutralan. Pravo rješenje je potvrda e-maila: na postojeći račun pošalje se poruka "već imate račun". Za sada štiti ograničenje od 10 registracija na sat po IP-u.</p>
+
+      <h3 id="login-lockout">Ograničenje prijave po e-mailu</h3>
+      <p>10 pokušaja u 15 minuta po e-mailu znači da netko tko zna tuđi e-mail može toj osobi na 15 minuta blokirati prijavu. Alternativa: ključ e-mail + IP, ili ograničenje tek nakon N neuspjelih pokušaja.</p>
+
+      <h3 id="hikvision-uredaj">Most treba provjeriti na pravom Hikvisionu</h3>
+      <p>Most i simulator napisani su prema dokumentaciji. Na uređaju treba potvrditi:</p>
+      <ul>
+        <li>čita li čitač QR s ekrana mobitela;</li>
+        <li>šalje li broj od 20 znamenki bez skraćivanja;</li>
+        <li>ima li svaki dio <code>alertStream</code> zaglavlje <code>Content-Length</code>;</li>
+        <li>Digest (MD5 ili SHA-256);</li>
+        <li>uključenost opcije "Notify Surveillance Center".</li>
+      </ul>
+      <p>Vidi <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a>.</p>
+
+      <h3 id="fiskalizacija">Računi i fiskalizacija uz Stripe uplate</h3>
+      <p>Kartično plaćanje mora se fiskalizirati, a račun izdaje teretana: treba joj FINA certifikat, prijavljen poslovni prostor i naplatni uređaj. Prijedlog je servis za račune s API-jem, koji se poziva iz webhooka nakon <code>payment_intent.succeeded</code> i šalje PDF na e-mail. Prije toga ide testna izvedba bez JIR-a. Treba odabrati servis zajedno s knjigovođom.</p>
+
+      <h3 id="povrat">Pravilo za povrat novca</h3>
+      <p>Povrat cijelog iznosa oduzima cijelo trajanje plana, a djelomični povrat ne mijenja članarinu (<a href="odluke.html#o-019">O-019</a>). Treba potvrdu vlasnika teretane.</p>
+
+      <h2 id="kasnije">Ostavljeno za kasnije</h2>
+      <ul>
+        <li id="retencija"><b>Čuvanje podataka:</b> <code>EntryToken</code>, <code>EntryEvent</code> i <code>DoorCommand</code> rastu bez čišćenja. Treba dnevni posao čišćenja i dogovor koliko dugo se čuva dnevnik ulazaka (GDPR).</li>
+        <li><b>Više instanci API-ja:</b> brojači ograničenja su u memoriji procesa. Kod skaliranja treba Redis.</li>
+        <li><b>Kontroler vrata:</b> firmware nije u repozitoriju; mora slati ključ vrata. Ključeve treba stvoriti prije deploya.</li>
+        <li><b>Stara mobilna verzija</b> osvježava QR svakih 60 s, a kod traje 45 s. Treba objaviti novu verziju zajedno s API-jem.</li>
+        <li><b>Automatski testovi:</b> provjere iz <a href="lokalno-okruzenje.html#rucna-provjera">scenarija</a> pokrenute su skriptama izvan repozitorija. Prijedlog: Vitest s testnom bazom i GitHub Actions.</li>
+        <li><b>Demo reset</b> (<code>DEMO_RESET=1</code>) nema zaštitu i briše dnevnik ulazaka za taj dan. Ne smije biti uključen izvan prezentacije.</li>
+        <li><b>Arhitektura (#14–#21):</b> avatar u bazi, indeksi za popunjenost, jedna teretana u dijelu koda, sadržaj hardkodiran u aplikaciji, validacija, GDPR i OpenAPI.</li>
+      </ul>
+
+      <h2 id="primijeceno">Primijećeno usput</h2>
+      <ul>
+        <li>U korijenu repozitorija postoji nepraćeni <code>package-lock.json</code> (npm), iako projekt koristi pnpm. Nije dio ovih promjena; vjerojatno ga treba obrisati.</li>
+        <li><code>@xmldom/xmldom</code> u ovisnostima mobilne aplikacije označen je kao zastario ("critical issues"). Dolazi tranzitivno preko Expa.</li>
+      </ul>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

@@ -13,10 +13,12 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "device": "tsx scripts/device.ts"
   },
   "dependencies": {
     "@fastify/jwt": "^10.1.0",
+    "@fastify/rate-limit": "^11.2.0",
     "@fastify/static": "^10.1.3",
     "@gibigib/types": "workspace:*",
     "@node-rs/argon2": "^2.0.2",
@@ -24,10 +26,13 @@
     "@prisma/client": "^7.8.0",
     "fastify": "^5.2.0",
     "fastify-plugin": "^6.0.0",
+    "nodemailer": "^10.0.15",
+    "stripe": "^23.0.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/nodemailer": "^8.0.2",
     "dotenv": "^17.4.2",
     "prisma": "^7.8.0",
     "tsx": "^4.19.0",

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Uvod</p>
+      <h1>O ovoj dokumentaciji</h1>
+      <p class="lede">Ovdje zapisujemo što smo na projektu napravili, zašto i na koji način, te koje smo odluke donijeli i s kojim razlozima.</p>
+      <p class="meta">Uvedeno: 2026-10-06</p>
+
+      <h2 id="kako-citati">Kako čitati</h2>
+      <p>Otvori <code>docs/index.html</code> u pregledniku (dvoklik na datoteku je dovoljan, ne treba server). Poglavlja su u izborniku lijevo. Za otvoreno poglavlje izbornik prikazuje i njegove odjeljke. Na mobitelu se izbornik otvara gumbom <b>Poglavlja</b>.</p>
+      <table>
+        <thead><tr><th>Poglavlje</th><th>Što sadrži</th></tr></thead>
+        <tbody>
+          <tr><td><a href="pregled-sustava.html">Pregled sustava</a></td><td>Kako su složeni API, baza i mobilna aplikacija, i kako teku glavni procesi (ulaz, lozinka, vrata).</td></tr>
+          <tr><td><a href="lokalno-okruzenje.html">Lokalno okruženje i testiranje</a></td><td>Kako pokrenuti sve lokalno i kako provjeriti da sigurnosni popravci rade.</td></tr>
+          <tr><td><a href="odluke.html">Odluke</a></td><td>Svaka važna odluka s kontekstom, razlozima i posljedicama.</td></tr>
+          <tr><td><a href="sigurnosni-popravci.html">Sigurnosni popravci</a></td><td>Sedam sigurnosnih problema iz pregleda koda: što je bio problem, što je napravljeno i kako je provjereno.</td></tr>
+          <tr><td><a href="dnevnik-promjena.html">Dnevnik promjena</a></td><td>Grane i commitovi kronološki.</td></tr>
+          <tr><td><a href="otvorena-pitanja.html">Otvorena pitanja</a></td><td>Ono o čemu se još treba dogovoriti ili što je namjerno ostavljeno za kasnije.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="pravila-pisanja">Pravila pisanja</h2>
+      <ul>
+        <li><b>Jezik:</b> hrvatski. Nazivi iz koda (datoteke, funkcije, tablice) ostaju kako jesu, u <code>code</code> formatu.</li>
+        <li><b>Datumi:</b> uvijek puni datum (<code>2026-10-06</code>), nikad "jučer" ili "prošli tjedan".</li>
+        <li><b>Svaka odluka</b> ide u <a href="odluke.html">Odluke</a> kao zaseban zapis s oznakom <code>O-NNN</code> i poljima: datum, kontekst, odluka, razlozi, posljedice, gdje u kodu. Odluke se ne brišu. Kad se promijene, stara dobiva status <span class="badge bad">Zamijenjeno</span> i poveznicu na novu.</li>
+        <li><b>Svaka grana</b> dobiva zapis u <a href="dnevnik-promjena.html">Dnevniku promjena</a>: što je napravljeno i popis commitova.</li>
+        <li><b>Što ostane otvoreno</b> ide u <a href="otvorena-pitanja.html">Otvorena pitanja</a>, a ne u komentare u kodu.</li>
+        <li>Pišemo <b>zašto</b>, ne samo <b>što</b>. Kod već pokazuje što radi, a razlog se bez zapisa izgubi.</li>
+      </ul>
+
+      <h2 id="novo-poglavlje">Kako dodati poglavlje</h2>
+      <ol>
+        <li>Kopiraj <code>docs/_predlozak.html</code> pod novim imenom, malim slovima i s crticama (npr. <code>placanje.html</code>).</li>
+        <li>U <code>docs/assets/docs.js</code> dodaj jedan redak u popis <code>CHAPTERS</code>. Izbornik se na svim stranicama gradi iz tog popisa.</li>
+        <li>Svaki <code>&lt;h2&gt;</code> mora imati <code>id</code>. Iz njih se gradi popis odjeljaka u izborniku.</li>
+      </ol>
+      <p>Stranice ne koriste vanjske fontove ni biblioteke, pa rade i bez interneta i izravno iz repozitorija. Stil je u <code>assets/docs.css</code> i prati svijetlu ili tamnu temu sustava.</p>
+
+      <h2 id="konvencije">Konvencije repozitorija</h2>
+      <table>
+        <thead><tr><th>Što</th><th>Pravilo</th><th>Primjer</th></tr></thead>
+        <tbody>
+          <tr><td>Grana</td><td><code>tip/opis-crticama</code>, iz <code>develop</code></td><td><code>fix/security-hardening</code></td></tr>
+          <tr><td>Tipovi</td><td><code>feature</code>, <code>fix</code>, <code>chore</code>, <code>docs</code></td><td></td></tr>
+          <tr><td>Commit</td><td><code>[tip]: opis</code>, malim slovima, engleski, jedan redak</td><td><code>[fix]: make entry tokens single use and log every scan</code></td></tr>
+          <tr><td>Spajanje</td><td>Isključivo pull requestom u <code>develop</code></td><td></td></tr>
+          <tr><td>Migracije</td><td>Nova migracija za svaku promjenu sheme; postojeće se ne mijenjaju nakon što su na <code>develop</code></td><td><code>prisma migrate dev --name ...</code></td></tr>
+        </tbody>
+      </table>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

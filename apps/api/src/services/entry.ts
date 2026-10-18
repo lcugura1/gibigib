@@ -1,18 +1,42 @@
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 import type { EntryScanResult, EntryTokenDto, OccupancyDto } from '@gibigib/types';
-import { ENTRY_QR_PREFIX } from '@gibigib/types';
-import { queueDoorOpen } from '../utils/device-state';
+import { ENTRY_QR_PREFIX, ENTRY_TOKEN_DIGITS } from '@gibigib/types';
+import { env } from '../config/env';
+import type { EntryOutcome } from '../generated/prisma/client';
+import type { AuthenticatedDevice } from '../plugins/device-auth';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
+import { queueDoorOpen } from './door';
 import { getActiveMembership } from './membership';
 
-const TOKEN_TTL_MS = 120_000;
-const TOKEN_REUSE_MIN_MS = 30_000;
+const TOKEN_TTL_MS = 45_000;
+const TOKEN_REUSE_MIN_MS = 20_000;
+const ANTI_PASSBACK_MS = env.ENTRY_ANTI_PASSBACK_MINUTES * 60_000;
+const OCCUPANCY_WINDOW_MS = env.OCCUPANCY_WINDOW_MINUTES * 60_000;
+
+const DENIED_MESSAGES: Record<Exclude<EntryOutcome, 'GRANTED'>, string> = {
+  INVALID_TOKEN: 'Nevažeća ulaznica',
+  TOKEN_USED: 'Ulaznica je već iskorištena, otvori aplikaciju za novi QR kod',
+  TOKEN_EXPIRED: 'QR kod je istekao, osvježi ga u aplikaciji',
+  NO_MEMBERSHIP: 'Članarina nije aktivna',
+  MEMBERSHIP_PAUSED: 'Članarina je pauzirana',
+  ANTI_PASSBACK: 'Ulaz je već zabilježen, pokušaj ponovno kasnije',
+};
 
 function startOfToday() {
   const date = new Date();
   date.setHours(0, 0, 0, 0);
   return date;
+}
+
+// Digits only, so a Hikvision reader can pass it on as a card number. The first digit is never 0
+// because readers may drop leading zeros. That leaves about 66 random bits.
+function generateEntryToken() {
+  let token = String(randomInt(1, 10));
+  while (token.length < ENTRY_TOKEN_DIGITS) {
+    token += String(randomInt(0, 10));
+  }
+  return token;
 }
 
 export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
@@ -34,7 +58,7 @@ export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
     existing ??
     (await prisma.entryToken.create({
       data: {
-        token: randomBytes(16).toString('hex'),
+        token: generateEntryToken(),
         userId,
         expiresAt: new Date(now + TOKEN_TTL_MS),
       },
@@ -43,7 +67,21 @@ export async function issueEntryToken(userId: string): Promise<EntryTokenDto> {
   return { token: entryToken.token, expiresAt: entryToken.expiresAt.toISOString() };
 }
 
-export async function scanEntryCode(code: string): Promise<EntryScanResult> {
+async function deny(
+  outcome: Exclude<EntryOutcome, 'GRANTED'>,
+  device: AuthenticatedDevice,
+  entryToken?: { id: string; userId: string },
+): Promise<EntryScanResult> {
+  await prisma.entryEvent.create({
+    data: { outcome, deviceId: device.id, userId: entryToken?.userId, entryTokenId: entryToken?.id },
+  });
+  return { ok: false, message: DENIED_MESSAGES[outcome] };
+}
+
+export async function scanEntryCode(
+  code: string,
+  device: AuthenticatedDevice,
+): Promise<EntryScanResult> {
   const raw = code.startsWith(ENTRY_QR_PREFIX) ? code.slice(ENTRY_QR_PREFIX.length) : code;
 
   const entryToken = await prisma.entryToken.findUnique({
@@ -52,61 +90,95 @@ export async function scanEntryCode(code: string): Promise<EntryScanResult> {
   });
 
   if (!entryToken) {
-    return { ok: false, message: 'Nevažeća ulaznica' };
+    return deny('INVALID_TOKEN', device);
   }
-  const usedToday = entryToken.usedAt != null && entryToken.usedAt >= startOfToday();
-
-  if (entryToken.usedAt && !usedToday) {
-    return { ok: false, message: 'Ulaznica je već iskorištena' };
+  if (entryToken.usedAt) {
+    return deny('TOKEN_USED', device, entryToken);
   }
-  if (!entryToken.usedAt && entryToken.expiresAt.getTime() < Date.now()) {
-    return { ok: false, message: 'QR kod je istekao, osvježi ga u aplikaciji' };
+  if (entryToken.expiresAt.getTime() <= Date.now()) {
+    return deny('TOKEN_EXPIRED', device, entryToken);
   }
 
   const membership = await getActiveMembership(entryToken.userId);
   if (!membership) {
-    return { ok: false, message: 'Članarina nije aktivna' };
+    return deny('NO_MEMBERSHIP', device, entryToken);
   }
   if (membership.status === 'PAUSED') {
-    return { ok: false, message: 'Članarina je pauzirana' };
+    return deny('MEMBERSHIP_PAUSED', device, entryToken);
   }
 
-  const alreadyInside = await prisma.attendance.findFirst({
-    where: { userId: entryToken.userId, checkInAt: { gte: startOfToday() } },
+  const outcome = await prisma.$transaction(async (tx): Promise<EntryOutcome> => {
+    // Serialises scans of the same member so two tokens cannot both pass the anti-passback check.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${entryToken.userId}))`;
+
+    const now = new Date();
+    if (ANTI_PASSBACK_MS > 0) {
+      const recentEntry = await tx.entryEvent.findFirst({
+        where: {
+          userId: entryToken.userId,
+          outcome: 'GRANTED',
+          createdAt: { gt: new Date(now.getTime() - ANTI_PASSBACK_MS) },
+        },
+      });
+      if (recentEntry) {
+        return 'ANTI_PASSBACK';
+      }
+    }
+
+    // Consumes the token only if nobody else has, so each code opens the door at most once.
+    const consumed = await tx.entryToken.updateMany({
+      where: { id: entryToken.id, usedAt: null, expiresAt: { gt: now } },
+      data: { usedAt: now },
+    });
+    if (consumed.count !== 1) {
+      return 'TOKEN_USED';
+    }
+
+    const checkedInToday = await tx.attendance.findFirst({
+      where: { userId: entryToken.userId, checkInAt: { gte: startOfToday() } },
+    });
+    if (!checkedInToday) {
+      await tx.attendance.create({
+        data: { userId: entryToken.userId, gymId: device.gymId, entryTokenId: entryToken.id },
+      });
+    }
+
+    await tx.entryEvent.create({
+      data: {
+        outcome: 'GRANTED',
+        deviceId: device.id,
+        userId: entryToken.userId,
+        entryTokenId: entryToken.id,
+      },
+    });
+    // In the same transaction, so a granted entry and its door opening are saved together or not at all.
+    await queueDoorOpen(device.gymId, tx);
+    return 'GRANTED';
   });
 
-  if (alreadyInside) {
-    await prisma.entryToken.update({
-      where: { id: entryToken.id },
-      data: { usedAt: new Date() },
-    });
-  } else {
-    const gym = await prisma.gym.findFirstOrThrow();
-    await prisma.$transaction([
-      prisma.entryToken.update({ where: { id: entryToken.id }, data: { usedAt: new Date() } }),
-      prisma.attendance.create({
-        data: { userId: entryToken.userId, gymId: gym.id, entryTokenId: entryToken.id },
-      }),
-    ]);
+  if (outcome !== 'GRANTED') {
+    return deny(outcome, device, entryToken);
   }
-
-  queueDoorOpen();
 
   return {
     ok: true,
-    message: alreadyInside ? 'Ulaz odobren, već si evidentiran danas' : 'Ulaz odobren',
+    message: 'Ulaz odobren',
     memberName: entryToken.user.firstName,
   };
 }
 
+// Nothing records leaving the gym, so everyone who entered within the window counts as inside.
 export async function getOccupancy(): Promise<OccupancyDto> {
-  const [members, gym] = await Promise.all([
-    prisma.attendance.groupBy({
-      by: ['userId'],
-      where: { checkInAt: { gte: startOfToday() } },
-    }),
-    prisma.gym.findFirstOrThrow(),
-  ]);
+  const gym = await prisma.gym.findFirstOrThrow();
+  const members = await prisma.entryEvent.groupBy({
+    by: ['userId'],
+    where: {
+      outcome: 'GRANTED',
+      userId: { not: null },
+      device: { gymId: gym.id },
+      createdAt: { gte: new Date(Date.now() - OCCUPANCY_WINDOW_MS) },
+    },
+  });
 
   return { count: members.length, capacity: gym.capacity };
 }

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plaćanje (Stripe) · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Sustav</p>
+      <h1>Plaćanje (Stripe)</h1>
+      <p class="lede">Kako član plaća članarinu u aplikaciji, kada se članarina aktivira i kako sve testirati Stripe testnim ključevima.</p>
+      <p class="meta">Zadnja izmjena: 2026-10-18 · simunbarberic</p>
+
+      <h2 id="tok">Tok plaćanja</h2>
+      <div class="callout">Član može imati samo jednu članarinu. Dok mu jedna traje ili je pauzirana, aplikacija umjesto gumba "Plati" prikazuje "Već imaš aktivnu članarinu do …", a API odbija novu uplatu s 409 (<a href="odluke.html#o-020">O-020</a>).</div>
+      <ol>
+        <li>Član na ekranu plana pritisne "Plati". Aplikacija šalje <code>POST /payments</code> sa samo <code>programSlug</code>.</li>
+        <li>API uzima cijenu iz baze (<code>MembershipProgram.priceCents</code>), sprema <code>Payment</code> sa stanjem <code>PENDING</code> i u Stripeu otvara PaymentIntent. Aplikaciji vraća <code>clientSecret</code> i javni ključ.</li>
+        <li>Aplikacija otvara Stripeov prozor za plaćanje (PaymentSheet): kartica, Google Pay, a kasnije i Apple Pay. Podaci o kartici idu izravno Stripeu i nikad ne prolaze kroz naš server.</li>
+        <li>Stripe javlja rezultat na <code>POST /payments/webhook</code>. API provjerava potpis i tek tada aktivira ili produljuje članarinu (<a href="odluke.html#o-018">O-018</a>).</li>
+        <li>Aplikacija do 20 s provjerava <code>GET /payments/:id</code>. Kad je stanje <code>SUCCEEDED</code>, osvježi članarinu i QR se pojavi.</li>
+      </ol>
+<pre><code>Aplikacija ── POST /payments ──▶ API ── PaymentIntent ──▶ Stripe
+    │                                                        │
+    └── PaymentSheet (kartica) ─────────────────────────────▶│
+                                                             │
+API ◀── POST /payments/webhook (potpisano) ──────────────────┘
+ └─▶ Payment = SUCCEEDED, članarina +N dana</code></pre>
+
+      <h2 id="stanja">Stanja uplate i webhookovi</h2>
+      <table>
+        <thead><tr><th>Stripe događaj</th><th>Što API napravi</th></tr></thead>
+        <tbody>
+          <tr><td><code>payment_intent.succeeded</code></td><td><code>PENDING</code>/<code>FAILED</code> → <code>SUCCEEDED</code> i otvara se nova članarina. Ako je član u međuvremenu dobio članarinu drugom uplatom, ova se automatski vraća u Stripeu. Ako je iznos drugačiji od spremljenog, članarina se ne daje, a greška ide u log da osoblje vrati novac. Stripeu se odgovara 200, jer ponavljanje to ne bi popravilo.</td></tr>
+          <tr><td><code>payment_intent.payment_failed</code></td><td><code>PENDING</code> → <code>FAILED</code>. Član može pokušati drugom karticom, a uspjeh i dalje prolazi.</td></tr>
+          <tr><td><code>payment_intent.canceled</code></td><td>→ <code>CANCELED</code></td></tr>
+          <tr><td><code>charge.refunded</code> (cijeli iznos)</td><td>→ <code>REFUNDED</code>. Ako je uplata već dala članarinu, oduzme joj se trajanje plana, a ako joj ne ostane vremena, otkazuje se (<a href="odluke.html#o-019">O-019</a>). Stripe ne jamči redoslijed, pa povrat koji stigne prije uspjeha znači da kasniji uspjeh ne daje ništa.</td></tr>
+        </tbody>
+      </table>
+      <p>Svaki događaj obrađuje se točno jednom: njegov <code>id</code> sprema se u <code>StripeEvent</code> u istoj transakciji s promjenom, pa ponovljena dostava ništa ne mijenja. Promjene članarine za istog člana (uplata, povrat, pauza, nastavak) idu jedna po jedna, pod istim zaključanim ključem kao kod ulaza.</p>
+      <p>Ako član zatvori prozor za plaćanje i ponovno pritisne "Plati" unutar 30 minuta, nastavlja se ista neplaćena uplata umjesto da se otvara nova.</p>
+
+      <h2 id="postavljanje">Postavljanje</h2>
+      <p>U <code>apps/api/.env</code>:</p>
+      <table>
+        <thead><tr><th>Varijabla</th><th>Odakle</th></tr></thead>
+        <tbody>
+          <tr><td><code>STRIPE_SECRET_KEY</code></td><td>Stripe Dashboard → Developers → API keys (<code>sk_test_…</code>). Nikad u git ni u aplikaciju.</td></tr>
+          <tr><td><code>STRIPE_PUBLISHABLE_KEY</code></td><td>Isto mjesto (<code>pk_test_…</code>). API ga šalje aplikaciji.</td></tr>
+          <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>Lokalno: ispis naredbe <code>stripe listen</code> (<code>whsec_…</code>). Na serveru: Dashboard → Webhooks → endpoint <code>https://&lt;api&gt;/payments/webhook</code>.</td></tr>
+        </tbody>
+      </table>
+      <p>Bez ovih ključeva API radi normalno, a rute za plaćanje odgovaraju 503 "Plaćanje trenutno nije dostupno".</p>
+<pre><code># Stripe CLI (https://docs.stripe.com/stripe-cli), jednom: stripe login
+stripe listen --forward-to localhost:3000/payments/webhook \
+  --events payment_intent.succeeded,payment_intent.payment_failed,payment_intent.canceled,charge.refunded
+# ispiše whsec_… → STRIPE_WEBHOOK_SECRET, pa ponovno pokreni API</code></pre>
+      <div class="callout warn">Stripe modul je nativni, pa mobilnu aplikaciju treba jednom ponovno izgraditi: <code>npx expo run:ios --device</code> ili <code>npx expo run:android --device</code>. Stari build nema taj modul i aplikacija s novim kodom na njemu neće raditi.</div>
+
+      <h2 id="testiranje">Testiranje</h2>
+      <table>
+        <thead><tr><th>Kartica</th><th>Rezultat</th></tr></thead>
+        <tbody>
+          <tr><td><code>4242 4242 4242 4242</code></td><td>Uspjeh</td></tr>
+          <tr><td><code>4000 0027 6000 3184</code></td><td>Traži 3-D Secure potvrdu</td></tr>
+          <tr><td><code>4000 0000 0000 9995</code></td><td>Odbijena (nedovoljno sredstava)</td></tr>
+        </tbody>
+      </table>
+      <p>Bilo koji budući datum isteka, bilo koji CVC. Povrat novca: Stripe Dashboard → Payments → plaćanje → Refund.</p>
+      <p>Provjereno 2026-10-14 i 2026-10-18 na Stripe test računu, uz prave PaymentIntente i povrate, s webhookovima potpisanim lokalnom testnom tajnom. Prošle su sve provjere, među njima:</p>
+      <ul>
+        <li>iznos se ne može poslati iz aplikacije;</li>
+        <li>prije webhooka nema članarine;</li>
+        <li>bez potpisa ili s krivim potpisom odgovor je 400, a događaj s izmijenjenim iznosom se odbija;</li>
+        <li>ponovljeni webhook ne produljuje članarinu;</li>
+        <li>druga uplata dok članarina traje ili je pauzirana odbija se s 409;</li>
+        <li>od dvije uplate pokrenute istodobno prva daje članarinu, a druga se vraća automatski i samo jednom;</li>
+        <li>odbijena kartica ostavlja stanje <code>FAILED</code>;</li>
+        <li>tuđe plaćanje vraća 404;</li>
+        <li>povrat jedine uplate otkazuje članarinu i QR;</li>
+        <li>povrat koji stigne prije uspjeha ne daje članarinu;</li>
+        <li>ponovni "Plati" nastavlja istu uplatu;</li>
+        <li>kad članarina prestane (npr. povratom), član može ponovno kupiti.</li>
+      </ul>
+      <p>Mobilni dio prolazi provjeru tipova, ali nije isproban na uređaju.</p>
+
+      <h2 id="nedostaje">Što još nedostaje</h2>
+      <ul>
+        <li><b>Stripe račun teretane</b> za stvarni novac. Mijenjaju se samo ključevi.</li>
+        <li><b>Apple Pay:</b> merchant ID u Apple Developer računu i <code>merchantIdentifier</code> u pluginu (<code>app.json</code>). Ne radi s besplatnim Apple računom.</li>
+        <li><b>Računi i fiskalizacija:</b> uz uplatu se još ne izdaje račun, vidi <a href="otvorena-pitanja.html#fiskalizacija">Otvorena pitanja</a>.</li>
+        <li><b>Cijene u aplikaciji</b> su i dalje upisane u <code>features/home/data/plans.ts</code>. Naplaćuje se cijena iz baze, a Stripeov prozor prikazuje stvarni iznos.</li>
+      </ul>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>
