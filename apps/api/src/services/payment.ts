@@ -5,11 +5,14 @@ import { env } from '../config/env';
 import type { MembershipProgram, Payment, Prisma } from '../generated/prisma/client';
 import { HttpError } from '../utils/errors';
 import { prisma } from '../utils/prisma';
-import { grantMembership, lockMember, revokeMembershipTime } from './membership';
+import { grantMembership, hasCurrentMembership, lockMember, revokeMembershipTime } from './membership';
 
 const CURRENCY = 'eur';
 const REUSE_PENDING_MS = 30 * 60_000;
 const UNAVAILABLE_MESSAGE = 'Plaćanje trenutno nije dostupno. Pokušaj ponovno kasnije.';
+const ALREADY_MEMBER_MESSAGE = 'Već imaš aktivnu članarinu. Novu možeš kupiti kad ova istekne.';
+// Long enough for the Stripe refund call that may run inside the webhook transaction.
+const WEBHOOK_TX_TIMEOUT_MS = 20_000;
 
 let client: Stripe | null = null;
 
@@ -51,6 +54,9 @@ export async function createPayment(
   });
   if (!program) {
     throw new HttpError(404, 'Program nije pronađen');
+  }
+  if (await hasCurrentMembership(userId)) {
+    throw new HttpError(409, ALREADY_MEMBER_MESSAGE);
   }
 
   // Closing the payment sheet and tapping Pay again continues the same payment instead of
@@ -174,7 +180,19 @@ async function handleSucceeded(tx: Prisma.TransactionClient, intent: Stripe.Paym
   if (claimed.count !== 1) return;
 
   const membership = await grantMembership(tx, payment.userId, payment.program, now);
-  await tx.payment.update({ where: { id: payment.id }, data: { membershipId: membership.id } });
+  if (membership) {
+    await tx.payment.update({ where: { id: payment.id }, data: { membershipId: membership.id } });
+    return;
+  }
+
+  // Two payments started before either one finished, e.g. from two phones. The first one gave the
+  // membership; this one goes back. A failed refund rolls the event back so Stripe retries it, and
+  // the idempotency key keeps a retry from refunding twice.
+  log.warn({ paymentId: payment.id }, 'Member already has a membership; refunding the payment');
+  await stripe().refunds.create(
+    { payment_intent: intent.id, reason: 'duplicate' },
+    { idempotencyKey: `refund-duplicate-${payment.id}` },
+  );
 }
 
 async function handleRefunded(tx: Prisma.TransactionClient, charge: Stripe.Charge) {
@@ -248,5 +266,5 @@ export async function handleStripeWebhook(
     });
     if (seen.count === 0) return;
     await handleEvent(tx, event, log);
-  });
+  }, { timeout: WEBHOOK_TX_TIMEOUT_MS });
 }

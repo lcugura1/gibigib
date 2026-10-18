@@ -16,10 +16,12 @@ type Props = {
   amount: number;
   onPay: () => void;
   submitting?: boolean;
+  // Shown instead of the Pay button when the member may not buy right now.
+  blockedNotice?: string | null;
 };
 
 // Stripe's payment sheet offers the card and wallet options itself, so this only starts it.
-export function PaymentSection({ amount, onPay, submitting = false }: Props) {
+export function PaymentSection({ amount, onPay, submitting = false, blockedNotice = null }: Props) {
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '700' }}>Plaćanje</Text>
@@ -51,25 +53,44 @@ export function PaymentSection({ amount, onPay, submitting = false }: Props) {
         </View>
       </View>
 
-      <Pressable onPress={onPay} disabled={submitting} style={{ marginTop: 4 }}>
-        <LinearGradient
-          colors={[colors.buttonPrimaryFrom, colors.buttonPrimaryTo]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+      {blockedNotice ? (
+        <View
           style={{
-            height: 52,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            padding: 16,
             borderRadius: 16,
             borderCurve: 'continuous',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: submitting ? 0.6 : 1,
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.surfaceBorder,
           }}
         >
-          <Text style={{ color: colors.buttonPrimaryText, fontSize: 17, fontWeight: '700' }}>
-            {submitting ? 'Obrada...' : `Plati ${formatEur(amount)}`}
-          </Text>
-        </LinearGradient>
-      </Pressable>
+          <Ionicons name="information-circle-outline" size={22} color={colors.accent} />
+          <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 15, lineHeight: 21 }}>{blockedNotice}</Text>
+        </View>
+      ) : (
+        <Pressable onPress={onPay} disabled={submitting} style={{ marginTop: 4 }}>
+          <LinearGradient
+            colors={[colors.buttonPrimaryFrom, colors.buttonPrimaryTo]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              height: 52,
+              borderRadius: 16,
+              borderCurve: 'continuous',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: submitting ? 0.6 : 1,
+            }}
+          >
+            <Text style={{ color: colors.buttonPrimaryText, fontSize: 17, fontWeight: '700' }}>
+              {submitting ? 'Obrada...' : `Plati ${formatEur(amount)}`}
+            </Text>
+          </LinearGradient>
+        </Pressable>
+      )}
     </View>
   );
 }

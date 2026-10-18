@@ -172,56 +172,32 @@ export async function resumeMembership(userId: string): Promise<MembershipDto> {
   return toMembershipDto(await endPause(membership, pause, new Date()));
 }
 
-// Adds a paid program to the member's current membership, or starts a new one. Paying during a
-// pause ends the pause, the same way resuming does. Runs inside the payment's transaction.
+// A member may hold only one membership at a time, whatever the program, so a paid program starts
+// a new membership only when none is running or paused. Returns null otherwise. Runs inside the
+// payment's transaction, under the member lock.
 export async function grantMembership(
   tx: Prisma.TransactionClient,
   userId: string,
   program: MembershipProgram,
   now = new Date(),
-): Promise<Membership> {
+): Promise<Membership | null> {
   const current = await tx.membership.findFirst({
-    where: {
-      userId,
-      OR: [{ status: 'ACTIVE', endDate: { gt: now } }, { status: 'PAUSED' }],
-    },
-    orderBy: { endDate: 'desc' },
-    include: membershipInclude,
+    where: { userId, OR: [{ status: 'ACTIVE', endDate: { gt: now } }, { status: 'PAUSED' }] },
   });
+  if (current) return null;
 
-  if (!current) {
-    return tx.membership.create({
-      data: {
-        userId,
-        programId: program.id,
-        startDate: now,
-        endDate: new Date(now.getTime() + program.durationDays * DAY_MS),
-      },
-    });
-  }
-
-  let endDate = current.endDate.getTime();
-  const pause = current.pauses[0];
-  if (current.status === 'PAUSED' && pause && !pause.endedAt) {
-    // A pause that ran out on its own ends when it was due, not now.
-    const endedAt = pause.endsAt < now ? pause.endsAt : now;
-    const closed = await tx.membershipPause.updateMany({
-      where: { id: pause.id, endedAt: null },
-      data: { endedAt },
-    });
-    if (closed.count === 1) {
-      endDate += endedAt.getTime() - pause.startedAt.getTime();
-    }
-  }
-
-  return tx.membership.update({
-    where: { id: current.id },
+  return tx.membership.create({
     data: {
-      status: 'ACTIVE',
+      userId,
       programId: program.id,
-      endDate: new Date(endDate + program.durationDays * DAY_MS),
+      startDate: now,
+      endDate: new Date(now.getTime() + program.durationDays * DAY_MS),
     },
   });
+}
+
+export async function hasCurrentMembership(userId: string) {
+  return (await findCurrentMembership(userId)) !== null;
 }
 
 // Takes back the time a refunded payment added. A membership left with no time is cancelled.
