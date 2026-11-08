@@ -7,6 +7,7 @@ type Props = {
   diameter: number;
   interactive?: boolean;
   elevated?: boolean;
+  colorScheme?: 'auto' | 'light' | 'dark';
   children: ReactNode;
 };
 
@@ -14,13 +15,14 @@ export function GlassCircle({
   diameter,
   interactive = false,
   elevated = false,
+  colorScheme = 'auto',
   children,
 }: Props) {
   const radius = diameter / 2;
 
   if (isLiquidGlassAvailable()) {
     const glass = (
-      <GlassView isInteractive={interactive} style={{ borderRadius: radius }}>
+      <GlassView isInteractive={interactive} colorScheme={colorScheme} style={{ borderRadius: radius }}>
         {children}
       </GlassView>
     );

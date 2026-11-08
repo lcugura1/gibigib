@@ -114,6 +114,7 @@ export function MembershipPass({
                                 color={colors.textOnLight}
                                 interactive={false}
                                 elevated
+                                colorScheme="light"
                                 onPress={onResumePress}
                                 accessibilityLabel="Nastavi članarinu"
                             />
@@ -125,6 +126,7 @@ export function MembershipPass({
                                 color={colors.textOnLight}
                                 interactive={false}
                                 elevated
+                                colorScheme="light"
                                 muted={!pause.canPause}
                                 onPress={onPausePress}
                                 accessibilityLabel="Pauziraj članarinu"
