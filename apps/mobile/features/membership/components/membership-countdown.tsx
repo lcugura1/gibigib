@@ -11,7 +11,7 @@ type Props = {
 
 export function MembershipCountdown({ label, onPress }: Props) {
   return (
-    <GlassCircle diameter={DIAMETER} elevated>
+    <GlassCircle diameter={DIAMETER} elevated colorScheme="light">
       <Pressable
         onPress={onPress}
         hitSlop={8}

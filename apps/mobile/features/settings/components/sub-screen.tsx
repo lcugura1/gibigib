@@ -14,11 +14,11 @@ export function SubScreen({ title, children }: Props) {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: 14 + 44 + 22,
           paddingBottom: insets.bottom + 24,
           gap: 24,
         }}

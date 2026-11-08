@@ -14,6 +14,7 @@ import {
 } from "@/features/attendance/data/visits";
 import { DayDetailSheet } from "@/features/attendance/components/day-detail-sheet";
 import { TrainingChart } from "@/features/attendance/components/training-chart";
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 export function AttendanceScreen() {
   const { visits, status, errorMessage, goal } = useAttendance();
@@ -29,11 +30,11 @@ export function AttendanceScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: statusBarInset + 8,
           paddingBottom: 24,
           gap: 24,
         }}

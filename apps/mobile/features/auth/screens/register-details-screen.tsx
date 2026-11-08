@@ -11,6 +11,7 @@ import { ApiError, register } from '@/features/auth/services/auth';
 import { colors } from '@/shared/theme/colors';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { toFieldErrors } from '@/shared/zod-errors';
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 const detailsSchema = registerSchema
   .pick({
@@ -90,10 +91,10 @@ export function RegisterDetailsScreen() {
       <Animated.ScrollView
         ref={scrollRef}
         style={{ flex: 1 }}
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: statusBarInset + 52,
           paddingBottom: 16,
         }}
         keyboardShouldPersistTaps="handled"

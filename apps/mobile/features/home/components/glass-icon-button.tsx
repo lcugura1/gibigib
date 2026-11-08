@@ -10,6 +10,7 @@ type Props = {
   interactive?: boolean;
   elevated?: boolean;
   muted?: boolean;
+  colorScheme?: 'auto' | 'light' | 'dark';
   accessibilityLabel?: string;
 };
 
@@ -22,11 +23,12 @@ export function GlassIconButton({
   interactive = true,
   elevated = false,
   muted = false,
+  colorScheme,
   accessibilityLabel,
 }: Props) {
   if (interactive) {
     return (
-      <GlassCircle diameter={DIAMETER} interactive elevated={elevated}>
+      <GlassCircle diameter={DIAMETER} interactive elevated={elevated} colorScheme={colorScheme}>
         <Pressable
           onPress={onPress}
           hitSlop={8}
@@ -77,7 +79,7 @@ export function GlassIconButton({
         }
 
         return (
-          <GlassCircle diameter={DIAMETER} elevated={elevated}>
+          <GlassCircle diameter={DIAMETER} elevated={elevated} colorScheme={colorScheme}>
             {icon}
           </GlassCircle>
         );

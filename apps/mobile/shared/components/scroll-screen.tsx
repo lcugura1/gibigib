@@ -3,6 +3,7 @@ import { ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenGradient } from '@/shared/components/screen-gradient';
 import { colors } from '@/shared/theme/colors';
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 type Props = {
   children: ReactNode;
@@ -18,12 +19,12 @@ export function ScrollScreen({ children, contentContainerStyle, footer }: Props)
       <ScreenGradient />
 
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={[
           {
             paddingHorizontal: 16,
-            paddingTop: 8,
+            paddingTop: statusBarInset + 8 + 44 + 24,
             paddingBottom: footer ? 24 : insets.bottom + 24,
             gap: 24,
           },
