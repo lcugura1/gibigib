@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router/stack';
+import { edgeScreenOptions } from '@/shared/navigation/edge-screen-options';
 import { RegisterFormProvider } from '@/features/auth/context/register-form';
 
 export default function RegisterLayout() {
@@ -6,7 +7,7 @@ export default function RegisterLayout() {
     <RegisterFormProvider>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#000000' } }}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="details" />
+        <Stack.Screen name="details" options={edgeScreenOptions} />
       </Stack>
     </RegisterFormProvider>
   );

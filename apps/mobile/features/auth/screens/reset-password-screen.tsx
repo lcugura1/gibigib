@@ -2,13 +2,11 @@ import { resetPasswordSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Alert, Pressable, Text, View, type LayoutChangeEvent, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
 import { ApiError, resetPassword } from '@/features/auth/services/auth';
-import { BackButton } from '@/shared/components/back-button';
-import { ScrollEdgeFade, useScrollEdge } from '@/shared/components/scroll-edge-fade';
 import { colors } from '@/shared/theme/colors';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { toFieldErrors } from '@/shared/zod-errors';
@@ -18,8 +16,7 @@ export function ResetPasswordScreen() {
   const router = useRouter();
   const keyboardHeight = useKeyboardHeight();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { scrollY, onScroll } = useScrollEdge();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const offsets = useRef<Record<string, number>>({});
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -75,11 +72,10 @@ export function ResetPasswordScreen() {
       <Animated.ScrollView
         ref={scrollRef}
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: insets.top + 52,
+          paddingTop: 8,
           paddingBottom: 16,
         }}
         keyboardShouldPersistTaps="handled"
@@ -135,12 +131,6 @@ export function ResetPasswordScreen() {
           </Text>
         ) : null}
       </Animated.ScrollView>
-
-      <ScrollEdgeFade scrollY={scrollY} />
-
-      <View style={{ position: 'absolute', top: insets.top + 8, left: 16 }}>
-        <BackButton />
-      </View>
 
       <View
         style={{

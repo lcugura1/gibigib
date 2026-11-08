@@ -1,15 +1,13 @@
 import { birthDateInputSchema, registerSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, Text, View, type LayoutChangeEvent, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
 import { useAuth } from '@/features/auth/context/auth';
 import { useRegisterForm } from '@/features/auth/context/register-form';
 import { ApiError, register } from '@/features/auth/services/auth';
-import { BackButton } from '@/shared/components/back-button';
-import { ScrollEdgeFade, useScrollEdge } from '@/shared/components/scroll-edge-fade';
 import { colors } from '@/shared/theme/colors';
 import { useKeyboardHeight } from '@/shared/use-keyboard-height';
 import { toFieldErrors } from '@/shared/zod-errors';
@@ -33,8 +31,7 @@ export function RegisterDetailsScreen() {
   const keyboardHeight = useKeyboardHeight();
   const { signIn } = useAuth();
   const { form, update } = useRegisterForm();
-  const { scrollY, onScroll } = useScrollEdge();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const offsets = useRef<Record<string, number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -93,11 +90,10 @@ export function RegisterDetailsScreen() {
       <Animated.ScrollView
         ref={scrollRef}
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: insets.top + 52,
+          paddingTop: 8,
           paddingBottom: 16,
         }}
         keyboardShouldPersistTaps="handled"
@@ -171,12 +167,6 @@ export function RegisterDetailsScreen() {
           </Text>
         ) : null}
       </Animated.ScrollView>
-
-      <ScrollEdgeFade scrollY={scrollY} />
-
-      <View style={{ position: 'absolute', top: insets.top + 8, left: 16 }}>
-        <BackButton />
-      </View>
 
       <View
         style={{

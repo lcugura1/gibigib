@@ -1,7 +1,6 @@
 import { Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useAuth } from "@/features/auth/context/auth";
-import { ScrollEdgeFade, useScrollEdge } from "@/shared/components/scroll-edge-fade";
 import { colors } from "@/shared/theme/colors";
 import { AvatarButton } from "@/features/home/components/avatar-button";
 import { MembershipCtaCard } from "@/features/home/components/membership-cta-card";
@@ -25,15 +24,12 @@ export default function Home() {
   const pause = useMembershipPause();
   const { qrValue } = useEntryToken(!!membership && !pause.paused);
   const occupancy = useOccupancy();
-  const { scrollY, onScroll } = useScrollEdge();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 8,
@@ -111,7 +107,6 @@ export default function Home() {
         </View>
       </Animated.ScrollView>
 
-      <ScrollEdgeFade scrollY={scrollY} insetAdjusted />
     </View>
   );
 }
