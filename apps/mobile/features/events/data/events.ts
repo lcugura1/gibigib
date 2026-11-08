@@ -1,11 +1,11 @@
-import type { ImageSourcePropType } from 'react-native';
+import type { ImageSource } from 'expo-image';
 
 export type GymEvent = {
   id: string;
   title: string;
   date: string;
   description: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
 };
 
 export const events: GymEvent[] = [

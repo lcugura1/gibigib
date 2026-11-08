@@ -9,5 +9,8 @@
     "dev:api": "pnpm --filter @gibigib/api dev",
     "dev:mobile": "pnpm --filter @gibigib/mobile start",
     "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0"
   }
 }

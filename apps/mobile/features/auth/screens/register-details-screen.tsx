@@ -1,7 +1,7 @@
 import { birthDateInputSchema, registerSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, Text, View, type LayoutChangeEvent, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
@@ -34,7 +34,7 @@ export function RegisterDetailsScreen() {
   const { signIn } = useAuth();
   const { form, update } = useRegisterForm();
   const { scrollY, onScroll } = useScrollEdge();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const offsets = useRef<Record<string, number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);

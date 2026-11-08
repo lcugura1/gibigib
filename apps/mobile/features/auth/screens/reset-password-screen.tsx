@@ -2,7 +2,7 @@ import { resetPasswordSchema } from '@gibigib/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Alert, Pressable, Text, View, type LayoutChangeEvent, type ScrollViewInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '@/features/auth/components/text-field';
@@ -19,7 +19,7 @@ export function ResetPasswordScreen() {
   const keyboardHeight = useKeyboardHeight();
   const { email } = useLocalSearchParams<{ email: string }>();
   const { scrollY, onScroll } = useScrollEdge();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const offsets = useRef<Record<string, number>>({});
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');

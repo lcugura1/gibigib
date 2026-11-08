@@ -35,6 +35,16 @@
         {
           "enableGooglePay": true
         }
+      ],
+      "expo-status-bar",
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "dynamic"
+          }
+        }
       ]
     ],
     "experiments": {
