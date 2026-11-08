@@ -78,6 +78,20 @@ export const locations: GymLocation[] = [
     ],
   },
   {
+    name: 'Varaždin III',
+    city: 'Varaždin',
+    address: 'Optujska ulica 155, 42000 Varaždin',
+    phone: '042 717 625',
+    tel: '+38542717625',
+    email: 'infovz@gibigib.com',
+    coordinates: { latitude: 46.317401, longitude: 16.315178 },
+    hours: [
+      { day: 'Pon – Pet', time: '06:00 – 22:00' },
+      { day: 'Subota', time: '08:00 – 21:00' },
+      { day: 'Nedjelja', time: '10:00 – 20:00' },
+    ],
+  },
+  {
     name: 'Zagreb I',
     city: 'Zagreb',
     address: 'Lazinska ulica 40, 10000 Zagreb',
