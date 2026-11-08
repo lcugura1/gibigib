@@ -16,7 +16,6 @@ import { GymIntro } from '@/features/info/components/gym-intro';
 import { LocationCard } from '@/features/info/components/location-card';
 import { LocationsMap } from '@/features/info/components/locations-map';
 import { SocialCard } from '@/features/info/components/social-card';
-import { ScrollEdgeFade } from '@/shared/components/scroll-edge-fade';
 
 export function InfoScreen() {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -86,8 +85,6 @@ export function InfoScreen() {
           <SocialCard />
         </View>
       </Animated.ScrollView>
-
-      <ScrollEdgeFade scrollY={offset} insetAdjusted />
     </View>
   );
 }

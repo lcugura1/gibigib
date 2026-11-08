@@ -3,18 +3,13 @@ import Animated from 'react-native-reanimated';
 import { colors } from '@/shared/theme/colors';
 import { events } from '@/features/events/data/events';
 import { EventCard } from '@/features/events/components/event-card';
-import { ScrollEdgeFade, useScrollEdge } from '@/shared/components/scroll-edge-fade';
 
 export function EventsScreen() {
-  const { scrollY, onScroll } = useScrollEdge();
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 8,
@@ -41,8 +36,6 @@ export function EventsScreen() {
           ))}
         </View>
       </Animated.ScrollView>
-
-      <ScrollEdgeFade scrollY={scrollY} insetAdjusted />
     </View>
   );
 }

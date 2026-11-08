@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BackButton } from '@/shared/components/back-button';
-import { ScrollEdgeFade, useScrollEdge } from '@/shared/components/scroll-edge-fade';
 import { colors } from '@/shared/theme/colors';
 
 type Props = {
@@ -11,21 +8,17 @@ type Props = {
   children: ReactNode;
 };
 
-const BACK_TOP = 14;
-
 export function SubScreen({ title, children }: Props) {
   const insets = useSafeAreaInsets();
-  const { scrollY, onScroll } = useScrollEdge();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Animated.ScrollView
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: BACK_TOP + 44 + 22,
+          paddingTop: 8,
           paddingBottom: insets.bottom + 24,
           gap: 24,
         }}
@@ -43,13 +36,7 @@ export function SubScreen({ title, children }: Props) {
           {title}
         </Text>
         {children}
-      </Animated.ScrollView>
-
-      <ScrollEdgeFade scrollY={scrollY} height={BACK_TOP + 44} />
-
-      <View style={{ position: 'absolute', top: BACK_TOP, left: 16 }}>
-        <BackButton icon="chevron-down" />
-      </View>
+      </ScrollView>
     </View>
   );
 }
