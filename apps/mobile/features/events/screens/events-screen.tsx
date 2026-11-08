@@ -3,16 +3,17 @@ import Animated from 'react-native-reanimated';
 import { colors } from '@/shared/theme/colors';
 import { events } from '@/features/events/data/events';
 import { EventCard } from '@/features/events/components/event-card';
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 export function EventsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: statusBarInset + 8,
           paddingBottom: 24,
           gap: 24,
         }}

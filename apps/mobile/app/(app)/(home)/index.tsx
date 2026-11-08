@@ -15,6 +15,7 @@ import { useOccupancy } from '@/features/home/hooks/use-occupancy';
 import { useMembership } from '@/features/membership/context/membership';
 import { useMembershipCountdown } from '@/features/membership/hooks/use-membership-countdown';
 import { useMembershipPause } from '@/features/membership/hooks/use-membership-pause';
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 export default function Home() {
   const { user } = useAuth();
@@ -28,11 +29,11 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: statusBarInset + 8,
           paddingBottom: 24,
           gap: 24,
         }}

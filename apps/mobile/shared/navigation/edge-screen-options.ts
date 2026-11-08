@@ -5,6 +5,8 @@ export const edgeScreenOptions: NativeStackNavigationOptions = {
   headerShown: true,
   headerTransparent: true,
   headerTitle: '',
+  headerUserInterfaceStyle: 'dark',
+  headerTintColor: colors.textPrimary,
   headerShadowVisible: false,
   headerBackButtonDisplayMode: 'minimal',
   scrollEdgeEffects: { top: 'soft' },

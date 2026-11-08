@@ -16,6 +16,7 @@ import { GymIntro } from '@/features/info/components/gym-intro';
 import { LocationCard } from '@/features/info/components/location-card';
 import { LocationsMap } from '@/features/info/components/locations-map';
 import { SocialCard } from '@/features/info/components/social-card';
+import { statusBarInset } from '@/shared/navigation/status-bar-inset';
 
 export function InfoScreen() {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -36,11 +37,11 @@ export function InfoScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.ScrollView
         ref={scrollRef}
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: statusBarInset + 8,
           paddingBottom: 24,
           gap: 24,
         }}
