@@ -2,7 +2,7 @@ import type {
   AnalyticsRange,
   MemberListItemDto,
   PaymentLogDto,
-  PaymentStatus,
+  AdminPaymentStatus,
   PaymentsPageDto,
   PaymentsQuery,
   RevenueDto,
@@ -138,7 +138,7 @@ export function sampleRevenue({ gymId, range }: RevenueQuery): RevenueDto {
 
 const memberByName = new Map(MEMBERS.map((member) => [member.name, member]));
 
-const PAYMENT_SEEDS: readonly [Date, string, PlanSlug, string, PaymentStatus][] = [
+const PAYMENT_SEEDS: readonly [Date, string, PlanSlug, string, AdminPaymentStatus][] = [
   [at(10, 13, 17, 42), 'Mateo Kralj', 'mjesecno', 'Apple Pay', 'PAID'],
   [at(10, 13, 16, 10), 'Ivana Horvat', 'grupni', 'Kartica ·· 1881', 'PENDING'],
   [at(10, 13, 9, 3), 'Lana Tomić', 'trener', 'Google Pay', 'PAID'],
@@ -151,7 +151,7 @@ const PAYMENT_SEEDS: readonly [Date, string, PlanSlug, string, PaymentStatus][] 
   [at(10, 10, 7, 2), 'Nika Petrović', 'godisnji', 'Kartica ·· 9034', 'PAID'],
 ];
 
-const OPEN_SEEDS: readonly [Date, PaymentStatus][] = [
+const OPEN_SEEDS: readonly [Date, AdminPaymentStatus][] = [
   [at(10, 9, 20, 11), 'PENDING'],
   [at(10, 8, 12, 47), 'FAILED'],
   [at(10, 8, 7, 55), 'PENDING'],
@@ -178,7 +178,7 @@ function payment(
   name: string,
   slug: string,
   method: string,
-  status: PaymentStatus,
+  status: AdminPaymentStatus,
 ): PaymentLogDto {
   const price = planOf(slug).price;
   return {
@@ -270,7 +270,7 @@ export function samplePayments(query: PaymentsQuery): PaymentsPageDto {
   };
 }
 
-const PAYMENT_CSV: Record<PaymentStatus, string> = {
+const PAYMENT_CSV: Record<AdminPaymentStatus, string> = {
   PAID: 'Plaćeno',
   PENDING: 'Na čekanju',
   FAILED: 'Neuspjelo',

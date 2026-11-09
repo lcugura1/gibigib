@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { membershipStatusSchema } from './membership';
 
-export const paymentStatusSchema = z.enum(['PAID', 'PENDING', 'FAILED', 'REFUNDED']);
+export const adminPaymentStatusSchema = z.enum(['PAID', 'PENDING', 'FAILED', 'REFUNDED']);
 
-export type PaymentStatus = z.infer<typeof paymentStatusSchema>;
+export type AdminPaymentStatus = z.infer<typeof adminPaymentStatusSchema>;
 
 export const memberDetailDtoSchema = z.object({
   asOf: z.string(),
@@ -42,7 +42,7 @@ export const memberDetailDtoSchema = z.object({
       date: z.string(),
       description: z.string(),
       method: z.string(),
-      status: paymentStatusSchema,
+      status: adminPaymentStatusSchema,
       amount: z.number(),
     }),
   ),

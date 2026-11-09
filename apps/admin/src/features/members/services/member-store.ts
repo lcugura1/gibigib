@@ -3,7 +3,7 @@ import type {
   MemberDetailDto,
   MemberListItemDto,
   MemberVisitsDto,
-  PaymentStatus,
+  AdminPaymentStatus,
 } from '@gibigib/types';
 import { GYMS, NOW, PLANS, local, noise } from '../../../shared/mock/fixtures';
 import { recordChange } from '../../audit/services/audit-store';
@@ -165,7 +165,7 @@ function generatedDetail(member: MemberListItemDto): MemberRecord['detail'] {
   const renewals = plan.durationDays === 365 ? 1 : 4;
   const failed = FAILED_PAYMENT_MEMBERS.has(member.name);
   const payments = Array.from({ length: renewals }, (_, i) => {
-    const status: PaymentStatus = failed && i === 0 ? 'FAILED' : 'PAID';
+    const status: AdminPaymentStatus = failed && i === 0 ? 'FAILED' : 'PAID';
     return {
       id: `${member.id}-p${i}`,
       date: addDays(startsAt, -i * plan.durationDays),

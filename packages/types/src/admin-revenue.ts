@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { paymentStatusSchema } from './admin-member-detail';
+import { adminPaymentStatusSchema } from './admin-member-detail';
 import { analyticsRangeSchema } from './admin-overview';
 
 export const revenueQuerySchema = z.object({
@@ -68,7 +68,7 @@ export const paymentLogDtoSchema = z.object({
   gymId: z.string(),
   planSlug: z.string(),
   method: z.string(),
-  status: paymentStatusSchema,
+  status: adminPaymentStatusSchema,
   amount: z.number(),
 });
 
