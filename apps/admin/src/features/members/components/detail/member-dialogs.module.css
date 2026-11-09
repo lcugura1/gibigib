@@ -1,0 +1,118 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.hint {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.limit {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+
+  span:first-child {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+.segments {
+  display: flex;
+  gap: var(--space-6);
+
+  span {
+    flex: 1;
+    block-size: var(--space-6);
+    border-radius: 3px;
+    background: var(--surface-border);
+  }
+}
+
+.options {
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-14) var(--space-16);
+  border-radius: var(--radius-16);
+  border: 1px solid var(--surface-border);
+  cursor: pointer;
+
+  &:has(input:checked) {
+    border-color: var(--accent);
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+
+  input {
+    appearance: none;
+    inline-size: 1.25rem;
+    aspect-ratio: 1;
+    flex: none;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+
+    &:checked {
+      border-color: var(--accent);
+
+      &::after {
+        content: '';
+        inline-size: 0.625rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+}
+
+.optionText {
+  flex: 1;
+
+  b {
+    display: block;
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+
+  small {
+    font-size: var(--text-section-label);
+    color: var(--text-secondary);
+  }
+}
+
+.price {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

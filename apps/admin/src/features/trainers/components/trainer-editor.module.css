@@ -1,0 +1,45 @@
+.remove {
+  min-block-size: 2.75rem;
+  margin-block: calc(var(--space-12) * -1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-size: var(--text-button);
+  font-weight: 600;
+}
+
+.photoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.photoButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-14);
+  border-radius: var(--radius-12);
+  border: 1px solid var(--border);
+  font-size: var(--text-body);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-within {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+}
+
+.file {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.short {
+  --textarea-min: 4.5rem;
+}

@@ -1,0 +1,107 @@
+.image {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--text-secondary);
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.rows {
+  overflow: hidden;
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+
+  li + li {
+    border-block-start: 1px solid var(--surface-border);
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-14) var(--space-16);
+
+  &:hover {
+    background: var(--tile-fill);
+  }
+}
+
+.selected {
+  background: var(--tile-fill);
+}
+
+.thumb {
+  inline-size: 7rem;
+  block-size: 4.5rem;
+  flex: none;
+  border-radius: var(--radius-12);
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  border: 1px solid var(--card-border);
+}
+
+.text {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  b {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  span {
+    font-size: var(--text-body-secondary);
+    color: var(--text-secondary);
+  }
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-24);
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  border: 1px solid var(--card-border);
+}
+
+.cover {
+  block-size: 9.375rem;
+  background: var(--tile-fill);
+  border-block-end: 1px solid var(--card-border);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+
+  b {
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}

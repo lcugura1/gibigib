@@ -1,0 +1,23 @@
+.card {
+  container-type: inline-size;
+  border-radius: var(--radius-24);
+  padding: var(--card-padding);
+  --card-padding: var(--space-20);
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  border: 1px solid var(--card-border);
+  min-inline-size: 0;
+}
+
+.flat {
+  --card-padding: var(--space-16);
+  background: var(--surface);
+  border-color: var(--surface-border);
+}
+
+.light {
+  background: var(--card-light);
+  border: 0;
+  color: var(--text-on-light);
+  --label-color: var(--text-on-light-secondary);
+  --muted-color: var(--text-on-light-secondary);
+}

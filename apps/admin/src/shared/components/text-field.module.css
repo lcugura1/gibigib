@@ -1,0 +1,93 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-inline-size: 0;
+
+  label {
+    font-size: var(--text-body-secondary);
+    color: var(--text-secondary);
+  }
+
+  input,
+  textarea {
+    inline-size: 100%;
+    border-radius: var(--radius-12);
+    border: 1px solid var(--border);
+    background: none;
+    font-size: 1rem;
+
+    &::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    &:focus {
+      border-color: var(--border-focused);
+      outline: none;
+    }
+  }
+
+  input {
+    block-size: 3.5rem;
+    padding-inline: var(--space-16);
+  }
+
+  textarea {
+    min-block-size: var(--textarea-min, 7.5rem);
+    padding: var(--space-14) var(--space-16);
+    line-height: 1.4;
+    resize: vertical;
+    font: inherit;
+    font-size: 1rem;
+    color: inherit;
+  }
+}
+
+.invalid :is(input, textarea) {
+  border-color: var(--danger);
+}
+
+.hint {
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+}
+
+.error {
+  font-size: var(--text-section-label);
+  color: var(--danger);
+}
+
+.select {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  select {
+    appearance: none;
+    inline-size: 100%;
+    block-size: 3.5rem;
+    padding-inline: var(--space-16) 2.75rem;
+    border-radius: var(--radius-12);
+    border: 1px solid var(--border);
+    background: none;
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:focus {
+      border-color: var(--border-focused);
+      outline: none;
+    }
+  }
+
+  option {
+    background: var(--surface);
+  }
+
+  svg {
+    position: absolute;
+    inset-inline-end: var(--space-16);
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+}

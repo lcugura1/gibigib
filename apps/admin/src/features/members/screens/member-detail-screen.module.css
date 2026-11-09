@@ -1,0 +1,72 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'membership'
+    'calendar'
+    'gyms'
+    'profile'
+    'pauses'
+    'payments'
+    'log';
+  gap: var(--space-24);
+  align-items: start;
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'membership calendar'
+      'gyms gyms'
+      'profile pauses'
+      'payments payments'
+      'log log';
+  }
+
+  @media (width >= 1200px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      'membership calendar profile'
+      'gyms gyms pauses'
+      'payments payments pauses'
+      'log log pauses';
+  }
+}
+
+.membership {
+  grid-area: membership;
+}
+
+.calendar {
+  grid-area: calendar;
+}
+
+.gyms {
+  grid-area: gyms;
+}
+
+.profile {
+  grid-area: profile;
+}
+
+.pauses {
+  grid-area: pauses;
+}
+
+.payments {
+  grid-area: payments;
+}
+
+.log {
+  grid-area: log;
+}
+
+.skeleton {
+  min-block-size: 12rem;
+}

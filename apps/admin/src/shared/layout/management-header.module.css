@@ -1,0 +1,46 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.titles {
+  flex: 1 1 0;
+  min-inline-size: 12rem;
+}
+
+.title {
+  font-size: var(--text-title-tab);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr 2.75rem;
+  align-items: center;
+  padding-block-start: var(--space-8);
+}
+
+.section {
+  text-align: center;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.search {
+  inline-size: clamp(13.75rem, 22vw, 17.5rem);
+}

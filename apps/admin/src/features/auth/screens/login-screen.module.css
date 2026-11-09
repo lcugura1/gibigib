@@ -1,0 +1,69 @@
+.page {
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-32) var(--space-16);
+  background: var(--background);
+}
+
+.panel {
+  inline-size: min(100%, 25rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-24);
+}
+
+.logo {
+  inline-size: clamp(8.75rem, 30vw, 10.625rem);
+  block-size: auto;
+}
+
+.titles {
+  text-align: center;
+}
+
+.title {
+  font-size: clamp(1.5rem, 5vw, 1.75rem);
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin-block-start: var(--space-6);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.form {
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.error {
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.notice {
+  padding: var(--space-16) var(--space-20);
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  font-size: var(--text-body);
+  line-height: 1.4;
+}
+
+.link {
+  align-self: center;
+  min-block-size: 2.75rem;
+  margin-block-start: var(--space-8);
+  padding-inline: var(--space-12);
+  border: 0;
+  background: none;
+  font-size: var(--text-button);
+  font-weight: 700;
+}

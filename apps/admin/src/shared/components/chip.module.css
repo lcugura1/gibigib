@@ -1,0 +1,35 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-block-size: 2.25rem;
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border);
+  background: none;
+  font-size: var(--text-body-secondary);
+  opacity: 0.75;
+
+  &[aria-pressed='true'] {
+    opacity: 1;
+    border-color: var(--tag);
+    background: color-mix(in srgb, var(--tag) 12%, transparent);
+  }
+}
+
+.dot {
+  inline-size: 0.5625rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--tag);
+
+  .chip[aria-pressed='false'] & {
+    opacity: var(--opacity-dimmed);
+  }
+}
+
+.meta {
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}

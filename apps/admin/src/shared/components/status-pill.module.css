@@ -1,0 +1,46 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0.3em var(--space-10);
+  border-radius: var(--radius-10);
+  font-size: var(--text-section-label);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--level);
+  background: color-mix(in srgb, var(--level) 15%, transparent);
+}
+
+.ok {
+  --level: var(--accent);
+}
+
+.warn {
+  --level: var(--warning);
+}
+
+.danger {
+  --level: var(--danger);
+}
+
+.muted {
+  --level: var(--text-secondary);
+}
+
+.solid {
+  background: var(--level);
+  color: var(--text-on-light);
+}
+
+.onLight {
+  background: var(--surface-on-light-muted);
+  color: var(--text-on-light);
+
+  &::before {
+    content: '';
+    inline-size: 0.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--level);
+  }
+}

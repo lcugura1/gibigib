@@ -1,0 +1,67 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+
+  @media (width < 768px) {
+    gap: var(--space-16);
+  }
+}
+
+.liveRow,
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-24);
+  align-items: start;
+}
+
+.liveRow {
+  @media (width >= 1024px) {
+    grid-template-columns: 5fr 7fr;
+    align-items: stretch;
+  }
+
+  @media (width >= 1200px) {
+    grid-template-columns: 4fr 8fr;
+  }
+}
+
+.board {
+  @media (width >= 1200px) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr;
+  }
+}
+
+@media (width >= 1200px) {
+  .arrivals {
+    grid-column: 1 / span 8;
+    grid-row: 1;
+  }
+
+  .plans {
+    grid-column: 9 / -1;
+    grid-row: 1;
+    align-self: stretch;
+  }
+
+  .peak {
+    grid-column: 1 / span 8;
+    grid-row: 2;
+  }
+
+  .attention {
+    grid-column: 9 / -1;
+    grid-row: 2 / span 2;
+  }
+
+  .entries {
+    grid-column: 1 / span 8;
+    grid-row: 3;
+  }
+}
+
+.skeleton {
+  min-block-size: 14rem;
+}

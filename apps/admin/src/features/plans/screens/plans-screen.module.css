@@ -1,0 +1,14 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+
+  @media (width < 768px) {
+    gap: var(--space-16);
+  }
+}
+
+.hint {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}

@@ -1,5 +1,5 @@
 // Shared domain types for the GibiGib platform.
-// Consumed by both @gibigib/api (backend) and @gibigib/mobile (app).
+// Consumed by @gibigib/api (backend), @gibigib/mobile (app) and @gibigib/admin (web).
 
 /** Standard health-check payload returned by the API. */
 export interface ApiHealthResponse {
@@ -13,3 +13,16 @@ export * from './attendance';
 export * from './membership';
 export * from './entry';
 export * from './payment';
+export * from './admin-overview';
+export * from './admin-members';
+export * from './admin-catalog';
+export * from './admin-member-detail';
+export * from './admin-entries';
+export * from './admin-gym';
+export * from './admin-revenue';
+export * from './admin-plans';
+export * from './admin-audit';
+export * from './admin-events';
+export * from './admin-trainers';
+export * from './admin-devices';
+export * from './admin-settings';

@@ -1,0 +1,37 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-block-size: 2.75rem;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.search {
+  inline-size: clamp(13.75rem, 22vw, 17.5rem);
+}
+
+.phone {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr 2.75rem;
+  align-items: center;
+  padding-block-start: var(--space-8);
+}
+
+.phoneTitle {
+  text-align: center;
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,54 @@
+.track {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  border-radius: var(--radius-16);
+  background: var(--tile-fill);
+}
+
+.option {
+  padding: var(--space-8) var(--space-16);
+  border: 0;
+  border-radius: var(--radius-12);
+  background: none;
+  font-size: var(--text-body);
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.22s,
+    color 0.22s;
+
+  &[aria-pressed='true'] {
+    background: var(--text-primary);
+    color: var(--text-on-light);
+  }
+}
+
+.small .option {
+  padding: 0.4375rem var(--space-12);
+  font-size: var(--text-body-secondary);
+}
+
+.fill {
+  display: flex;
+  flex-wrap: nowrap;
+
+  .option {
+    flex: 1;
+    min-inline-size: 0;
+  }
+}
+
+.count {
+  margin-inline-start: var(--space-6);
+  padding: 0.0625rem var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--count-pill);
+  font-size: var(--text-label-small);
+  font-weight: 700;
+
+  .option[aria-pressed='true'] & {
+    background: rgb(0 0 0 / 0.16);
+  }
+}
