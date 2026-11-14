@@ -33,16 +33,16 @@
       <h3 id="login-lockout">Ograničenje prijave po e-mailu</h3>
       <p>10 pokušaja u 15 minuta po e-mailu znači da netko tko zna tuđi e-mail može toj osobi na 15 minuta blokirati prijavu. Alternativa: ključ e-mail + IP, ili ograničenje tek nakon N neuspjelih pokušaja.</p>
 
-      <h3 id="hikvision-uredaj">Most treba provjeriti na pravom Hikvisionu</h3>
-      <p>Most i simulator napisani su prema dokumentaciji. Na uređaju treba potvrditi:</p>
+      <h3 id="hardver-ulaza">Hardver ulaza: što još treba potvrditi</h3>
+      <p>Stanje 2026-11-14. Odluke O-021 do O-026 temelje se na dokumentaciji, a ništa nije isprobano na uređaju. Treba potvrditi:</p>
       <ul>
-        <li>čita li čitač QR s ekrana mobitela;</li>
-        <li>šalje li broj od 20 znamenki bez skraćivanja;</li>
-        <li>ima li svaki dio <code>alertStream</code> zaglavlje <code>Content-Length</code>;</li>
-        <li>Digest (MD5 ili SHA-256);</li>
-        <li>uključenost opcije "Notify Surveillance Center".</li>
+        <li><b>Akuvox A08S:</b> HTTP metodu i kodiranje callbacka, čitanje našeg 20-znamenkastog QR-a s mobitela, potvrdu PIN-a na numpadu (nema <code>#</code>), koji od <code>DoorNum=SA</code> i <code>SB</code> aktivira SR01, ponašanje na stabilnom firmwareu 108.30.11.61 naspram Beta 108.30.12.17, HTTPS za callback.</li>
+        <li><b>Tedee:</b> minutnu preciznost <code>endDate</code>, latenciju izdavanja PIN-a, kad istekli PIN oslobađa mjesto, kašnjenje zapisa <code>UnlockedByPin</code>.</li>
+        <li><b>Odgovori proizvođača:</b> upiti Akuvoxu i Tedeeu poslani su 2026-11-14.</li>
+        <li><b>MultiSport i PassSport:</b> mailovi u ime vlasnika teretane još nisu poslani. Do odgovora i pristupnih podataka adapteri se ne programiraju.</li>
+        <li><b>Detalji dizajna prije koda:</b> format callbacka, PIN za naše članove, <code>gymId</code> i izvor u <code>EntryEvent</code>, anti-passback za goste (<a href="hardver/arhitektura-ulaza.md">arhitektura ulaza</a>).</li>
       </ul>
-      <p>Vidi <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a>.</p>
+      <p>Popis testova: <a href="hardver/ugovori/akuvox-a08s.md">ugovor Akuvox</a>, <a href="hardver/ugovori/tedee.md">ugovor Tedee</a>. Pregled: <a href="ulaz-hardver.html">Ulaz i hardver</a>.</p>
 
       <h3 id="fiskalizacija">Računi i fiskalizacija uz Stripe uplate</h3>
       <p>Kartično plaćanje mora se fiskalizirati, a račun izdaje teretana: treba joj FINA certifikat, prijavljen poslovni prostor i naplatni uređaj. Prijedlog je servis za račune s API-jem, koji se poziva iz webhooka nakon <code>payment_intent.succeeded</code> i šalje PDF na e-mail. Prije toga ide testna izvedba bez JIR-a. Treba odabrati servis zajedno s knjigovođom.</p>
@@ -54,7 +54,7 @@
       <ul>
         <li id="retencija"><b>Čuvanje podataka:</b> <code>EntryToken</code>, <code>EntryEvent</code> i <code>DoorCommand</code> rastu bez čišćenja. Treba dnevni posao čišćenja i dogovor koliko dugo se čuva dnevnik ulazaka (GDPR).</li>
         <li><b>Više instanci API-ja:</b> brojači ograničenja su u memoriji procesa. Kod skaliranja treba Redis.</li>
-        <li><b>Kontroler vrata:</b> firmware nije u repozitoriju; mora slati ključ vrata. Ključeve treba stvoriti prije deploya.</li>
+        <li><b>Kontroler vrata (ESP32 iz demoa):</b> firmware nije u repozitoriju i mora slati ključ vrata. U produkciji ga zamjenjuje Akuvox most (<a href="odluke.html#o-022">O-022</a>), koji koristi ključ uređaja vrste <code>SCANNER</code>. Ključeve treba stvoriti prije deploya.</li>
         <li><b>Stara mobilna verzija</b> osvježava QR svakih 60 s, a kod traje 45 s. Treba objaviti novu verziju zajedno s API-jem.</li>
         <li><b>Automatski testovi:</b> provjere iz <a href="lokalno-okruzenje.html#rucna-provjera">scenarija</a> pokrenute su skriptama izvan repozitorija. Prijedlog: Vitest s testnom bazom i GitHub Actions.</li>
         <li><b>Demo reset</b> (<code>DEMO_RESET=1</code>) nema zaštitu i briše dnevnik ulazaka za taj dan. Ne smije biti uključen izvan prezentacije.</li>

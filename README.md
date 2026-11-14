@@ -23,6 +23,23 @@ mobile application available on iOS and Android.
 | FZ07 | News and events |
 | FZ08 | Gym info (location, hours, contact) |
 
+## Feature status
+
+Checked on 2026-11-14. "Server verified" means the API behaviour was exercised with scripted requests against a throwaway database (39 checks; the one that looked like a failure, a purchase refused with 409 while a membership was active, is the intended rule; the dev database was not touched) and `pnpm -r typecheck` passes for all five workspaces. The mobile app was **not run on a device or simulator** in this check, so screens are listed as implemented, not as verified. There are no automated tests in the repository.
+
+| Code | Feature | Server | Mobile app | Not confirmed |
+|---|---|---|---|---|
+| FZ01 | Registration, login, password reset | Verified: register, duplicate rejected, login, wrong password, token refresh rotation, logout, reset code by e-mail (Mailpit) and login with the new password | Screens implemented | App flows on a device |
+| FZ02 | Membership program browsing | Programs exist in the database, but the app lists plans from static content (`features/home/data/plans.ts`) | Implemented, static | Prices and plans are not served by the API |
+| FZ03 | In-app payment | Rules verified: validation, and a second purchase is refused while a membership is active (409) | PaymentSheet implemented | The Stripe flow end to end (needs test keys and a dev build); not run, to avoid creating objects in the Stripe account |
+| FZ04 | QR entry | Verified: 20-digit token, single use, membership and pause checks, anti-passback, every scan logged, door command queued (the 45 s expiry was not re-tested) | Pass screen implemented | **Door hardware**: reader and lock are documented but not tested, see [`docs/hardver`](docs/hardver/README.md) |
+| FZ05 | Membership expiry info, pause and resume | Verified: active membership, pause (QR refused while paused), resume | Screens implemented | App flows on a device |
+| FZ06 | Attendance tracking | Verified: entry visits, training tags, monthly goal | Implemented. **Flaw:** the screen merges eight hard-coded sample visits (June and July 2026, `attendance/data/visits.ts`) with the real ones | Real data only, until the sample visits are removed |
+| FZ07 | News and events | No API | Static content in the app | Content management |
+| FZ08 | Gym info (location, hours, contact) | No API | Static content in the app | Content management |
+
+Also implemented in the app: profile avatar (server verified), live occupancy (server verified; an estimate, because exits are not recorded), trainers (static), settings, help and about (static).
+
 ## Documentation
 
 Project decisions, what was changed and why, and open questions are kept as HTML pages in [`docs/`](docs/index.html). Open `docs/index.html` in a browser; chapters are in the sidebar.
@@ -100,7 +117,7 @@ The scanner page also accepts a USB QR reader, which types the code like a keybo
 
 #### Hikvision terminal (bridge and simulator)
 
-A Hikvision terminal reads the app's QR code as a card number. `apps/bridge` listens to the terminal's events, checks each code with `POST /entry/scan` and opens the door over ISAPI. Without a terminal, run the bundled simulator instead:
+The Hikvision bridge is being replaced by an Akuvox bridge (decision O-021 in `docs/odluke.html`); the code stays until then. A Hikvision terminal reads the app's QR code as a card number. `apps/bridge` listens to the terminal's events, checks each code with `POST /entry/scan` and opens the door over ISAPI. Without a terminal, run the bundled simulator instead:
 
 ```sh
 cp apps/bridge/.env.example apps/bridge/.env   # set DEVICE_KEY to a scanner key
@@ -108,7 +125,7 @@ pnpm --filter @gibigib/bridge simulator         # fake terminal on http://localh
 pnpm --filter @gibigib/bridge start             # the bridge
 ```
 
-Open `http://localhost:8090`, show the app's QR code to the camera or type the number, and the page shows the door opening. See `docs/ulaz-hikvision.html`.
+Open `http://localhost:8090`, show the app's QR code to the camera or type the number, and the page shows the door opening. Hardware docs: `docs/ulaz-hardver.html` and `docs/hardver/`.
 
 ### 7. Payments (Stripe, optional)
 

@@ -45,7 +45,7 @@ corepack pnpm dev                          # API na http://localhost:3000</code>
         <li>Ključ uređaja ispisuje se samo jednom. Ako se izgubi: <code>device revoke --id …</code> pa novi <code>device create</code>.</li>
         <li>Skener: <code>http://localhost:3000/scanner/</code>, pri prvom otvaranju traži ključ skenera.</li>
         <li>E-mailovi (kodovi za reset lozinke): <code>http://localhost:8025</code> (Mailpit).</li>
-        <li>Hikvision bez uređaja: most i simulator, vidi <a href="ulaz-hikvision.html#simulator">Ulaz preko Hikvisiona</a>.</li>
+        <li>Hikvision most i simulator u <code>apps/bridge</code> postoje dok ih ne zamijeni Akuvox most (<a href="odluke.html#o-021">O-021</a>). Pokretanje: <code>apps/bridge/.env</code> iz <code>.env.example</code> s ključem skenera, zatim <code>corepack pnpm --filter @gibigib/bridge simulator</code> (stranica na <code>http://localhost:8090</code>) i <code>corepack pnpm --filter @gibigib/bridge start</code>. Hardver ulaza: <a href="ulaz-hardver.html">Ulaz i hardver</a>.</li>
         <li>Nakon promjene sheme: <code>prisma migrate dev --name …</code>, pa <code>prisma generate</code>. Prisma 7 klijent se ne generira sam.</li>
       </ul>
 
