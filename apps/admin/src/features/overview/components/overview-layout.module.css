@@ -1,0 +1,75 @@
+.liveGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-12);
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-24);
+  align-items: start;
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 1fr;
+  }
+
+  @media (width >= 1200px) {
+    grid-template-rows: auto auto 1fr;
+  }
+}
+
+@media (1024px <= width < 1200px) {
+  .arrivals,
+  .peak {
+    grid-column: 1 / -1;
+  }
+
+  .plans {
+    grid-column: 1 / span 7;
+    grid-row: 3;
+  }
+
+  .entries {
+    grid-column: 1 / span 7;
+    grid-row: 4;
+  }
+
+  .attention {
+    grid-column: 8 / -1;
+    grid-row: 3 / span 2;
+  }
+}
+
+@media (width >= 1200px) {
+  .arrivals {
+    grid-column: 1 / span 8;
+    grid-row: 1;
+  }
+
+  .plans {
+    grid-column: 9 / -1;
+    grid-row: 1;
+    align-self: stretch;
+  }
+
+  .peak {
+    grid-column: 1 / span 8;
+    grid-row: 2;
+  }
+
+  .entries {
+    grid-column: 1 / span 8;
+    grid-row: 3;
+  }
+
+  .attention {
+    grid-column: 9 / -1;
+    grid-row: 2 / span 2;
+  }
+}

@@ -1,0 +1,74 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.plan {
+  font-size: var(--text-headline);
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.terms {
+  font-size: var(--text-body-secondary);
+  color: var(--text-on-light-secondary);
+}
+
+.countdown {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-10);
+  font-size: var(--text-button);
+  font-weight: 600;
+}
+
+.count {
+  font-size: 3.25rem;
+  line-height: 1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.track {
+  block-size: var(--space-8);
+  border-radius: var(--radius-4);
+  background: var(--surface-on-light-muted);
+  overflow: hidden;
+
+  span {
+    display: block;
+    block-size: 100%;
+    inline-size: var(--progress);
+    border-radius: inherit;
+    background: var(--text-on-light);
+  }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-14) var(--space-16);
+  margin: 0;
+
+  dt {
+    font-size: var(--text-label-small);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-on-light-secondary);
+  }
+
+  dd {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+}

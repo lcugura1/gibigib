@@ -1,0 +1,110 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  @media (width < 768px) {
+    --card-padding: var(--space-16);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding-block-end: var(--space-12);
+  border-block-end: 1px solid var(--divider);
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 1.375rem;
+  line-height: 1.25;
+  font-weight: 700;
+
+  &::before {
+    content: '';
+    inline-size: 0.5625rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--tag);
+  }
+
+  @media (width < 768px) {
+    font-size: 1.1875rem;
+  }
+}
+
+.address {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.devices li + li {
+  border-block-start: 1px solid var(--divider);
+}
+
+.device {
+  display: flex;
+  align-items: center;
+  gap: var(--space-14);
+  padding-block: var(--space-14);
+}
+
+.offline {
+  margin-inline: calc(var(--card-padding) * -1 + var(--space-4));
+  padding-inline: calc(var(--card-padding) - var(--space-4));
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+}
+
+.tile {
+  inline-size: 2.75rem;
+  aspect-ratio: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-12);
+  background: var(--tile-fill);
+}
+
+.deviceText {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+
+  b {
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+
+  span {
+    font-size: var(--text-body-secondary);
+    color: var(--text-secondary);
+  }
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding-block-start: var(--space-14);
+  border-block-start: 1px solid var(--divider);
+}
+
+.note {
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.warning {
+  padding-block-start: var(--space-8);
+  font-size: var(--text-section-label);
+  color: var(--danger);
+}

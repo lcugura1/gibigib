@@ -1,0 +1,93 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.compact {
+  --card-padding: var(--space-16);
+  --axis-width: 2.125rem;
+  --plot-height: 12.5rem;
+  --bar-gap: var(--space-6);
+  --axis-size: 0.625rem;
+  gap: var(--space-14);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: var(--axis-width, 3.25rem) minmax(0, 1fr);
+  grid-template-rows: var(--plot-height, 16.25rem) auto;
+  row-gap: var(--space-8);
+}
+
+.yAxis {
+  position: relative;
+  font-size: var(--text-label-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+
+  span {
+    position: absolute;
+    inset-inline-end: var(--space-8);
+    inset-block-start: var(--at);
+    translate: 0 -50%;
+    white-space: nowrap;
+  }
+}
+
+.plot {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--bar-gap, var(--space-14));
+  align-items: end;
+}
+
+.grid {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: var(--at);
+  border-block-start: 1px solid var(--divider);
+  pointer-events: none;
+}
+
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-2);
+  block-size: 100%;
+}
+
+.segment {
+  flex: none;
+  block-size: var(--share);
+  border-radius: var(--radius-4);
+
+  .compact & {
+    border-radius: 0.1875rem;
+  }
+
+  .current & {
+    outline: 1px solid rgb(255 255 255 / 0.35);
+    outline-offset: 1px;
+  }
+}
+
+.xAxis {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--bar-gap, var(--space-14));
+  font-size: var(--axis-size, var(--text-label-small));
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}

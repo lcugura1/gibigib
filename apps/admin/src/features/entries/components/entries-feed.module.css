@@ -1,0 +1,62 @@
+.feed {
+  overflow: hidden;
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+
+  li + li {
+    border-block-start: 1px solid var(--divider);
+  }
+}
+
+.denied {
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-14);
+}
+
+.time {
+  inline-size: 2.75rem;
+  flex: none;
+  font-size: var(--text-body-secondary);
+  color: var(--text-secondary);
+}
+
+.who {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+
+  b {
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+}
+
+.gym {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+
+  &::before {
+    content: '';
+    inline-size: 0.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--tag);
+  }
+}
+
+.reason {
+  font-size: var(--text-section-label);
+  font-weight: 600;
+  color: var(--danger);
+}

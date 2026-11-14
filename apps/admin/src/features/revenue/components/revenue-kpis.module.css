@@ -1,0 +1,11 @@
+.pending {
+  min-block-size: 9.375rem;
+}
+
+.revenue {
+  --metric-size: var(--text-price);
+}
+
+.dash {
+  color: var(--text-secondary);
+}

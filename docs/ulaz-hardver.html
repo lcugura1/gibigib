@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ulaz i hardver · GibiGib dokumentacija</title>
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <p class="brand"><a href="index.html">GibiGib</a></p>
+    <p class="sub">Projektna dokumentacija</p>
+  </aside>
+  <main>
+    <div class="content">
+      <p class="eyebrow">Sustav</p>
+      <h1>Ulaz i hardver</h1>
+      <p class="lede">Kako član ulazi u teretanu, koji hardver za to koristimo i što o njemu zasad znamo. Detalji i formati za kod su u <a href="hardver/README.md">docs/hardver</a>.</p>
+      <p class="meta">Zadnja izmjena: 2026-11-14 · stanje nakon audita dokumentacije, ništa nije isprobano na uređaju</p>
+
+      <h2 id="paketi">Dva paketa</h2>
+      <p>Klijent dobiva jedan od dva paketa, ovisno o tome želi li QR ili mu je dovoljan PIN (<a href="odluke.html#o-024">O-024</a>).</p>
+      <table>
+        <thead><tr><th>Klijent želi</th><th>Paket</th><th>Odluka</th></tr></thead>
+        <tbody>
+          <tr><td>QR (uz PIN ili bez)</td><td>Akuvox A08S, SR01, električni zapor 12 V DC fail-secure i lokalni most u teretani</td><td><a href="odluke.html#o-021">O-021</a>, <a href="odluke.html#o-022">O-022</a></td></tr>
+          <tr><td>Samo PIN</td><td>Tedee Keypad PRO, Tedee PRO ili GO i Bridge</td><td><a href="odluke.html#o-023">O-023</a></td></tr>
+          <tr><td>Članovi MultiSporta i PassSporta</td><td>Isti Akuvox čitač; kod provjerava provajder preko adaptera, uz dogovor koji traži teretana</td><td><a href="odluke.html#o-026">O-026</a></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="tok">Tok s Akuvoxom</h2>
+<pre><code>Mobitel (QR / PIN)
+   -> A08S --- http (LAN) ---> lokalni most --- https + ključ uređaja ---> BE
+                                    |                                        |
+   A08S &lt;--- {"isvalid": ...} -----+&lt;-------- ok / odbijeno ----------------+
+                                    |-- OpenDoor (SA/SB) --> A08S --RS-485--> SR01 --> zapor</code></pre>
+      <p>Čitač šalje sirovi kod mostu u lokalnoj mreži, most ga šalje API-ju (<code>POST /entry/scan</code>, postojeća ruta) i nakon odobrenja okida SR01, na koji je spojen zapor. Čitač odgovor čeka najviše 3 s. Skidanje čitača sa zida ne otvara vrata jer je relej unutra (<a href="odluke.html#o-022">O-022</a>).</p>
+
+      <h2 id="tedee">Tok s Tedeeom</h2>
+      <p>API izdaje kratkotrajni PIN preko Tedee clouda i Bridgea, a član ga utipka na keypadu. Dolazak se bilježi čitanjem zapisnika aktivnosti brave (događaj <code>UnlockedByPin</code> s aliasom), jer webhooka za korištenje PIN-a nema. Ograničenja su 700 zahtjeva na sat, jedna PIN operacija po bravi odjednom i granica od 100 PIN-ova.</p>
+
+      <h2 id="stanje">Što je potvrđeno i što nije</h2>
+      <div class="callout warn">Nijedan dio nije isproban na uređaju. Za Akuvox nema neovisnog dokaza da callback radi u praksi, a prva instalacija je pilot (<a href="odluke.html#o-025">O-025</a>).</div>
+      <table>
+        <thead><tr><th>Dio</th><th>Dokumentirano</th><th>Nedokumentirano ili test</th></tr></thead>
+        <tbody>
+          <tr><td>Akuvox callback</td><td>URL, varijable <code>{QRCode}</code> i <code>{Pin}</code>, odgovor <code>isvalid</code>, rok 3 s; naredba za SR01</td><td>Koji relej otvara odobrenje, HTTPS, HTTP metoda, tipka za potvrdu PIN-a, optika čitanja QR-a</td></tr>
+          <tr><td>Firmware</td><td>Osnovni callback od 108.30.10.139</td><td>PIN i autentikacija traže Beta 108.30.11.228 ili noviji; Release/LTS vjerojatno nemaju</td></tr>
+          <tr><td>Tedee API</td><td>Izdavanje i brisanje PIN-a, zapisnik s <code>pinAlias</code>, ograničenja</td><td>Minutna preciznost, latencija, oslobađanje mjesta nakon isteka PIN-a</td></tr>
+          <tr><td>MultiSport, PassSport</td><td>Pravila i dinamički kodovi</td><td>API, format kodova i pristupni podaci: samo od provajdera</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="kod">Kod koji postoji danas</h2>
+      <p>API ima <code>POST /entry/scan</code> s ključem uređaja vrste <code>SCANNER</code>, evidenciju <code>EntryEvent</code> i polling vrata <code>GET /device/commands</code> (uređaji vrste <code>DOOR</code>). Paket <code>apps/bridge</code> je most za Hikvision, koji se zamjenjuje Akuvox mostom (<a href="odluke.html#o-021">O-021</a>); kod ostaje dok novi most ne postoji. Što treba dodati: <a href="hardver/arhitektura-ulaza.md">arhitektura ulaza</a>.</p>
+
+      <h2 id="gdje">Gdje je što</h2>
+      <table>
+        <thead><tr><th>Treba mi</th><th>Datoteka</th></tr></thead>
+        <tbody>
+          <tr><td>Komponente, tokovi, podaci, kvarovi</td><td><a href="hardver/arhitektura-ulaza.md">hardver/arhitektura-ulaza.md</a></td></tr>
+          <tr><td>Odabir, cijene, pregled vrata, pilot</td><td><a href="hardver/odabir-hardvera.md">hardver/odabir-hardvera.md</a></td></tr>
+          <tr><td>Formati za kod</td><td><a href="hardver/ugovori/akuvox-a08s.md">Akuvox</a>, <a href="hardver/ugovori/tedee.md">Tedee</a>, <a href="hardver/ugovori/multisport.md">MultiSport</a>, <a href="hardver/ugovori/passsport.md">PassSport</a>, <a href="hardver/ugovori/wellhub.md">Wellhub</a></td></tr>
+          <tr><td>Dokazi i PDF-ovi</td><td><a href="hardver/izvori/akuvox/README.md">Akuvox</a>, <a href="hardver/izvori/tedee/README.md">Tedee</a>, <a href="hardver/partneri/README.md">partneri</a></td></tr>
+          <tr><td>Pitanja i mailovi provajderima</td><td><a href="hardver/partneri/pitanja-i-mailovi.md">pitanja-i-mailovi.md</a></td></tr>
+        </tbody>
+      </table>
+
+      <footer>GibiGib · projektna dokumentacija</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/docs.js"></script>
+</body>
+</html>

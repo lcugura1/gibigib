@@ -208,14 +208,15 @@
       </section>
 
       <section class="card decision" id="o-017">
-        <h3>O-017 · Most prema Hikvisionu i simulator u <code>apps/bridge</code> <span class="badge ok">Prihvaćeno</span></h3>
+        <h3>O-017 · Most prema Hikvisionu i simulator u <code>apps/bridge</code> <span class="badge bad">Zamijenjeno</span></h3>
         <dl>
           <dt>Datum</dt><dd>2026-10-14</dd>
           <dt>Kontekst</dt><dd><p>Terminal ne zna ništa o našim članarinama, a API ne smije biti izložen u lokalnoj mreži teretane niti držati otvorene veze prema uređajima. Uređaj još nemamo.</p></dd>
           <dt>Odluka</dt><dd><p>Zaseban proces u lokalnoj mreži teretane sluša <code>alertStream</code> terminala, zove <code>POST /entry/scan</code> s ključem skenera i nakon odobrenja otvara vrata preko ISAPI-ja. Simulator govori iste ISAPI pozive (Digest, multipart događaji, otvaranje vrata), pa se most testira bez preinaka.</p></dd>
           <dt>Razlozi</dt><dd><p>Odluka o ulazu ostaje na jednom mjestu (API), a terminal služi samo kao čitač i brava. Most otvara vrata na temelju odgovora skeniranja, bez čekanja na <code>DoorCommand</code>, jer je to jedan poziv manje i brže otvaranje. Odbačeno: registrirati tokene kao kartice na uređaju, jer bi trebalo stalno sinkronizirati tokene koji traju 45 s.</p></dd>
           <dt>Posljedice</dt><dd><p>Za granted ulaz i dalje nastaje <code>DoorCommand</code>, koji uz most nitko ne preuzme i istekne za 5 s. Most treba računalo uz terminal (mini PC ili Raspberry Pi). Oblik događaja treba potvrditi na uređaju.</p></dd>
-          <dt>Gdje u kodu</dt><dd><p><code>apps/bridge/src</code>, <code>apps/bridge/simulator</code>, opis u <a href="ulaz-hikvision.html">Ulaz preko Hikvisiona</a></p></dd>
+          <dt>Gdje u kodu</dt><dd><p><code>apps/bridge/src</code>, <code>apps/bridge/simulator</code>, opis u poglavlje <a href="ulaz-hardver.html">Ulaz i hardver</a> (opis Hikvision mosta zamijenjen je odlukom O-021)</p></dd>
+          <dt>Zamijenjeno</dt><dd><p>Odlukom <a href="#o-021">O-021</a> (čitač je Akuvox A08S). Kod u <code>apps/bridge</code> ostaje dok Akuvox nije potvrđen na uređaju, a uzorak mosta koristi <a href="#o-022">O-022</a>.</p></dd>
         </dl>
       </section>
 
@@ -254,6 +255,91 @@
           <dt>Razlozi</dt><dd><p>Provjera u aplikaciji je samo za korisnika. Pravilo stvarno čuva server, jer se aplikacija može zaobići. Automatski povrat je jedini ispravan ishod za uplatu koja je prošla, a nije smjela, pa osoblje ne mora ništa ručno.</p></dd>
           <dt>Posljedice</dt><dd><p>Nema produljenja unaprijed: novu članarinu član kupuje kad stara istekne. Plaćanje tijekom pauze više ne prekida pauzu. Ako Stripe odbije povrat, webhook ne uspije i Stripe ga ponovi, a ključ idempotentnosti sprječava dvostruki povrat.</p></dd>
           <dt>Gdje u kodu</dt><dd><p><code>apps/api/src/services/payment.ts</code> (<code>createPayment</code>, <code>handleSucceeded</code>), <code>apps/api/src/services/membership.ts</code> (<code>grantMembership</code>, <code>hasCurrentMembership</code>), <code>apps/mobile/features/home/screens/plan-detail-screen.tsx</code></p></dd>
+        </dl>
+      </section>
+
+      <h2 id="hardver">Hardver ulaza</h2>
+
+      <section class="card decision" id="o-021">
+        <h3>O-021 · Čitač na ulazu je Akuvox A08S, ne Hikvision <span class="badge warn">Privremeno, čeka test na uređaju</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Hikvision (<a href="#o-017">O-017</a>) provjerava QR lokalno: čitač čita QR samo preko RS-485, kontroler pamti broj kartice od najviše 20 znamenki, dinamički QR je vezan uz HikCentral ili Hik-Connect Teams, a poziv prema našem serveru nije dokumentiran. Naš zahtjev je da o svakom skeniranju odlučuje naš BE.</p></dd>
+          <dt>Odluka</dt><dd><p>Akuvox A08S (QR skener, numpad, RFID, BLE) s funkcijom Third Party Integration: uređaj šalje <code>{QRCode}</code> ili <code>{Pin}</code> i <code>{DeviceID}</code> na naš URL, a mi vraćamo JSON <code>isvalid</code> u roku od 3 s. Jedan uređaj služi za QR i za PIN.</p></dd>
+          <dt>Razlozi</dt><dd><p>Jedini pregledani uređaj koji dokumentirano šalje svaki sken serveru. 2N i Hikvision provjeravaju lokalno, a Suprema ide preko vlasničkog SDK-a bez poznate cijene. Odbačeno: Hikvision DS-K1109DKB-QR s kontrolerom DS-K2601T.</p></dd>
+          <dt>Posljedice</dt><dd><p>Ponašanje je dokumentirano samo kod proizvođača, a neovisnog dokaza da radi nismo našli. PIN (<code>{Pin}</code>) i Basic/Digest autentikacija traže Beta firmware 108.30.11.228 ili noviji (javno preuzimanje); stabilni Release 108.30.11.61 vjerojatno ima samo QR. Nedokumentirano: HTTPS za callback, koji relej otvara odobrenje, potvrda PIN-a na numpadu i optika čitanja našeg QR-a. Bez servera pristup se odbija. Cijena čitača je oko 228–400 € bez PDV-a.</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/ugovori/akuvox-a08s.md">ugovor Akuvox</a>, <a href="hardver/izvori/akuvox/README.md">izvori i audit</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-022">
+        <h3>O-022 · Zapor je spojen na SR01, a lokalni most okida SR01 <span class="badge warn">Privremeno, čeka test na uređaju</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Relej čitača je vani, pa skidanje čitača sa zida omogućuje otvaranje vrata. Dokumentacija ne kaže otvara li odobrenje servera i SR01, niti podržava li callback HTTPS (svi primjeri su <code>http://</code>).</p></dd>
+          <dt>Odluka</dt><dd><p>Zapor (12 V DC, fail-secure) spaja se samo na SR01 unutra, koji je s čitačem povezan preko RS-485. Čitač zove lokalni most u mreži teretane (običan HTTP), a most zove naš BE preko HTTPS-a s ključem uređaja. Nakon odobrenja most okida SR01 dokumentiranom naredbom <code>http://{IP čitača}/fcgi/OpenDoor?action=OpenDoor&amp;DoorNum=SA</code>, a čitaču vraća <code>isvalid:true</code> radi povratne informacije.</p></dd>
+          <dt>Razlozi</dt><dd><p>Oslanja se samo na dokumentirane mogućnosti i zaobilazi oba nedokumentirana pitanja. Skidanje čitača ne otvara vrata, a isti most služi i za daljinsko otvaranje iz admina. Odbačeno: zapor na relej čitača (ranjivost) i oslanjanje na to da <code>isvalid</code> sam otvori SR01.</p></dd>
+          <dt>Posljedice</dt><dd><p>Svaka teretana treba malo računalo uz čitač (npr. Raspberry Pi, oko 60–100 €). Uzorak je postojeći <code>apps/bridge</code>. HTTP API čitača ograničiti allowlistom na IP mosta i promijeniti zadani <code>admin</code>/<code>admin</code>. Nema offline puta: kad BE ne radi, pristup se odbija, pa osoblju treba mehanički ključ ili ručno otključavanje. Zapor mora biti 12 V DC, a relej SR01 i čitača podnosi 30 V 2 A.</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/arhitektura-ulaza.md">arhitektura ulaza</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-023">
+        <h3>O-023 · Teretane samo s PIN-om koriste Tedee Keypad PRO, Tedee PRO ili GO i Bridge <span class="badge warn">Privremeno, nepotvrđeno s klijentom</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Neki klijenti (npr. Blok Gym) žele samo PIN i već koriste Tedee.</p></dd>
+          <dt>Odluka</dt><dd><p>BE izdaje kratkotrajni PIN (5–8 znamenki) preko Tedee cloud API-ja (<code>POST /my/lock/{id}/pin</code> s <code>startDate</code> i <code>endDate</code>), aplikacija ga prikazuje, a istekli se brišu sami. Autentikacija je Personal Access Key. Ulaz se evidentira čitanjem zapisnika aktivnosti (događaj <code>UnlockedByPin</code>, <code>pinAlias</code> je ID člana), jer webhooka za korištenje PIN-a nema.</p></dd>
+          <dt>Razlozi</dt><dd><p>Nema ožičenja ni našeg uređaja uz vrata, motor je unutra pa otkidanje keypada ništa ne otvara, a izdavanje PIN-a je potpuno dokumentirano i vidljivo kod drugih integratora.</p></dd>
+          <dt>Posljedice</dt><dd><p>Granica od 700 zahtjeva na sat po računu; jedna PIN operacija po bravi odjednom (409), pa zahtjevi idu u red po bravi. Granica od 100 PIN-ova, a oslobađanje mjesta nakon isteka nije dokumentirano. Bridge je obavezan za PIN-ove preko API-ja. GO traži europski cilindar s hitnom funkcijom i najmanje 40 mm do okvira kod vrata koja se otvaraju prema van; PRO traži zamjenu cilindra. Protupanične brave nisu podržane, a Tedee navodi da uređaj nije protuprovalna zaštita. QR nije moguć. Nedokumentirano: minutna preciznost, latencija izdavanja, prag zaključavanja pri pogrešnim PIN-ovima.</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/ugovori/tedee.md">ugovor Tedee</a>, <a href="hardver/izvori/tedee/README.md">izvori i audit</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-024">
+        <h3>O-024 · Hardver se bira prema želji klijenta: QR znači Akuvox, samo PIN znači Tedee <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Klijenti žele ili QR (uz PIN) ili samo PIN, a vrata su različita (drvena, PVC, otvaranje prema van).</p></dd>
+          <dt>Odluka</dt><dd><p>Klijent dobiva jedan od dva paketa za ista vrata: Akuvox A08S s električnim zaporom (<a href="#o-021">O-021</a>, <a href="#o-022">O-022</a>) ako želi QR, ili Tedee (<a href="#o-023">O-023</a>) ako mu je dovoljan PIN. Točan model zapora i brave bira se nakon pregleda vrata (fotografije ruba krila, ključanice i okvira).</p></dd>
+          <dt>Razlozi</dt><dd><p>Tedee keypad prima samo PIN, a Akuvox je jedini paket s QR-om i pozivom prema našem BE-u. Kombinacija A08S s Tedee Dry Contact modulom nije potvrđena pa se ne nudi.</p></dd>
+          <dt>Posljedice</dt><dd><p>Evakuacija i vatrootpornost idu preko ovlaštenog instalatera. Cijene: Akuvox oko 420–780 € materijala i 300–800 € montaže bez PDV-a, Tedee oko 400 € s PDV-om bez montaže (sve orijentacijski).</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/odabir-hardvera.md">odabir-hardvera.md</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-025">
+        <h3>O-025 · Prva instalacija je pilot na jednim vratima <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Audit dokumentacije nije našao neovisnu potvrdu da Akuvoxov callback radi u praksi, a Tedee API je testiran samo na papiru. Dokumentirano nije isto što i isprobano.</p></dd>
+          <dt>Odluka</dt><dd><p>Klijentu se ne obećava "sigurno radi", nego "izvedivo i dokumentirano, prvu instalaciju radimo kao pilot". Prije toga test na stolu s jednim A08S i zapisom zahtjeva: HTTP metoda i kodiranje, naš 20-znamenkasti QR s mobitela, 8-znamenkasti PIN i potvrda na numpadu, <code>DoorNum=SA</code> prema SR01, usporedba stabilnog i Beta firmwarea.</p></dd>
+          <dt>Razlozi</dt><dd><p>Optika čitanja, ponašanje numpada i firmware ovise o stvarnom uređaju, a proizvođač ih ne objavljuje.</p></dd>
+          <dt>Posljedice</dt><dd><p>Pitanja Akuvoxu i Tedeeu poslana su e-mailom. Ako odgovora nema, test na stolu ostaje jedini put do potvrde. Za Tedee latenciju izdavanja PIN-a i oslobađanje mjesta nakon isteka mjeri samo test na bravi.</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/izvori/akuvox/audit-sr01-https-firmware-2026-11-14.md">audit Akuvox</a>, <a href="hardver/izvori/tedee/audit-2026-11-14.md">audit Tedee</a>, <a href="hardver/odabir-hardvera.md">plan pilota</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-026">
+        <h3>O-026 · MultiSport i PassSport korisnici ulaze bez registracije u našoj aplikaciji, a kod provjerava provajder <span class="badge warn">Privremeno, čeka provajdere</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Njihovi članovi imaju vlastite aplikacije s dinamičkim kodovima (MultiSport QR vrijedi oko 10 s; PassSport QR 1 minutu, uz 8-znamenkasti PIN koji se mijenja svakih 60 s), pa ih može provjeriti samo provajder. Ugovor s provajderom ima teretana, ne mi. MultiSportovi uvjeti iz 1.12.2026. definiraju samoposlužni rad.</p></dd>
+          <dt>Odluka</dt><dd><p>Isti čitač šalje sirovi sadržaj našem BE-u, koji prepozna vrstu koda i pita provajdera preko adaptera. Gost-profil BE stvara sam (broj kartice ili ID provajdera), bez aplikacije. Prvi korak je da teretana (vlasnik) zatraži suradnju od provajdera; mailovi su pripremljeni u ime vlasnika.</p></dd>
+          <dt>Razlozi</dt><dd><p>Isto rade Walletap (Hrvatska), amidal amiFIT (Koprivnica), eFitness i GymManager (Poljska) i Wellhub preko javnog API-ja. Odbačeno kao trajno rješenje: drugi čitač paralelno na istu bravu preko dobavljača koji već ima integraciju (Walletap od 103 € mjesečno uz 19 € po čitaču bez PDV-a), jer su tada dva sustava, a evidencija izvan našeg.</p></dd>
+          <dt>Posljedice</dt><dd><p>Ni MultiSport ni PassSport nemaju javni API; za MultiSport u Poljskoj klub dobiva ClientId od svog kontakta u Benefit Systems. MultiSport traži profil u sustavu partnera i prvu provjeru identiteta uživo uz osoblje. Odgovor uređaju mora stići u 3 s, uključujući poziv provajderu. Tedee paket ovo ne podržava jer keypad ne zove BE. Dok provajderi ne odgovore, adapteri se ne programiraju.</p></dd>
+          <dt>Gdje</dt><dd><p><a href="hardver/partneri/README.md">partneri</a>, <a href="hardver/ugovori/multisport.md">ugovor MultiSport</a>, <a href="hardver/ugovori/passsport.md">ugovor PassSport</a>, <a href="hardver/partneri/pitanja-i-mailovi.md">pitanja i mailovi</a></p></dd>
+        </dl>
+      </section>
+
+      <section class="card decision" id="o-027">
+        <h3>O-027 · Hardverska dokumentacija u <code>docs/hardver</code>: ugovor je izvor istine za kod <span class="badge ok">Prihvaćeno</span></h3>
+        <dl>
+          <dt>Datum</dt><dd>2026-11-14</dd>
+          <dt>Kontekst</dt><dd><p>Hardverske odluke ovise o službenim dokumentima proizvođača i provajdera koji se mijenjaju (firmware, API), a kod mora pratiti formate koje oni očekuju. Raniji zapisi i istraživanja govorili su o Hikvisionu i međusobno su se razilazili.</p></dd>
+          <dt>Odluka</dt><dd><p>Jedna struktura: <code>ugovori/</code> (što uređaj ili provajder šalje i očekuje, za kod), <code>izvori/</code> (audit i izvorni PDF-ovi po proizvođaču), <code>partneri/</code> (MultiSport, PassSport, Wellhub, istraživanje, pitanja i mailovi), uz <code>arhitektura-ulaza.md</code> i <code>odabir-hardvera.md</code>. Ugovor je izvor istine za kod, odluka za razlog, izvori za dokaz; isto se ne piše na dva mjesta. Oznake: dokumentirano, nepotvrđeno, test. Zastarjeli zapisi su obrisani. Firmware datoteke (<code>.rom</code>) ne idu u repozitorij.</p></dd>
+          <dt>Razlozi</dt><dd><p>Odluke tako uvijek upućuju na izvor koji se može provjeriti, a kod ne ovisi o pretpostavkama koje nigdje ne pišu.</p></dd>
+          <dt>Posljedice</dt><dd><p>Kad test na uređaju potvrdi ili opovrgne nešto, oznaka u ugovoru se zamijeni rezultatom i datumom, a odluka se ažurira. Pregled je u <a href="hardver/README.md">docs/hardver</a> i u poglavlju <a href="ulaz-hardver.html">Ulaz i hardver</a>.</p></dd>
         </dl>
       </section>
 

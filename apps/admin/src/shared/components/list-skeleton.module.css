@@ -1,0 +1,33 @@
+.list {
+  overflow: hidden;
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+
+.table {
+  border: 0;
+  border-radius: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-16);
+
+  & + & {
+    border-block-start: 1px solid var(--surface-border);
+  }
+}
+
+.text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.stats {
+  margin-block-start: var(--space-8);
+}

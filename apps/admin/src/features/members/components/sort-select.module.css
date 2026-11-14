@@ -1,0 +1,23 @@
+.sort {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-block-size: 2.75rem;
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  &:focus-within {
+    outline: 2px solid var(--border-focused);
+    outline-offset: 2px;
+  }
+
+  select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    font-size: var(--text-button);
+  }
+}

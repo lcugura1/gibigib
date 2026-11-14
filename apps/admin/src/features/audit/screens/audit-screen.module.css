@@ -1,0 +1,91 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+
+  @media (width < 768px) {
+    gap: var(--space-16);
+  }
+}
+
+.toolbar {
+  scroll-margin-block-start: var(--space-16);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.range {
+  margin-inline-start: auto;
+}
+
+.clear {
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-body-secondary);
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.filterButton {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: -0.125rem;
+  inset-inline-end: -0.125rem;
+  min-inline-size: 1.125rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--text-on-light);
+  font-size: var(--text-badge);
+  font-weight: 700;
+  line-height: 1.125rem;
+}
+
+.emptyCard {
+  border-radius: var(--radius-18);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+
+.more {
+  block-size: 3rem;
+  border-radius: var(--radius-14);
+  border: 1px solid var(--border);
+  background: none;
+  font-size: var(--text-button);
+  font-weight: 600;
+
+  &:disabled {
+    opacity: var(--opacity-dimmed);
+    cursor: default;
+  }
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.sheetTitle {
+  font-size: var(--text-headline);
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.sheetActions {
+  display: flex;
+  gap: var(--space-8);
+  margin-block-start: var(--space-8);
+}

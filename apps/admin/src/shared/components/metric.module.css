@@ -1,0 +1,31 @@
+.value {
+  font-size: var(--metric-size, clamp(2rem, 18cqi, var(--text-metric-xl)));
+  line-height: 1.05;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.unit {
+  font-size: var(--metric-unit-size, 0.48em);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-secondary);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+
+  & > :first-child {
+    flex: 1 1 6rem;
+  }
+}
+
+.note {
+  font-size: var(--text-section-label);
+  color: var(--text-secondary);
+}

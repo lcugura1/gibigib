@@ -1,0 +1,19 @@
+.button {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  block-size: 2.75rem;
+  padding-inline: var(--space-14);
+  border-radius: var(--radius-12);
+  border: 1px solid var(--border);
+  background: none;
+  font-size: var(--text-body);
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: var(--opacity-dimmed);
+    cursor: default;
+  }
+}

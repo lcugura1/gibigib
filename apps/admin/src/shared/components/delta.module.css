@@ -1,0 +1,22 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-items: baseline;
+  font-size: var(--text-section-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.good {
+  color: var(--accent);
+}
+
+.bad {
+  color: var(--danger);
+}

@@ -7,7 +7,7 @@ const CHAPTERS = [
     { file: 'lokalno-okruzenje.html', title: 'Lokalno okruženje i testiranje' },
   ] },
   { group: 'Sustav', items: [
-    { file: 'ulaz-hikvision.html', title: 'Ulaz preko Hikvisiona' },
+    { file: 'ulaz-hardver.html', title: 'Ulaz i hardver' },
     { file: 'placanje.html', title: 'Plaćanje (Stripe)' },
   ] },
   { group: 'Rad na projektu', items: [

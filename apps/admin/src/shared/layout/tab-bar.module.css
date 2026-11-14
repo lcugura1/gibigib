@@ -1,0 +1,45 @@
+.bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 5;
+  padding: var(--space-8) var(--space-8) max(var(--space-28), env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  border-block-start: 1px solid var(--surface-border);
+  backdrop-filter: blur(20px);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tab {
+  inline-size: 100%;
+  min-block-size: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1875rem;
+  padding: var(--space-4) 0 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-badge);
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  svg {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+  }
+
+  &[aria-current='page'],
+  &[aria-expanded='true'],
+  &.current {
+    color: var(--text-primary);
+  }
+
+  .items:has([aria-expanded='true']) &[aria-current='page'] {
+    color: var(--text-secondary);
+  }
+}

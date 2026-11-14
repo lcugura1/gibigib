@@ -1,0 +1,95 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.compact {
+  --card-padding: var(--space-16);
+  --axis-width: 2.25rem;
+  --plot-height: 11.25rem;
+  --total-size: var(--text-unit);
+}
+
+.empty {
+  flex: 1;
+  min-block-size: 18rem;
+}
+
+.total {
+  font-size: var(--total-size, var(--text-price));
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta {
+  justify-content: flex-end;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: var(--axis-width, 2.75rem) minmax(0, 1fr);
+  grid-template-rows: var(--plot-height, 13.75rem) auto;
+  row-gap: var(--space-8);
+}
+
+.yAxis,
+.xAxis {
+  position: relative;
+  font-size: var(--text-label-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.yAxis span {
+  position: absolute;
+  inset-inline-end: var(--space-8);
+  inset-block-start: var(--at);
+  translate: 0 -50%;
+}
+
+.xAxis {
+  grid-column: 2;
+  block-size: 1.25rem;
+
+  span {
+    position: absolute;
+    inset-inline-start: var(--at);
+    translate: -50% 0;
+    white-space: nowrap;
+
+    &:first-child {
+      translate: none;
+    }
+
+    &:last-child {
+      translate: -100% 0;
+    }
+  }
+}
+
+.plot {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--divider);
+  vector-effect: non-scaling-stroke;
+}
+
+.series {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}

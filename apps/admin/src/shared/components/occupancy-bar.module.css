@@ -1,0 +1,26 @@
+.bar {
+  block-size: var(--space-8);
+  border-radius: var(--radius-4);
+  background: var(--surface-border);
+  overflow: hidden;
+}
+
+.fill {
+  block-size: 100%;
+  inline-size: var(--share);
+  border-radius: inherit;
+  background: var(--level);
+  transition: inline-size 0.8s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.ok {
+  --level: var(--accent);
+}
+
+.warn {
+  --level: var(--warning);
+}
+
+.danger {
+  --level: var(--danger);
+}
